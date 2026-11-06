@@ -1,0 +1,40 @@
+BioLab.addReview({
+creditcard:{
+ questions:[
+  {id:'minmonths',kind:'real',lvl:'bio',
+   q:'You owe $1,500 at 24% APR and pay only the minimum (the interest plus 1% of the balance, at least $25). How many months until the card is paid off?',
+   choices:['About 24 months','About 60 months','About 114 months','About 200 months'],correct:2,
+   steps:['Each month: add 2% interest, then pay the interest plus 1%. That leaves 99% of the balance.','The balance shrinks slowly: $1,330 after a year, and it reaches the $25 floor at about $833, after about 59 months.','From there, $25 a month takes about 55 more months. In all: 114 months, about 9.5 years.'],
+   lab:{set:{bal:1500,apr:24},act:'show',look:'Read <b>Months to pay off, minimum only</b>.'},verify:[['minM',114,0]]},
+  {id:'mininterest',kind:'real',lvl:'bio',
+   q:'In that same case, about how much interest do you pay in total?',
+   choices:['About $300','About $900','About $1,900','About $3,000'],correct:2,
+   steps:['Interest is 2% of whatever you still owe, every month, for 114 months.','The balance stays high for years, so the interest adds up to about $1,887.','That is more than the $1,500 you borrowed.'],
+   lab:{set:{bal:1500,apr:24},act:'show',look:'Read <b>Interest paid, minimum only</b>.'},verify:[['minI',1886.9,1]]},
+  {id:'firstmin',kind:'test',lvl:'bio',
+   q:'A card has a $2,000 balance at 18% APR. The minimum is the interest plus 1% of the balance. What is the first minimum payment, in dollars?',
+   num:{ans:50,tol:0.01,unit:'dollars'},
+   steps:['Monthly rate: 18% ÷ 12 = 1.5%.','Interest: 0.015 × 2000 = $30. One percent of the balance: $20.','Minimum: $30 + $20 = $50. Only $20 of it pays down the balance.'],
+   lab:{set:{bal:2000,apr:18},look:'Read <b>First minimum payment</b> at Closer look.'},verify:[['first',50,0.01]]},
+  {id:'decay',kind:'test',lvl:'honors',
+   q:'While the minimum is interest plus 1%, the balance is B(n) = 1500(0.99)ⁿ. What is the balance after 24 months, to the nearest cent?',
+   num:{ans:1178.52,tol:0.02,unit:'dollars'},
+   steps:['B(24) = 1500 × 0.99²⁴.','0.99²⁴ ≈ 0.785678.','1500 × 0.785678 ≈ $1,178.52. Two years of payments have cut the balance by only about $321.']},
+  {id:'saved',kind:'real',lvl:'honors',
+   q:'Same $1,500 card at 24% APR. Instead of the minimum, you pay $100 a month. About how much interest do you save, in dollars?',
+   num:{ans:1586,tol:5,unit:'dollars'},
+   steps:['Minimum only: $1,887 in interest over 114 months.','$100 a month: 19 payments and $301 in interest.','Savings: $1,887 − $301 ≈ $1,586.'],
+   lab:{set:{bal:1500,apr:24,pay:100},act:'show',look:'Read <b>Interest you save by paying more</b>.'},verify:[['saved',1585.74,1]]},
+  {id:'formula',kind:'test',lvl:'ap',
+   q:'You owe $3,000 at 2% a month and pay $100 a month. Using n = −ln(1 − rB/P) ÷ ln(1 + r), how many monthly payments does it take (counting a smaller last one)?',
+   num:{ans:47,tol:0,unit:'payments'},
+   steps:['rB/P = 0.02 × 3000 ÷ 100 = 0.6.','n = −ln(0.4) ÷ ln(1.02) ≈ 0.9163 ÷ 0.0198 ≈ 46.3.','So 46 full payments and a smaller 47th: 47 payments.'],
+   lab:{set:{bal:3000,apr:24,pay:100},act:'show',look:'Read <b>Months at your fixed payment</b>.'},verify:[['fixM',47,0]]},
+  {id:'flip',kind:'real',lvl:'ap',
+   q:'The flip side: you save $100 at the end of every month for 114 months, at 5% a year compounded monthly. To the nearest $10, how much do you have?',
+   num:{ans:14554,tol:10,unit:'dollars'},
+   steps:['FV = P((1 + i)ⁿ − 1) ÷ i with P = 100, i = 0.05 ÷ 12, n = 114.','(1 + 0.05/12)¹¹⁴ ≈ 1.6064, so FV ≈ 100 × 0.6064 ÷ 0.0041667 ≈ $14,554.','You deposited $11,400; about $3,154 is growth.'],
+   lab:{set:{bal:1500,apr:24,pay:100,srate:5},act:'show',look:'Read <b>Saving your fixed payment for that long</b>.'},verify:[['save',14554.27,1]]}
+ ]
+}
+});

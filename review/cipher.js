@@ -1,0 +1,42 @@
+BioLab.addReview({
+cipher:{
+ questions:[
+  {id:'encodeh',kind:'test',lvl:'bio',
+   q:'The code is E(x) = (3x + 5) mod 26, with A = 0 … Z = 25. What does the letter H turn into?',
+   choices:['K','A','Z','H'],correct:1,
+   steps:['H is letter number 7.','3 × 7 + 5 = 26.','26 mod 26 = 0, which is A.']},
+  {id:'divide',kind:'real',lvl:'bio',
+   q:'Your team’s code multiplies by 3, then adds 5. The coded call starts with E, which is 4. Subtracting 5 (and wrapping) gives 25, and 25 ÷ 3 is a fraction, so dividing reads no letter. Which letter did the sender mean?',
+   choices:['R','H','I','Z'],correct:0,
+   steps:['Subtract 5 first: 4 − 5 = −1, which wraps around to 25.','Dividing fails: 25 ÷ 3 = 8⅓ is not a whole number. The real letter was wrapped past 25 by the code, so its code minus 5 is not a multiple of 3.','Multiply by 9 instead, since 3 × 9 = 27 wraps to 1: 9 × 25 = 225 = 8 × 26 + 17, which wraps to 17, the letter R. Check: 3 × 17 + 5 = 56, which wraps to 4, E.']},
+  {id:'temp',kind:'real',lvl:'bio',
+   q:'A thermometer reads in Fahrenheit, and F = 1.8C + 32. Using the inverse function, what is 77 °F in Celsius?',
+   num:{ans:25,tol:0.1,unit:'°C'},
+   steps:['The rule multiplies by 1.8, then adds 32. The inverse undoes those steps in reverse order.','Subtract 32: 77 − 32 = 45.','Divide by 1.8: 45 ÷ 1.8 = 25 °C. Check: 1.8 × 25 + 32 = 77.']},
+  {id:'inv7',kind:'test',lvl:'honors',
+   q:'The code multiplies by 7 (mod 26). What whole number should the decoder multiply by to undo it?',
+   num:{ans:15,tol:0,unit:''},
+   steps:['You need m with 7m leaving remainder 1 when divided by 26.','Try multiples of 7: 7 × 15 = 105 = 4 × 26 + 1.','So m = 15.'],
+   lab:{set:{a:7,um:15},look:'Read <b>Code multiplier × yours, mod 26</b>: 1 means your multiplier undoes the code.'},verify:[['check',1,0],['inv',15,0]]},
+  {id:'collide',kind:'test',lvl:'honors',
+   q:'The code multiplies by 13, then adds b (mod 26). How many different code letters can it ever produce?',
+   choices:['26','13','2','1'],correct:2,
+   steps:['13x mod 26 is 0 when x is even and 13 when x is odd.','So every letter codes to one of just two letters: b or b + 13.','24 letters collide, so the code is not one-to-one and has no inverse.'],
+   lab:{set:{a:13,table:true},look:'Read <b>Different code letters used</b> and look at the red letters in the table.'},verify:[['distinct',2,0]]},
+  {id:'decodeA',kind:'real',lvl:'honors',
+   q:'Your team’s code is E(x) = (3x + 5) mod 26. A coded call starts with the letter A. Which letter did the sender mean?',
+   choices:['F','H','D','A'],correct:1,
+   steps:['The decoder is D(y) = 9(y − 5) mod 26, since 3 × 9 = 27 ≡ 1.','A is 0: 0 − 5 = −5, which wraps to 21.','9 × 21 = 189 = 7 × 26 + 7, so the letter is 7: H.'],
+   lab:{set:{msg:0,a:3,b:5,peek:true},act:'inverse',look:'Every letter of the call decodes correctly.'},verify:[['right',16,0],['pct',100,0.01]]},
+  {id:'twice',kind:'test',lvl:'ap',
+   q:'The code E(x) = (5x + 8) mod 26 is applied twice. Which single code is E(E(x))?',
+   choices:['10x + 16','25x + 22','25x + 48','5x + 16'],correct:1,
+   steps:['E(E(x)) = 5(5x + 8) + 8 = 25x + 48.','48 mod 26 = 22, so E(E(x)) = (25x + 22) mod 26.','Its inverse subtracts 22, then multiplies by 25, because 25 × 25 = 625 = 24 × 26 + 1.'],
+   lab:{set:{a:5,b:8,twice:true,peek:true},act:'inverse',look:'Read the line under the code machine and the decoder settings.'},verify:[['right',16,0]]},
+  {id:'count',kind:'test',lvl:'ap',
+   q:'How many values of a from 1 to 25 give a code E(x) = (ax + b) mod 26 that has an inverse?',
+   num:{ans:12,tol:0,unit:''},
+   steps:['a needs an inverse mod 26, which happens exactly when a shares no factor with 26 = 2 × 13.','Remove the even numbers and 13: 1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25.','That is 12 values.']}
+ ]
+}
+});
