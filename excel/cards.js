@@ -83,9 +83,9 @@
   F.webCopy = function () {
     return fig(browser('excel.office.com',
       r(1, 32, 130, 162, 'f-panel', 0) + t(14, 52, 'File', 'f-t f-b') +
-      t(14, 78, 'New', 'f-t f-sm') + t(14, 100, 'Open', 'f-t f-sm') + t(14, 122, 'Create a Copy', 'f-t f-sm f-b') + hl(10, 110, 112, 18, 1) +
+      t(14, 78, 'New', 'f-t f-sm') + t(14, 100, 'Open', 'f-t f-sm') + t(14, 122, 'Save As', 'f-t f-sm f-b') + hl(10, 110, 112, 18, 1) +
       r(140, 108, 160, 34, 'f-win', 5) + t(152, 129, 'Download a Copy', 'f-t f-sm') + hl(146, 112, 148, 26, 2)),
-      'The File menu in Excel for the web. Create a Copy is outlined and marked 1, and Download a Copy is marked 2.',
+      'The File menu in Excel for the web. Save As is outlined and marked 1, and Download a Copy is marked 2.',
       'Screenshot: Excel for the web File menu showing Download a Copy');
   };
   F.folder = function (file) {
@@ -192,12 +192,12 @@
       step('2a', 'Open the file', 'Open your <b>Downloads</b> folder and double-click <b>' + esc(file) + '</b>. It opens in the Excel desktop app.', F.folder(file)) +
       step('2b', 'Click Enable Editing', 'See a yellow bar that says <b>Protected View</b>? Excel opens files that came from the internet as read-only at first, to keep you safe. You made this file, so click <b>Enable Editing</b>.', F.protected(file)) +
       step('2c', 'Save it', 'Press <b>Ctrl+S</b> to save (on a Mac, <b>Cmd+S</b>). To keep it somewhere safe, choose <b>File &gt; Save As</b> and pick your OneDrive.', F.save()) +
-      step('If you need it', 'Don’t have the desktop app yet?', 'Every RJ student can install it with their RJ account: sign in at <b>microsoft365.com</b> and choose <b>Install apps</b>. Until then, use Excel for the web: everything in these lessons works there.', F.install()) +
+      step('If you need it', 'Don’t have the desktop app yet?', 'Every RJ student can install it with their RJ account: sign in at <b>microsoft365.com</b> and choose <b>Install apps</b>, then <b>Microsoft 365 apps</b>. Until then, use Excel for the web: everything in these lessons works there.', F.install()) +
       '</ol></div>' +
       '<h3 class="xl-canvas-h">Turn it in on Canvas</h3>' +
       '<ol class="xl-osteps">' +
       step(3, 'Start the assignment', 'Open the assignment in Canvas and press <b>Start Assignment</b>.', F.canvasStart()) +
-      step(4, 'Attach your file', 'Choose <b>File Upload</b>, press <b>Upload File</b>, and pick your saved .xlsx file. Used Excel for the web? Canvas needs the file itself: in Excel, choose <b>File &gt; Create a Copy &gt; Download a Copy</b>, then upload that copy.', F.canvasUpload(file, 'upload')) +
+      step(4, 'Attach your file', 'Choose <b>File Upload</b>, press <b>Upload File</b>, and pick your saved .xlsx file. Used Excel for the web? Canvas needs the file itself: in Excel, choose <b>File &gt; Save As &gt; Download a Copy</b> (some versions say <b>File &gt; Create a Copy &gt; Download a Copy</b>), then upload that copy.', F.canvasUpload(file, 'upload')) +
       step(5, 'Submit', 'Press <b>Submit Assignment</b>. Done.', F.canvasUpload(file, 'submit')) +
       '</ol>' +
       '<details class="xl-webcopy"><summary>Picture: Download a Copy in Excel for the web</summary>' + F.webCopy() + '</details>' +
