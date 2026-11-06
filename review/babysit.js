@@ -1,0 +1,40 @@
+BioLab.addReview({
+babysit:{
+ questions:[
+  {id:'high',kind:'real',lvl:'bio',
+   q:'On your street you decide to charge $24 an hour. With 6 free nights and one 4-hour night per family, how much do you earn in a month?',
+   num:{ans:192,tol:0.5,unit:'$'},
+   steps:['A family books you only if it pays at least $24 now: the $24 family and the $40 family. That is 2 families.','So you fill 2 of your 6 nights.','2 nights × 4 h × $24 = $192 a month, against $480 at $20.'],
+   lab:{set:{area:'street',rate:24,show:true},look:'Read <b>Nights booked</b> and <b>You earn each month</b>.'},verify:[['earn',192,0.01],['booked',2,0.01]]},
+  {id:'meanst',kind:'test',lvl:'bio',
+   q:'The 12 rates on your street are $17, 18, 19, 19, 20, 20, 20, 21, 21, 22, 24 and 40. Find the mean, to the nearest cent.',
+   num:{ans:21.75,tol:0.01,unit:'$'},
+   steps:['Add them: 17 + 18 + 19 + 19 + 20 + 20 + 20 + 21 + 21 + 22 + 24 + 40 = 261.','Divide by 12: 261 ÷ 12 = 21.75.','The mean is $21.75, higher than 9 of the 12 rates.'],
+   lab:{set:{area:'street'},look:'Read <b>Average (mean) rate on the list</b>.'},verify:[['mean',21.75,0.005],['median',20,0.001]]},
+  {id:'medacross',kind:'test',lvl:'honors',
+   q:'Across town the rates are $12, 18, 19, 20, 20, 21, 21, 21, 22, 22, 23 and 24. Find the median and the mean. Which is larger?',
+   choices:['Median $21, mean $20.25: the median is larger','Median $20.50, mean $21: the mean is larger','They are equal'],correct:0,
+   steps:['With 12 values in order, the median is the average of the 6th and 7th: (21 + 21) ÷ 2 = $21.','The sum is 243, so the mean is 243 ÷ 12 = $20.25.','The low $12 rate pulls the mean down: the data are skewed left.'],
+   lab:{set:{area:'across'},look:'Read the mean and the median.'},verify:[['median',21,0.001],['mean',20.25,0.001]]},
+  {id:'table',kind:'real',lvl:'honors',
+   q:'Across town, a friend charges the mean, $20.25, instead of the median, $21. Both fill all 6 nights. How much less does your friend make each month?',
+   num:{ans:18,tol:0.01,unit:'$'},
+   steps:['Seven families pay at least $20.25, so your friend fills all 6 nights: 6 × 4 × $20.25 = $486.','Seven families pay at least $21, so $21 also fills 6 nights: 6 × 4 × $21 = $504.','$504 − $486 = $18 a month left on the table.'],
+   lab:{set:{area:'across',rate:21,show:true},look:'Read <b>You earn each month</b> at $21.'},verify:[['earn',504,0.01]]},
+  {id:'resist',kind:'test',lvl:'honors',
+   q:'A data set has one extreme outlier. Which pair of statistics is resistant to it?',
+   choices:['Mean and standard deviation','Median and IQR','Mean and range','Range and standard deviation'],correct:1,
+   steps:['The mean, SD and range all use the actual size of every value, so one extreme value drags them.','The median and the quartiles only depend on the order of the middle values.','So the median and IQR are resistant.']},
+  {id:'four',kind:'ap',lvl:'ap',
+   q:'On your street you can only sit 4 nights a month. What rate earns the most, and how much is that a month?',
+   choices:['$20: $320','$21: $336','$22: $264','$40: $160'],correct:1,
+   steps:['You need 4 families at or above your rate, so charge the 4th highest rate. In order from the top: $40, $24, $22, $21.','At $21: 5 families pay at least $21, so you fill all 4 nights: 4 × 4 × $21 = $336.','At $22 only 3 families book you: 3 × 4 × $22 = $264.'],
+   lab:{set:{area:'street',nights:4},act:'best',look:'Read <b>Best rate for your free nights</b> and <b>You earn each month</b>.'},verify:[['best',21,0.001],['earn',336,0.01]]},
+  {id:'sd',kind:'ap',lvl:'ap',
+   q:'The standard deviation of the rates on your street is about $6.03; on your cousin’s street it is about $2.37. Which statement is the best explanation?',
+   choices:['Your street’s rates are all more spread out','One extreme rate, the $40 nanny, inflates your street’s SD; without it, the two streets have similar spread','The cousin’s street has more families'],correct:1,
+   steps:['Both lists have 12 rates, and 11 of your street’s rates fall between $17 and $24, inside your cousin’s range of $17 to $25.','The SD squares each distance from the mean, so the $40 rate, $18.25 above the mean, counts very heavily.','The SD is not resistant: without the $40 rate your street’s SD would be about $1.92, so one outlier roughly triples it.'],
+   lab:{set:{area:'street'},look:'Read <b>Standard deviation of the rates</b> at Deep dive, then switch lists.'},verify:[['sd',6.032,0.005]]}
+ ]
+}
+});

@@ -1,0 +1,40 @@
+BioLab.addReview({
+pollmargin:{
+ questions:[
+  {id:'small',kind:'real',lvl:'bio',
+   q:'A smaller poll: 27 of 50 students (54%) pick your candidate. What is the 95% margin of error, in percentage points?',
+   num:{ans:13.8,tol:0.1,unit:'points'},
+   steps:['Standard error: √(0.54 × 0.46 / 50) = √0.004968 ≈ 0.0705.','Margin: 1.96 × 0.0705 ≈ 0.138.','About ±13.8 points: we are 95% confident the true share is between 40.2% and 67.8%.'],
+   lab:{set:{n:50,show:true},look:'Read <b>Margin of error</b>.'},verify:[['moe',13.81,0.01]]},
+  {id:'sixty',kind:'real',lvl:'honors',
+   q:'A poll of 50 students gives your candidate 60%. Is the race a lock at 95% confidence?',
+   choices:['Yes: 60% is far above 50%','No: the interval is about 46.4% to 73.6%, which includes 50%','Yes, because 50 students is a big sample'],correct:1,
+   steps:['SE = √(0.60 × 0.40 / 50) ≈ 0.0693.','Margin = 1.96 × 0.0693 ≈ 0.136: ±13.6 points.','60 ± 13.6 gives 46.4% to 73.6%. A loss is still plausible with only 50 students.'],
+   lab:{set:{n:50,ph:60,show:true},look:'Read the low and high ends of the interval.'},verify:[['lo',46.42,0.01]]},
+  {id:'se200',kind:'test',lvl:'honors',
+   q:'p̂ = 0.54 and n = 200. What is the standard error, in percentage points?',
+   num:{ans:3.52,tol:0.01,unit:'points'},
+   steps:['SE = √(p̂(1 − p̂)/n) = √(0.54 × 0.46 / 200).','= √0.001242 ≈ 0.0352.','That is 3.52 points; the 95% margin is 1.96 × 3.52 ≈ 6.9 points.'],
+   lab:{set:{n:200,show:true},look:'Read <b>Standard error</b>.'},verify:[['se',3.524,0.001]]},
+  {id:'interval150',kind:'test',lvl:'honors',
+   q:'81 of 150 randomly chosen students support your candidate. What is the low end of the 95% confidence interval, as a percent?',
+   num:{ans:46.0,tol:0.1,unit:'%'},
+   steps:['p̂ = 81/150 = 0.54.','Margin = 1.96 × √(0.54 × 0.46 / 150) ≈ 1.96 × 0.0407 ≈ 0.0798.','Interval: 0.54 ± 0.080, from 46.0% to 62.0%.'],
+   lab:{set:{n:150,show:true},look:'Read <b>Low end of the interval</b>.'},verify:[['lo',46.02,0.01]]},
+  {id:'meaning',kind:'test',lvl:'honors',
+   q:'A 95% confidence interval for your candidate’s support is 44.2% to 63.8%. Which statement is correct?',
+   choices:['There is a 95% chance the true share is 54%','If we repeated the random poll many times, about 95% of the intervals made this way would capture the true share','95% of students support a candidate between 44.2% and 63.8%','The true share is definitely between 44.2% and 63.8%'],correct:1,
+   steps:['Confidence describes the method, not one interval.','About 95% of intervals from repeated random samples capture the true proportion.','This particular interval either captures it or not; we just do not know which.']},
+  {id:'samplesize',kind:'ap',lvl:'ap',
+   q:'Planning ahead, you guess p̂ ≈ 0.54. How many students would a 95% interval need for its margin of error to be at most 4 points?',
+   num:{ans:597,tol:1,unit:'students'},
+   steps:['Solve 1.96 × √(0.54 × 0.46 / n) ≤ 0.04.','n ≥ 1.96² × 0.54 × 0.46 / 0.04² = 3.8416 × 0.2484 / 0.0016 ≈ 596.4.','Round up to 597. That is about 30% of a 2,000-student school, which breaks the 10% condition, so this simple formula overstates the margin there.'],
+   lab:{set:{n:100,show:true},look:'Read <b>Poll size that would make this result a lock</b>.'},verify:[['need',597,0]]},
+  {id:'ninetynine',kind:'ap',lvl:'ap',
+   q:'p̂ = 0.54 and n = 200. What is the 99% margin of error, in points?',
+   num:{ans:9.08,tol:0.02,unit:'points'},
+   steps:['For 99% confidence, z* = 2.576.','SE = √(0.54 × 0.46 / 200) ≈ 0.03524.','Margin = 2.576 × 0.03524 ≈ 0.0908: ±9.08 points, wider than the 95% margin of ±6.9.'],
+   lab:{set:{n:200,conf:99,show:true},look:'Read <b>Margin of error</b>.'},verify:[['moe',9.08,0.01]]}
+ ]
+}
+});

@@ -1,0 +1,40 @@
+BioLab.addReview({
+sprinkler:{
+ questions:[
+  {id:'circle',kind:'test',lvl:'bio',
+   q:'A rotary sprinkler throws 30 ft in every direction. To the nearest square foot, how much lawn does it water?',
+   num:{ans:2827,tol:1,unit:'sq ft'},
+   steps:['The pattern is a circle with radius 30 ft.','Area = πr² = π × 900 ≈ 2,827 sq ft.'],
+   lab:{set:{pattern:'circle',reach:30},act:'show',look:'Read <b>Area it waters</b>.'},verify:[['area',2827.43,0.1]]},
+  {id:'water',kind:'real',lvl:'bio',
+   q:'A full-circle sprinkler waters a 25 ft radius, about 1,963 sq ft. You want half an inch of water on it. One cubic foot holds about 7.48 gallons. About how many gallons is that?',
+   choices:['About 82 gallons','About 612 gallons','About 7,340 gallons','About 14,700 gallons'],correct:1,
+   steps:['Half an inch is 0.5/12 ≈ 0.0417 ft.','Volume = 1,963 × 0.0417 ≈ 81.8 cubic feet.','81.8 × 7.48 ≈ 612 gallons.'],
+   lab:{set:{pattern:'circle',reach:25},act:'show',look:'Read <b>Water for half an inch</b>.'},verify:[['water',612.0,0.5]]},
+  {id:'sector',kind:'test',lvl:'honors',
+   q:'One pie slice of a spray pattern has radius 18 ft and angle π/12 radian. To the nearest tenth, what is its area?',
+   num:{ans:42.4,tol:0.1,unit:'sq ft'},
+   steps:['A sector has area ½r²Δθ.','½ × 18² × π/12 = 162 × 0.2618 ≈ 42.4 sq ft.']},
+  {id:'inside',kind:'real',lvl:'honors',
+   q:'For the house pattern with a 25 ft throw, 12 inside slices give about 573 sq ft, and the real area is about 736 sq ft. If you planned the watering from the slice estimate, what would happen?',
+   choices:['The lawn would get about 22% too little water','The lawn would get about 22% too much water','It would make no difference'],correct:0,
+   steps:['The slice estimate is 736 − 573 = 163 sq ft short, which is 163/736 ≈ 22% of the real area.','Water planned for 573 sq ft gets spread over 736 sq ft, so each square foot gets about 573/736 ≈ 78% of what you meant: about 22% too little.','More slices, or the integral, fixes this.'],
+   lab:{set:{pattern:'wall',reach:25,n:12},act:'show',look:'Compare <b>Inside-slice estimate</b> with <b>Area it waters</b>.'},verify:[['inner',573.0,1],['area',736.3,0.1]]},
+  {id:'limacon',kind:'ap',lvl:'ap',
+   q:'On a windy day a 30 ft head’s pattern is r = 24 + 6 cos θ. Find the area it waters, to the nearest square foot.',
+   num:{ans:1866,tol:1,unit:'sq ft'},
+   steps:['A = ½∫₀^{2π} (24 + 6 cos θ)² dθ = ½∫₀^{2π} (576 + 288 cos θ + 36 cos²θ) dθ.','Over a full turn, ∫ cos θ dθ = 0 and ∫ cos²θ dθ = π.','A = ½(576 × 2π + 36π) = 576π + 18π = 594π ≈ 1,866 sq ft. The calm-day circle is 900π ≈ 2,827 sq ft.'],
+   lab:{set:{pattern:'wind',reach:30,wind:20},act:'show',look:'Read <b>Area it waters</b>.'},verify:[['area',1866.1,0.1]]},
+  {id:'cardioid',kind:'ap',lvl:'ap',
+   q:'A head by the house waters r = 10(1 + cos θ). Which value is the area inside this curve?',
+   choices:['100π ≈ 314 sq ft','150π ≈ 471 sq ft','200π ≈ 628 sq ft','400π ≈ 1,257 sq ft'],correct:1,
+   steps:['A = ½∫₀^{2π} 100(1 + 2 cos θ + cos²θ) dθ.','= 50(2π + 0 + π) = 150π ≈ 471 sq ft.','In general a cardioid r = a(1 + cos θ) has area (3/2)πa².'],
+   lab:{set:{pattern:'wall',reach:20},act:'show',look:'Read <b>Area it waters</b>.'},verify:[['area',471.24,0.1]]},
+  {id:'sidewalk',kind:'ap',lvl:'ap',
+   q:'A full-circle head with a 25 ft throw sits 15 ft from a straight sidewalk edge, which in polar form is r = 15 sec θ. How much spray lands past the edge, to the nearest square foot?',
+   num:{ans:280,tol:1,unit:'sq ft'},
+   steps:['The curves cross where 15 sec θ = 25: cos θ = 0.6, θ = ±0.9273.','A = ½∫ from −0.9273 to 0.9273 of (625 − 225 sec²θ) dθ = 625(0.9273) − 225 tan(0.9273).','tan(0.9273) = 4/3, so A ≈ 579.6 − 300 ≈ 280 sq ft of wasted spray.'],
+   lab:{set:{pattern:'circle',reach:25,walk:true,edge:15},look:'Read <b>Spray on the sidewalk</b>.'},verify:[['waste',279.56,0.5]]}
+ ]
+}
+});

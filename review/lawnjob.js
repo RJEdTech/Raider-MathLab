@@ -1,0 +1,40 @@
+BioLab.addReview({
+lawnjob:{
+ questions:[
+  {id:'quote',kind:'real',lvl:'bio',
+   q:'Your line from 15 jobs is: minutes = 10.65 + 6.036 × (lawn size in thousands of sq ft). You charge $25 an hour. To the nearest cent, what should you quote for a 6,500 sq ft lawn?',
+   num:{ans:20.79,tol:0.03,unit:'$'},
+   steps:['Lawn size in thousands of sq ft: 6,500 ÷ 1,000 = 6.5.','Predicted time: 10.65 + 6.036 × 6.5 = 10.65 + 39.23 = 49.88 minutes.','Quote: 49.88 min × $25 ÷ 60 min ≈ $20.79.'],
+   lab:{set:{size:6500,rate:25,line:true},look:'Read <b>The line predicts</b> and <b>The line’s quote</b>.'},verify:[['pred',49.89,0.02],['lq',20.79,0.01]]},
+  {id:'resid',kind:'test',lvl:'bio',
+   q:'Your 9,300 sq ft job took 76 minutes. The line predicts 66.8 minutes for a lawn that size. What is that job’s residual, and what does its sign tell you?',
+   choices:['+9.2 min: the job ran longer than the line predicts','−9.2 min: the job ran shorter than the line predicts','66.8 min: the predicted time'],correct:0,
+   steps:['Residual = actual − predicted = 76 − 66.8 = +9.2 minutes.','Positive means the dot sits above the line. Maybe that yard had a steep slope or lots of trimming.'],
+   lab:{set:{line:true,resid:true},look:'Find the dot at 9,300 sq ft. Its red stick is the biggest one above the line.'}},
+  {id:'r2',kind:'test',lvl:'honors',
+   q:'For your 15 jobs, r = 0.970. What is r², and what does it say?',
+   choices:['0.970: 97% of predictions are exactly right','About 0.941: about 94% of the variation in job times is accounted for by the linear relationship with lawn size','About 0.985: lawn size causes 98.5% of your time'],correct:1,
+   steps:['r² = 0.970² ≈ 0.941.','It is the fraction of the variation in minutes that the line accounts for. The other 6% is yard-to-yard scatter the line cannot explain.','It does not promise any single prediction is exact, and a correlation alone does not prove cause.'],
+   lab:{set:{line:true},look:'Read <b>Correlation r</b> and <b>r²</b>.'},verify:[['r',0.970,0.001],['r2',94.06,0.05]]},
+  {id:'far',kind:'real',lvl:'honors',
+   q:'A new customer has an 18,000 sq ft lawn. Your jobs ran from 2,200 to 11,400 sq ft. The line says 119.3 minutes. What is the best way to use that number?',
+   choices:['Quote it exactly: the line is the best fit','Treat it as a rough starting point at most: it is an extrapolation far past your biggest job','Ignore lawn size and charge your usual price'],correct:1,
+   steps:['18,000 sq ft is more than 6,000 sq ft past your biggest job, so this is extrapolation.','Nothing in your data shows the pattern still holds that far out: a big lawn may need a different mower, more trips to empty the bag, or a break.','A safer plan: quote it as a new kind of job, time it, and add it to your data.'],
+   lab:{set:{size:18000,line:true},look:'The line turns dashed past your last job. Read <b>The line predicts</b>.'},verify:[['pred',119.31,0.05]]},
+  {id:'gutcost',kind:'real',lvl:'honors',
+   q:'At $25 an hour, a gut guess of 30 minutes for the 6,500 sq ft lawn misses the real cost by about $8.29 on an average job like it. The line’s quote misses by about $1.65. Over 30 jobs that far off, about how much does the gut guess cost you compared with the line?',
+   num:{ans:199,tol:2,unit:'$'},
+   steps:['Extra miss per job: $8.29 − $1.65 = $6.64.','Over 30 jobs: 30 × $6.64 ≈ $199.'],
+   lab:{set:{size:6500,rate:25,est:30,line:true},look:'Read <b>Your quote: average dollars off</b>, then drag your estimate to the line.'},verify:[['off',8.29,0.01]]},
+  {id:'ci',kind:'ap',lvl:'ap',
+   q:'Regression output for your 15 jobs: slope b = 6.036 min per 1,000 sq ft, SE of the slope = 0.421. Find the margin of error for a 95% confidence interval for the true slope.',
+   num:{ans:0.909,tol:0.005,unit:'min per 1,000 sq ft'},
+   steps:['Degrees of freedom: n − 2 = 13, so t* = 2.160.','Margin of error = t* × SE = 2.160 × 0.421 ≈ 0.909.','Interval: 6.036 ± 0.909, from about 5.13 to 6.95 min per 1,000 sq ft. It does not contain 0, so the data give convincing evidence of a positive linear relationship between lawn size and time.'],
+   lab:{set:{line:true},look:'At Deep dive, read <b>Slope b</b>, <b>Standard error of the slope</b> and the interval.'},verify:[['slope',6.036,0.001],['seb',0.4208,0.0005]]},
+  {id:'tstat',kind:'ap',lvl:'ap',
+   q:'Same output: b = 6.036, SE_b = 0.421, n = 15. Test H₀: β = 0 against Hₐ: β > 0. What is the test statistic, and what do you conclude?',
+   choices:['t ≈ 14.3; the P-value is tiny, so there is convincing evidence of a positive linear relationship','t ≈ 2.16; fail to reject H₀','t ≈ 0.07; the slope is not significant'],correct:0,
+   steps:['t = (b − 0) / SE_b = 6.036 / 0.421 ≈ 14.3, with df = 13.','A t of 14.3 is far beyond any usual critical value (t* = 1.771 for a one-sided test at α = 0.05), so the P-value is essentially 0.','Reject H₀: bigger lawns really do take longer, in a linear way.']}
+ ]
+}
+});

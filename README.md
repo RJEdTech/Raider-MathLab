@@ -1,6 +1,6 @@
 # Raider MathLab
 
-Why am I learning this? Real problems a high schooler might actually face, solved with the exact math from Regis Jesuit's Algebra 1, Geometry, Algebra 2, Precalculus and AP Precalculus courses.
+Why am I learning this? Real problems a high schooler might actually face, solved with the exact math from Regis Jesuit's Algebra 1, Geometry, Algebra 2, Precalculus, AP Precalculus, Statistics, AP Statistics, AP Calculus AB and AP Calculus BC courses.
 
 **Live site:** https://rjedtech.github.io/Raider-MathLab/
 
@@ -16,7 +16,7 @@ Part of the Raider Labs suite with BioLab, ChemLab, PhysLab, ForensicsLab, Anato
 Each course unit opens with a **Why are we learning this?** card that teachers can project on the first day of the unit.
 
 ## Courses
-Unit order comes from RJ math teachers' Canvas modules: Algebra 1, Geometry, Algebra 2, Precalculus and AP Precalculus, with Honors notes.
+Unit order comes from RJ math teachers' Canvas modules: Algebra 1, Geometry, Algebra 2, Precalculus, AP Precalculus, Statistics (Probability & Statistics and Inferential Statistics), AP Statistics, AP Calculus AB and AP Calculus BC, with Honors notes. 70 tools in all.
 
 ## How it is built
 Static site with no build step: `index.html`, `engine.js` and `biolab.css` (the shared Raider Labs engine, plus MathLab's gut-vs-math and guided cold start), `courses.js` and `why.js`, and one file per tool in `sims/`, `practical/` and `review/`. Everything runs in the browser; no student data leaves the device. See `ENGINE.md` and `MATHLAB.md` to author a tool.
