@@ -1,0 +1,232 @@
+/* excel/excel.css: "Excel from zero" page. Uses the Raider Labs theme tokens from biolab.css,
+   so light and dark mode follow the device setting, like the MathLab home. */
+
+/* ---------- page ---------- */
+.xl-top{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin:0 0 18px}
+.xl-top a.back{font-weight:600;color:var(--fg);text-decoration:none;padding:8px 2px;display:inline-block}
+.xl-top a.back:hover{text-decoration:underline}
+#app{min-height:60vh}
+body.xl-inlesson .xl-top,body.xl-inlesson main>.labs{display:none}
+body.xl-inlesson .rj-masthead{margin-bottom:22px!important}
+.xl-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- home ---------- */
+.xl-home .home-head h2{font-size:30px;line-height:1.15;margin:0 0 8px}
+.xl-home .lede{font-size:17px;color:var(--muted);max-width:66ch;margin:0 0 20px}
+.xl-start{background:var(--card);border:2px solid var(--rj);border-radius:14px;padding:20px 22px;margin:0 0 30px;display:grid;grid-template-columns:1fr auto;gap:6px 24px;align-items:center}
+.xl-start .xl-badge{grid-column:1/-1;margin:0;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--rj-ink)}
+.xl-start h3{margin:0;font-size:22px;line-height:1.25}
+.xl-start p{margin:0;color:var(--muted)}
+.xl-start h3,.xl-start p:not(.xl-badge){grid-column:1}
+.xl-big{grid-column:2;grid-row:2/span 2;display:inline-flex;align-items:center;justify-content:center;min-width:170px;min-height:60px;padding:14px 34px;border-radius:12px;
+  background:var(--rj);color:#fff;font-size:22px;font-weight:800;text-decoration:none;box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.xl-big:hover{filter:brightness(1.08)}
+.xl-big:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.xl-keep{grid-column:1/-1;justify-self:start;margin-top:8px}
+.xl-group-h{font-size:20px;margin:26px 0 4px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.xl-count{font-size:14px;font-weight:600;color:var(--muted)}
+.xl-group-p{margin:0 0 12px;color:var(--muted);max-width:72ch}
+.xl-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.xl-item a{display:flex;gap:12px;align-items:flex-start;min-height:64px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg);text-decoration:none;height:100%}
+.xl-item a:hover{border-color:var(--rj)}
+.xl-item a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.xl-n{flex:0 0 34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--card2);border:1px solid var(--line);font-weight:800;font-variant-numeric:tabular-nums}
+.xl-done .xl-n{background:var(--good);border-color:var(--good);color:#fff}
+.xl-first a{border-color:var(--rj);box-shadow:inset 4px 0 0 var(--rj)}
+.xl-t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.xl-t b{font-size:16px;line-height:1.3}
+.xl-t small{font-size:14px;color:var(--muted);line-height:1.4}
+.xl-tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--rj);border-radius:5px;padding:1px 6px;vertical-align:2px}
+.xl-builds{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.xl-build{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.xl-build h4{margin:0 0 4px;font-size:18px}
+.xl-build p{margin:0 0 10px;color:var(--muted);font-size:15px}
+.xl-lvls{display:flex;flex-wrap:wrap;gap:8px}
+.xl-lvl{display:inline-flex;align-items:center;min-height:40px;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--card2);color:var(--fg);text-decoration:none;font-weight:700;font-size:15px}
+.xl-lvl:hover{border-color:var(--rj)}
+.xl-lvl.xl-done{border-color:var(--good);color:var(--good)}
+
+/* ---------- lesson view ---------- */
+.xl-crumb{margin:0 0 8px}
+.xl-crumb a{color:var(--fg);font-weight:600;text-decoration:none;display:inline-block;padding:6px 0}
+.xl-crumb a:hover{text-decoration:underline}
+.xl-kicker{margin:0;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rj-ink)}
+.xl-donetag{color:var(--good)}
+.xl-title{font-size:28px;line-height:1.2;margin:4px 0 6px;outline:none}
+.xl-scen{margin:0 0 16px;color:var(--muted);max-width:74ch;font-size:16px}
+.xl-lvlbar{display:flex;align-items:center;gap:10px;margin:4px 0 12px;flex-wrap:wrap}
+.xl-lvlbar .seg a{display:inline-flex;align-items:center;min-height:36px;padding:5px 12px;border-radius:6px;font-size:15px;font-weight:600;color:var(--muted);text-decoration:none}
+.xl-lvlbar .seg a[aria-current="page"]{background:var(--rj);color:#fff}
+.xl-lvlbar .seg a:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+
+.xl-card{position:relative;z-index:40;scroll-margin-top:10px;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--rj);border-radius:12px;padding:12px 16px 14px;margin:0 0 14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.xl-prog{display:flex;align-items:center;gap:12px;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin:0 0 6px}
+.xl-pbar{flex:1;max-width:220px;height:6px;border-radius:3px;background:var(--card2);border:1px solid var(--line);overflow:hidden}
+.xl-pbar i{display:block;height:100%;background:var(--rj)}
+.xl-fb{margin:0 0 6px;padding:7px 11px;border-radius:8px;font-size:15px;line-height:1.45}
+.xl-fb[hidden]{display:none}
+.xl-fb-good{background:color-mix(in srgb,var(--good) 13%,var(--card));color:var(--fg);border:1px solid color-mix(in srgb,var(--good) 45%,var(--line))}
+.xl-fb-good::before{content:"✓ ";color:var(--good);font-weight:800}
+.xl-fb-bad{background:color-mix(in srgb,var(--bad) 10%,var(--card));color:var(--fg);border:1px solid color-mix(in srgb,var(--bad) 45%,var(--line))}
+.xl-fb-bad::before{content:"Not yet: ";color:var(--bad);font-weight:800}
+.xl-fb-info{background:var(--warn-bg);color:var(--fg);border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line))}
+.xl-hint{display:block;margin-top:3px;color:var(--muted)}
+.xl-say{font-size:17px;line-height:1.5;max-width:78ch}
+.xl-say b{color:var(--fg)}
+.xl-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.xl-acts:empty{display:none}
+.xl-btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:7px 16px;border-radius:9px;border:1px solid var(--line);background:var(--card2);color:var(--fg);
+  font:700 15px/1.25 var(--font);cursor:pointer;text-decoration:none}
+.xl-btn:hover{border-color:var(--muted)}
+.xl-btn.primary{background:var(--rj);border-color:var(--rj);color:#fff}
+.xl-btn.primary:hover{filter:brightness(1.08)}
+.xl-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.xl-extra:empty{display:none}
+.xl-extra{margin-top:8px}
+.xl-learned{margin:6px 0 0;padding-left:22px}
+.xl-learned li{margin:3px 0}
+.xl-still-h{margin:4px 0 2px;font-size:14px;font-weight:700;color:var(--muted)}
+.xl-still{margin:0 0 4px;padding-left:22px;font-size:15px}
+.xl-choices{display:flex;flex-wrap:wrap;gap:8px}
+.xl-choice{min-height:44px;min-width:64px;padding:8px 16px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--fg);font:700 16px/1.3 var(--font);cursor:pointer;text-align:left}
+.xl-choice:hover{border-color:var(--focus)}
+.xl-choice:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.xl-choice.xl-wrong{border-color:var(--bad);color:var(--muted);text-decoration:line-through}
+.xl-choice.xl-right{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--card))}
+.xl-gut label{display:block;font-weight:700;margin:0 0 6px}
+.xl-gut-row{display:flex;align-items:center;gap:6px}
+.xl-gut input{width:150px;min-height:44px;padding:8px 10px;font-size:18px;border:2px solid var(--line);border-radius:9px;background:var(--card);color:var(--fg)}
+.xl-gut input:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.xl-gut-pre,.xl-gut-suf{font-weight:700;font-size:18px}
+
+/* ---------- the stage: grid plus the first-timer layer ---------- */
+.xl-stage{position:relative;margin:0 0 16px}
+.xl-stage .rjs-tools:empty{display:none}
+.xl-stage .rjs-scroll{max-height:min(440px,62vh)}
+.xl-stage .rjs .rjs-grid td.rjs-yt{animation:xl-glow 1.8s ease-in-out infinite}
+@keyframes xl-glow{0%,100%{box-shadow:inset 0 0 0 2px var(--rj)}50%{box-shadow:inset 0 0 0 4px var(--rj),0 0 10px color-mix(in srgb,var(--rj) 55%,transparent)}}
+.xl-stage .rjs .rjs-grid td.rjs-yt.rjs-act{box-shadow:inset 0 0 0 3px var(--focus);animation:none}
+.xl-stage .rjs .rjs-bar .rjs-enter.xl-glow{background:var(--rj);color:#fff;animation:xl-pulse 1.2s ease-in-out infinite}
+@keyframes xl-pulse{50%{filter:brightness(1.18)}}
+.xl-layer{position:absolute;inset:0;pointer-events:none;z-index:30}
+.xl-calls{position:absolute;left:0;top:0;width:100%;height:0;z-index:32;pointer-events:none}
+.xl-ptr{position:absolute;left:0;top:0;padding:5px 11px;border-radius:8px;background:var(--rj);color:#fff;font-weight:800;font-size:14px;line-height:1.2;white-space:nowrap;
+  box-shadow:0 3px 10px rgba(0,0,0,.25);--ax:50%}
+.xl-ptr::after{content:"";position:absolute;left:calc(var(--ax) - 7px);bottom:-7px;border:7px solid transparent;border-bottom:0;border-top-color:var(--rj)}
+.xl-ptr.xl-below::after{bottom:auto;top:-7px;border:7px solid transparent;border-top:0;border-bottom-color:var(--rj)}
+.xl-call{position:absolute;pointer-events:none;background:var(--card);color:var(--fg);border:2px solid var(--focus);border-radius:11px;padding:9px 12px 10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.22);opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s;--ax:50%}
+.xl-call.xl-in{opacity:1;transform:none}
+.xl-call.xl-out{opacity:0;transform:translateY(-4px)}
+.xl-call.xl-out .xl-call-ok{pointer-events:none}
+.xl-watchres{margin:2px 0 0;padding:7px 11px;border-radius:8px;background:color-mix(in srgb,var(--good) 13%,var(--card));border:1px solid color-mix(in srgb,var(--good) 45%,var(--line));font-size:15px}
+.xl-call::after{content:"";position:absolute;left:calc(var(--ax) - 9px);bottom:-9px;border:9px solid transparent;border-bottom:0;border-top-color:var(--focus)}
+.xl-call.xl-below::after{bottom:auto;top:-9px;border:9px solid transparent;border-top:0;border-bottom-color:var(--focus)}
+.xl-call-h{margin:0;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--focus)}
+.xl-call-b{margin:2px 0 8px;font-size:15px;line-height:1.4}
+.xl-call-ok{pointer-events:auto;min-height:34px;padding:4px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font:700 14px var(--font);cursor:pointer}
+.xl-call-ok:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.xl-cursor{position:absolute;left:0;top:0;z-index:36;transition:transform .62s cubic-bezier(.4,.1,.2,1);filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.xl-cursor.xl-clk::before{content:"";position:absolute;left:-12px;top:-12px;width:30px;height:30px;border-radius:50%;border:3px solid var(--rj);animation:xl-ring .45s ease-out forwards}
+@keyframes xl-ring{from{transform:scale(.3);opacity:1}to{transform:scale(1.4);opacity:0}}
+.xl-cap{position:absolute;left:0;top:0;z-index:36;padding:4px 10px;border-radius:7px;background:var(--fg);color:var(--card);font-weight:700;font-size:14px;white-space:nowrap;transition:transform .62s cubic-bezier(.4,.1,.2,1)}
+.xl-ghost{position:absolute;border:2px dashed var(--focus);border-radius:2px;background:color-mix(in srgb,var(--focus) 8%,transparent)}
+.xl-demoing .rjs{pointer-events:none}
+.xl-ctype{display:flex;align-items:center;gap:10px;margin:12px 0 0}
+.xl-ctype-l{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.xl-ctype .seg button{min-height:36px}
+.xl-after:empty{display:none}
+/* wide screens: the chart sits beside the grid, so the instruction, the cells and the chart are all in view */
+@media (min-width:901px){
+  .xl-has-chart .rjs{display:grid;grid-template-columns:minmax(0,48%) minmax(0,1fr);column-gap:16px;align-items:start}
+  .xl-has-chart .rjs>.rjs-bar,.xl-has-chart .rjs>.rjs-tools,.xl-has-chart .rjs>.rjs-scroll,.xl-has-chart .rjs>.rjs-msg{grid-column:1}
+  .xl-has-chart .rjs>.xl-ctype{grid-column:2;grid-row:1;margin:0}
+  .xl-has-chart .rjs>.rjs-charts{grid-column:2;grid-row:2/span 4;margin-top:0}
+  .xl-has-chart .rjs-chart{margin-top:8px}
+}
+.xl-pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:18px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+.xl-pager a{color:var(--fg);font-weight:700;text-decoration:none;padding:8px 0;display:inline-block}
+.xl-pager a:hover{text-decoration:underline}
+
+/* ---------- Open it in Excel and Two Excels cards ---------- */
+.xl-cardbox{margin-top:4px}
+.xl-open h3,.xl-two h3{margin:8px 0 8px;font-size:20px}
+.xl-osteps{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.xl-ostep{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,330px);gap:14px;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.xl-on{margin:0;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rj-ink)}
+.xl-otext h4{margin:2px 0 4px;font-size:17px}
+.xl-otext p{margin:0;font-size:16px}
+.xl-which{margin:16px 0 8px;font-weight:800}
+.xl-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px;border-bottom:2px solid var(--line)}
+.xl-tabs [role=tab]{min-height:44px;padding:8px 16px;border:1px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0;background:var(--card2);color:var(--muted);font:700 16px var(--font);cursor:pointer;margin-bottom:-2px}
+.xl-tabs [role=tab][aria-selected="true"]{background:var(--card);color:var(--fg);border-color:var(--line);box-shadow:inset 0 3px 0 var(--rj);border-bottom:2px solid var(--card)}
+.xl-tabs [role=tab]:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.xl-canvas-h{margin-top:20px!important}
+.xl-webcopy{margin:10px 0 0}
+.xl-webcopy summary{cursor:pointer;font-weight:700;min-height:36px;display:flex;align-items:center}
+.xl-webcopy .xl-fig{max-width:330px}
+.xl-fig{margin:0;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px}
+.xl-fig svg{display:block;width:100%;height:auto}
+.xl-fig .f-win{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+.xl-fig .f-chrome{fill:var(--card2)}
+.xl-fig .f-url{fill:var(--card);stroke:var(--line)}
+.xl-fig .f-dot{fill:var(--line)}
+.xl-fig .f-t{fill:var(--fg);font-family:var(--font);font-size:12px}
+.xl-fig .f-sm{font-size:11px}
+.xl-fig .f-xs{font-size:10px}
+.xl-fig .f-b{font-weight:700}
+.xl-fig .f-mut{fill:var(--muted)}
+.xl-fig .f-tw{fill:#fff}
+.xl-fig .f-tb{fill:var(--fg);font-weight:700;font-size:11px}
+.xl-fig .f-mono{font-family:ui-monospace,Consolas,Menlo,monospace}
+.xl-fig .f-link{fill:var(--s2);font-weight:700}
+.xl-fig .f-btn{fill:var(--card2);stroke:var(--muted);stroke-width:1.2}
+.xl-fig .f-btn-p{fill:#2d6bd2}
+.xl-fig .f-hl{fill:none;stroke:var(--rj);stroke-width:3}
+.xl-fig .f-badge{fill:var(--rj)}
+.xl-fig .f-xl,.xl-fig .f-xlbar,.xl-fig .f-file{fill:#217346}
+.xl-fig .f-panel{fill:var(--card2);stroke:var(--line)}
+.xl-fig .f-ph{fill:var(--line)}
+.xl-fig .f-line{stroke:var(--line);stroke-width:1}
+.xl-fig .f-field{fill:var(--card);stroke:var(--muted);stroke-width:1.2}
+.xl-fig .f-warn{fill:#fff4ce}
+.xl-fig .f-key{fill:var(--card2);stroke:var(--muted);stroke-width:2}
+.xl-fig .f-rjband{fill:#394b58}
+.xl-fig .f-stroke{fill:none;stroke:var(--fg);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.xl-fig .f-uline{stroke:#2d6bd2;stroke-width:2.5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .xl-fig .f-warn{fill:#4a3d12}}
+:root[data-theme="dark"] .xl-fig .f-warn{fill:#4a3d12}
+.xl-two-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.xl-two-c{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.xl-two-c h4{margin:0;font-size:18px}
+.xl-two-sub{margin:2px 0 6px;color:var(--muted);font-size:15px}
+.xl-two-c ul{margin:0;padding-left:20px}
+.xl-two-c li{margin:5px 0}
+.xl-two-same{margin:12px 0}
+.xl-rule{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,330px);gap:14px;align-items:center;background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));border-radius:12px;padding:12px 14px}
+.xl-rule p{margin:0}
+
+/* ---------- teachers' notes ---------- */
+.xl-notes{margin-top:30px}
+.xl-notes code{font:14px ui-monospace,Consolas,Menlo,monospace;background:var(--card2);border:1px solid var(--line);border-radius:5px;padding:0 4px}
+
+/* ---------- phones ---------- */
+@media (max-width:700px){
+  .xl-start{grid-template-columns:1fr}
+  .xl-big{grid-column:1;grid-row:auto;width:100%;margin-top:10px}
+  .xl-ostep,.xl-rule{grid-template-columns:1fr}
+  .xl-two-cols{grid-template-columns:1fr}
+  .xl-title{font-size:24px}
+  .xl-say{font-size:16px}
+  .xl-btn,.xl-call-ok,.xl-lvl{min-height:44px}
+  .xl-lvlbar .seg a,.xl-ctype .seg button{min-height:44px}
+  .xl-stage .rjs .rjs-btn{min-height:44px}
+  .xl-stage .rjs .rjs-bar .rjs-enter{min-height:44px}
+  .xl-stage .rjs-scroll{max-height:min(380px,56vh)}
+}
+@media (prefers-reduced-motion:reduce){
+  .xl-stage .rjs .rjs-grid td.rjs-yt,.xl-stage .rjs .rjs-bar .rjs-enter.xl-glow{animation:none}
+  .xl-cursor,.xl-cap,.xl-call{transition:none}
+  .xl-cursor.xl-clk::before{animation:none;display:none}
+}
