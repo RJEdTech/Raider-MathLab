@@ -1,6 +1,8 @@
 /* excel/builds.js: the Build it projects. Each matches its MathLab tool's scenario and numbers:
    Order total  = sims/formulas.js   (40 shirts at $12, $35 setup fee, 8% tax on everything: $556.20)
    Credit card  = sims/creditcard.js ($1,500 at 24% APR; minimum = interest + 1% of the balance, at least $25: 114 months, $1,886.90)
+   Living wage  = sims/livingwage.js  (MIT 2026, Arapahoe County: 1 adult + 1 child $103,964 a year ÷ 2,080 = $49.98 an hour;
+                  2 adults both working + 2 children $144,282 ÷ 2 ÷ 2,080 = $34.68 each; Colorado minimum $15.16)
    Three levels each: Big picture (one formula, fully walked through), Closer look (fill a formula down with $),
    Deep dive (build from a mostly blank sheet and chart it). Every level: gut guess, build, check against the model, download.
    The model's answers are computed here in plain JavaScript, separately from the spreadsheet engine. */
@@ -298,6 +300,157 @@
           dlStep(), openStep('credit-card-payoff-deep'),
           { kind: 'done', say: '<b>You built the whole payoff model.</b>',
             learned: ['Each row is a month; each month starts where the last one ended.', 'MAX and MIN build the card’s payment rule.', 'COUNTIF counts months; SUM adds the interest.', 'In Excel, make the chart again with Insert: the download has your formulas, not the chart.'] }
+        ] }
+    ]
+  });
+  /* ===================== Living wage ===================== */
+  /* MIT Living Wage Calculator, 2026 estimates (county pages updated Feb 15, 2026), the same numbers as sims/livingwage.js.
+     "Other necessities" = MIT's civic + internet & mobile + other. Living wage = (budget + taxes) ÷ earners ÷ 2,080 hours. */
+  var LW_H = 2080, LW_MIN = 15.16;
+  var LW_CATS = ['Food', 'Housing', 'Child care', 'Transportation', 'Health care', 'Other necessities', 'Taxes'];
+  var LW_1A1 = [6685, 25109, 19448, 9302, 8272, 17471, 17677];   /* Arapahoe County: 1 adult, 1 child */
+  var LW_2A2 = [13336, 25109, 36208, 13482, 9538, 23104, 23505]; /* Arapahoe County: 2 adults (both working), 2 children */
+  var LW_TYPES = [
+    { l: '1 adult, no children', e: 1, y: 56342 }, { l: '1 adult, 1 child', e: 1, y: 103964 }, { l: '1 adult, 2 children', e: 1, y: 139519 },
+    { l: '2 adults (1 working), 2 children', e: 1, y: 94680 }, { l: '2 adults (both working), no children', e: 2, y: 74245 }, { l: '2 adults (both working), 2 children', e: 2, y: 144282 }];
+  function lwSum(a) { return a.reduce(function (s, v) { return s + v; }, 0); }
+  function livingWage(perYear, earners, hours) { return perYear / earners / hours; }
+  function lwBudget(sh) { var a = []; for (var r = 2; r <= 8; r++) a.push(sh.get('B' + r)); return a; }
+  function cents(v) { return money(Math.round(v * 100) / 100); }
+  function lwCats(s, vals) {
+    s.set('A1', 'Basic need'); s.set('B1', 'Per year'); s.bold('A1:B1');
+    LW_CATS.forEach(function (c, i) { s.set('A' + (i + 2), c); s.set('B' + (i + 2), vals[i]); });
+    s.format('B2:B8', 'currency:0'); s.lock('A1:B8');
+  }
+  var LW_BIG = livingWage(lwSum(LW_1A1), 1, LW_H), LW_FAM = livingWage(lwSum(LW_2A2), 2, LW_H);
+  var lwBigWrongs = [
+    { when: function (c) { return XL.util.near(c.value, lwSum(LW_1A1), 0.5); }, msg: 'That is the whole year, $103,964. Now spread it over the hours: divide by B9. =SUM(B2:B8)/B9.' },
+    { when: function (c) { return XL.util.near(c.value, lwSum(LW_1A1.slice(0, 6)) / LW_H, 0.005); }, msg: 'Close, but that leaves out the taxes in B8. The pay has to cover them too: =SUM(B2:B8)/B9.' },
+    { when: function (c) { return XL.util.near(c.value, LW_1A1[0] / LW_H, 0.005); }, msg: 'That divides only the food. Add the whole budget first with SUM: =SUM(B2:B8)/B9.' },
+    { when: function (c) { return XL.util.near(c.value, lwSum(LW_1A1) / 12, 0.5); }, msg: 'That is the amount per month. A living wage is per hour: divide by the 2,080 hours in B9.' }
+  ];
+  var lwChart = function (ctx, sel) {
+    var g = R.parseRange(sel);
+    if (!(g.r1 >= 1 && g.r2 <= 8 && g.c1 >= 1 && g.c2 <= 2)) return 'Select the budget first: drag from A1 to B8, then press Insert chart.';
+    return { type: 'column', x: 'A2:A8', y: 'B2:B8', title: 'One year of basic needs, family of four', xLabel: 'Basic need', yLabel: 'Dollars per year' };
+  };
+  function lwTypeVals(sh) { var h = sh.get('B1'); return LW_TYPES.map(function (t) { return livingWage(t.y, t.e, h); }); }
+
+  XL.addBuild({
+    id: 'build-livingwage', title: 'Living wage', tool: 'from the MathLab tool “Build a living wage”', filename: 'living-wage',
+    blurb: 'One year of basic needs for a family in Aurora’s county, from MIT’s calculator. Build the sheet that turns it into an hourly wage.',
+    problem: 'One adult and one child live in Arapahoe County, Colorado, where Aurora is. MIT’s living wage calculator prices one year of their basic needs. What hourly pay, at one full-time job, covers it?',
+    levels: [
+      { key: 'big', name: 'Big picture', hint: 'Fill one missing formula, step by step',
+        problem: 'One adult and one child live in Arapahoe County, where Aurora is. MIT’s living wage calculator prices one year of their basic needs, plus the taxes on the pay that covers them. What hourly wage, at one full-time job, covers it all? Build the one formula that answers it.',
+        sheet: { name: 'Living wage', rows: 12, cols: 2, widths: { A: 190, B: 120 }, start: 'A1',
+          setup: function (s) { lwCats(s, LW_1A1); s.set('A9', 'Full-time hours a year'); s.set('B9', LW_H); s.set('A10', 'Living wage per hour'); s.bold('A10'); s.format('B10', 'currency');
+            s.set('A11', 'Colorado minimum'); s.set('B11', '$15.16'); s.lock('A9:B9'); s.lock('A10'); s.lock('A11:B11'); } },
+        ui: { tools: ['undo'], download: true, buttons: ['check'] },
+        steps: [
+          { kind: 'gut', say: '<b>Guess first.</b> No math yet: just your gut.', label: 'Your gut: what hourly wage covers this family’s basic needs?', prefix: '$',
+            ok: function (ctx) { return 'Locked in: ' + cash(ctx.data.gut) + ' an hour. Now build it.'; } },
+          { kind: 'info', say: '<b>Your sheet.</b> B2 to B8 hold one year of basic needs for one adult and one child, from MIT’s living wage calculator. Taxes are in B8: the paycheck has to cover them too. B9 holds the hours in one full-time year: 40 hours × 52 weeks = 2,080. The gray cells are given, so they stay the same.',
+            callouts: [{ at: 'cell:B10', title: 'Your cell', text: 'The living wage goes here. It glows when it is your turn.' }] },
+          { kind: 'type', cell: 'B10', say: 'Click <b>B10</b> and type <b>=SUM(B2:B8)/B9</b>, then press Enter. SUM adds up the whole year’s budget. Dividing by B9 spreads it over every hour of a full-time year.',
+            expect: { value: LW_BIG, tol: 0.005, mustUse: ['B9'] }, wrong: lwBigWrongs, ok: 'B10 shows $49.98 an hour.' },
+          { kind: 'check', say: 'Press <b>Check my work</b>. It compares your sheet with the MathLab model’s answer.',
+            targets: function (ctx) { return [{ cell: 'B10', value: livingWage(lwSum(lwBudget(ctx.sheet)), 1, ctx.sheet.get('B9')), tol: 0.005, mustUse: ['B9'] }]; },
+            ok: function (ctx) { return 'It checks out: ' + cents(LW_BIG) + ' an hour, the same answer as the MathLab model and MIT. ' + gutLine(ctx.data.gut, LW_BIG, '$') + ' Colorado’s minimum wage, in B11, is $15.16: earning the same at that wage would take ' + (Math.round(LW_BIG * 40 / LW_MIN * 10) / 10) + ' hours a week.'; } },
+          { kind: 'watch', say: 'Watch: the rent goes up $200 a month, so housing rises by $2,400 a year.', changes: [{ cell: 'B3', from: LW_1A1[1], to: LW_1A1[1] + 2400 }], show: ['B10'],
+            done: function (ctx) { return 'Same formula, new rent: B10 now says ' + ctx.sheet.display('B10') + '. Every $2,400 a year adds about $1.15 an hour. (MIT’s tax model would also raise the taxes a little. This sheet keeps them the same.)'; } },
+          dlStep(), openStep('living-wage'),
+          { kind: 'done', say: '<b>You built a living wage.</b> Try Closer look: one formula for every kind of household.',
+            learned: ['A living wage is built: a year of basic needs plus taxes, divided by full-time hours.', '=SUM(B2:B8)/B9 adds the budget, then divides by 2,080 hours.', 'Change one cost and the wage updates itself.'] }
+        ] },
+      { key: 'closer', name: 'Closer look', hint: 'Fill a formula down six households and lock what must stay fixed',
+        problem: 'MIT prices different households in Arapahoe County. Some have one earner, some two. Write one formula for the living wage per earner, fill it down all six households, then compare each with Colorado’s minimum wage. Decide which cells must stay fixed with $.',
+        sheet: { name: 'Households', rows: 11, cols: 5, widths: { A: 290, B: 84, C: 140, D: 132, E: 150 }, start: 'A1',
+          setup: function (s) {
+            s.set('A1', 'Full-time hours a year'); s.set('B1', LW_H); s.set('A2', 'Colorado minimum wage'); s.set('B2', '$15.16'); s.lock('A1:B2');
+            ['Household', 'Earners', 'Per year', 'Wage per hour', 'Times minimum'].forEach(function (h, j) { s.set(R.A1(4, j + 1), h); }); s.bold('A4:E4'); s.lock('A4:E4');
+            LW_TYPES.forEach(function (t, i) { s.set('A' + (5 + i), t.l); s.set('B' + (5 + i), t.e); s.set('C' + (5 + i), t.y); });
+            s.format('C5:C10', 'currency:0'); s.format('D5:D10', 'currency'); s.format('E5:E10', 'fixed:2'); s.lock('A5:C10'); } },
+        ui: { tools: ['fill', 'dollar', 'undo'], download: true, buttons: ['check'] },
+        steps: [
+          { kind: 'gut', say: '<b>Guess first.</b>', label: 'Your gut: in a family of four with both parents working, what hourly wage does each parent need?', prefix: '$', ok: function (ctx) { return 'Locked in: ' + cash(ctx.data.gut) + ' an hour.'; } },
+          { kind: 'type', cell: 'D5', say: 'In <b>D5</b>, divide the year in <b>C5</b> by the earners in <b>B5</b> and by the hours in <b>B1</b>. The hours are the same for every household, so lock them with $. C5 and B5 change from row to row, so they get no $. Type <b>=C5/B5/$B$1</b>, or type it without $ and press $ Lock ref (or F4) next to B1.',
+            expect: { value: livingWage(LW_TYPES[0].y, 1, LW_H), tol: 0.005, mustUse: ['B$1', 'B5'] },
+            wrong: [{ when: function (c) { return /A\d/.test(c.f); }, msg: 'Column A holds words, not numbers. Use the year in C5 and the earners in B5.' }],
+            ok: 'D5 shows $27.09 for one adult.' },
+          { kind: 'fill', src: 'D5', range: 'D5:D10', allow: 'D5:E10', lockTyping: false, say: 'Fill it down: click <b>D5</b>, then press <b>Fill down</b>.',
+            targets: function (ctx) { return [{ range: 'D5:D10', values: lwTypeVals(ctx.sheet), tol: 0.005, mustUse: ['B$1', 'B5'] }]; },
+            bad: function (res, ctx) { var f = ctx.sheet.formula(res.cell) || ''; if (!/\$1/.test(f)) return res.cell + ' says ' + esc(f) + ': the hours reference moved off B1. Lock it in D5 with $B$1, then fill down again.'; return XL.friendly(res) + ' Fix D5, then fill down again.'; },
+            ok: 'All six living wages are in.' },
+          { kind: 'type', cell: 'E5', say: 'Now compare with the minimum wage. In <b>E5</b>, divide the living wage in D5 by the minimum wage in B2. Every row uses the same minimum, so lock it: <b>=D5/$B$2</b>.',
+            expect: { value: livingWage(LW_TYPES[0].y, 1, LW_H) / LW_MIN, tol: 0.0005, mustUse: ['B$2'] }, ok: 'E5 shows 1.79: one adult needs 1.79 times the minimum wage.' },
+          { kind: 'fill', src: 'E5', range: 'E5:E10', allow: 'D5:E10', lockTyping: false, say: 'Fill E5 down: click <b>E5</b>, then press <b>Fill down</b>.',
+            targets: function (ctx) { var m = ctx.sheet.get('B2'); return [{ range: 'E5:E10', values: lwTypeVals(ctx.sheet).map(function (v) { return v / m; }), tol: 0.0005, mustUse: ['B$2'] }]; },
+            bad: function (res, ctx) { var f = ctx.sheet.formula(res.cell) || ''; if (!/\$2/.test(f)) return res.cell + ' says ' + esc(f) + ': the minimum wage reference moved off B2. Lock it in E5 with $B$2, then fill down again.'; return XL.friendly(res) + ' Fix E5, then fill down again.'; },
+            ok: 'Every household is compared with the minimum wage.' },
+          { kind: 'check', say: 'Press <b>Check my work</b>.',
+            targets: function (ctx) { var m = ctx.sheet.get('B2'), v = lwTypeVals(ctx.sheet); return [{ range: 'D5:D10', values: v, tol: 0.005, mustUse: ['B$1', 'B5'] }, { range: 'E5:E10', values: v.map(function (x) { return x / m; }), tol: 0.0005, mustUse: ['B$2'] }]; },
+            ok: function (ctx) { return 'All six match the MathLab model. Each parent in the family of four needs ' + cents(LW_FAM) + ', ' + (Math.round(LW_FAM / LW_MIN * 100) / 100) + ' times the minimum wage. ' + gutLine(ctx.data.gut, LW_FAM, '$') + ' Click D6: it says =C6/B6/$B$1. Only the row moved.'; } },
+          { kind: 'watch', say: 'Watch: what if each earner can find only 30 hours of work a week? That is 30 × 52 = 1,560 hours a year.', changes: [{ cell: 'B1', from: LW_H, to: 1560 }], show: ['D10'], showLabel: 'Updated',
+            done: function (ctx) { return 'Every living wage rose by a third: each parent in the family of four now needs ' + ctx.sheet.display('D10') + ' an hour. One locked cell, B1, updated all six rows.'; } },
+          dlStep(), openStep('living-wage-closer'),
+          { kind: 'done', say: '<b>One formula, every household.</b> Try Deep dive: build the family of four from a mostly blank sheet and chart it.',
+            learned: ['Lock the cells every row shares: $B$1 for the hours, $B$2 for the minimum wage.', 'Leave the cells that change row to row unlocked: C5 and B5.', 'Living wage ÷ minimum wage is a multiple: it has no units.'] }
+        ] },
+      { key: 'deep', name: 'Deep dive', hint: 'Build the model from a mostly blank sheet and chart it',
+        problem: 'Two adults, both working, with two children in Arapahoe County. MIT’s budget for one year is in the sheet. Build everything else yourself: the inputs, the total, each parent’s living wage, the comparison with the minimum wage, and a chart of where the money goes. Then find which cost drives the wage most.',
+        sheet: { name: 'Family of four', rows: 16, cols: 2, widths: { A: 210, B: 110 }, start: 'A1',
+          setup: function (s) { lwCats(s, LW_2A2);
+            ['Per year, before taxes', 'Full-time hours a year', 'Earners', 'Minimum wage', 'Wage per hour, each', 'Times the minimum', 'Hours a week at minimum'].forEach(function (l, i) { s.set('A' + (9 + i), l); });
+            s.lock('A9:A15'); s.format('B9', 'currency:0'); s.format('B12', 'currency'); s.format('B13', 'currency'); s.format('B14', 'fixed:2'); s.format('B15', 'fixed:1'); } },
+        ui: { tools: ['fill', 'dollar', 'undo'], download: true, buttons: ['chart', 'check'] },
+        chart: lwChart, chartTypes: ['column'],
+        steps: [
+          { kind: 'gut', say: '<b>Guess first.</b>', label: 'Your gut: at Colorado’s $15.16 minimum wage, how many hours a week would each parent have to work?', suffix: 'hours', ok: function (ctx) { return 'Locked in: ' + plural(ctx.data.gut, 'hour') + ' a week.'; } },
+          { kind: 'free', allow: 'B10:B12', glowRange: 'B10:B12', say: 'Type the inputs into <b>B10</b> to <b>B12</b>: <b>2080</b> hours, <b>2</b> earners and the minimum wage, <b>15.16</b>.',
+            first: function (ctx) { var w = [LW_H, 2, LW_MIN]; for (var i = 0; i < 3; i++) if (ctx.sheet.get('B' + (10 + i)) !== w[i]) return 'B' + (10 + i); return null; },
+            test: function (ctx) {
+              var s = ctx.sheet, w = [LW_H, 2, LW_MIN], nm = ['the hours, 2080', 'the earners, 2', 'the minimum wage, 15.16'];
+              if (s.get('B10') === 40) return 'B10 holds 40, the hours in one week. A living wage uses the hours in a year: 40 × 52 = 2080.';
+              for (var i = 0; i < 3; i++) { var v = s.get('B' + (10 + i)); if (v !== null && typeof v !== 'number') return 'B' + (10 + i) + ' holds words. Type just the number: ' + nm[i] + '.'; if (v !== null && Math.abs(v - w[i]) > 1e-9) return 'B' + (10 + i) + ' should hold ' + nm[i] + '.'; }
+              for (i = 0; i < 3; i++) if (s.get('B' + (10 + i)) === null) return '';
+              return true;
+            }, ok: 'The inputs are in.' },
+          { kind: 'type', cell: 'B9', say: 'In <b>B9</b>, add up the whole budget, taxes included, with SUM.', expect: { value: lwSum(LW_2A2), tol: 0.5 },
+            wrong: [{ when: function (c) { return XL.util.near(c.value, lwSum(LW_2A2.slice(0, 6)), 0.5); }, msg: 'That leaves out the taxes in B8. The pay has to cover them too: =SUM(B2:B8).' }],
+            ok: 'B9 shows $144,282 a year.' },
+          { kind: 'type', cell: 'B13', say: 'In <b>B13</b>, find each parent’s living wage: the year in B9, divided by the earners in B11, divided by the hours in B10.',
+            expect: { value: LW_FAM, tol: 0.005, mustUse: ['B9', 'B10', 'B11'] },
+            wrong: [{ when: function (c) { return XL.util.near(c.value, LW_FAM * 2, 0.005); }, msg: 'That is what one earner would need to cover everything. Two parents share it: divide by the earners in B11 too.' },
+              { when: function (c) { return XL.util.near(c.value, lwSum(LW_2A2) / 4 / LW_H, 0.005); }, msg: 'That divides by 4 people. Only the earners work: divide by B11.' }],
+            ok: 'B13 shows $34.68 an hour for each parent.' },
+          { kind: 'type', cell: 'B14', say: 'In <b>B14</b>, compare with the minimum wage: divide the living wage in B13 by the minimum wage in B12.', expect: { value: LW_FAM / LW_MIN, tol: 0.0005, mustUse: ['B12', 'B13'] }, ok: 'B14 shows 2.29: each parent needs 2.29 times the minimum wage.' },
+          { kind: 'type', cell: 'B15', say: 'In <b>B15</b>, find the hours a week each parent would need at minimum wage to earn what the living wage pays in 40 hours: 40 times B13, divided by B12.',
+            expect: { value: LW_FAM * 40 / LW_MIN, tol: 0.005, mustUse: ['B12', 'B13'] },
+            wrong: [{ when: function (c) { return XL.util.near(c.value, LW_FAM * 40 / LW_MIN - 40, 0.05); }, msg: 'That is the extra hours beyond 40. This cell asks for all of them: =40*B13/B12.' }],
+            ok: function (ctx) { return 'B15 shows ' + ctx.sheet.display('B15') + ' hours a week, for each parent. ' + gutLine(ctx.data.gut, LW_FAM * 40 / LW_MIN, 'hours'); } },
+          { kind: 'select', from: 'A1', glow2: 'A1:B8', say: 'Chart where the money goes. Select the budget: drag from <b>A1</b> to <b>B8</b> (or click A1 and Shift+click B8; on a touch screen, tap any cell in the budget).',
+            test: function (sel) { var g = R.parseRange(sel); if (g.r1 <= 2 && g.r2 === 8 && g.c1 === 1 && g.c2 === 2) return true; if (XL.coarse() && g.r1 >= 1 && g.r2 <= 8 && g.c2 <= 2) return true; if (g.r1 === g.r2 && g.c1 === g.c2) return null; return 'You selected ' + sel + '. Drag from A1 to B8.'; },
+            ok: 'Selected.' },
+          { kind: 'chart', say: 'Press <b>Insert chart</b>.', ok: 'Each column is one year of one basic need. The tallest is child care, because both parents work.' },
+          { kind: 'choice', say: 'Which one line, if it cost 10% more, would raise each parent’s wage the most? Use the chart.',
+            choices: [
+              { t: 'Housing', why: 'Housing is $25,109. 10% more is $2,511 a year: $2,511 ÷ 2 earners ÷ 2,080 hours ≈ $0.60 an hour each. Another line is bigger.' },
+              { t: 'Child care', ok: true, why: 'Child care is the tallest column, $36,208. 10% more is $3,621 a year: ÷ 2 earners ÷ 2,080 hours ≈ $0.87 an hour each. In the MathLab tool, where the taxes rise too, it is about $1.04. The biggest line carries the most weight.' },
+              { t: 'Food', why: 'Food is $13,336. 10% more is $1,334 a year: about $0.32 an hour each. The tallest column matters most.' },
+              { t: 'All the same', why: 'A 10% rise adds 10% of that line, so a bigger line adds more dollars. Compare the column heights.' }
+            ] },
+          { kind: 'check', say: 'Press <b>Check my work</b> to check the whole model against the MathLab model.',
+            targets: function (ctx) { var s = ctx.sheet, y = lwSum(lwBudget(s)), h = s.get('B10'), e = s.get('B11'), mn = s.get('B12'), v = livingWage(y, e, h); return [
+              { cell: 'B10', value: LW_H, formula: false }, { cell: 'B11', value: 2, formula: false }, { cell: 'B12', value: LW_MIN, formula: false },
+              { cell: 'B9', value: y, tol: 0.5 }, { cell: 'B13', value: v, tol: 0.005, mustUse: ['B9', 'B10', 'B11'] },
+              { cell: 'B14', value: v / mn, tol: 0.0005 }, { cell: 'B15', value: v * 40 / mn, tol: 0.005 }]; },
+            ok: function () { return 'Your whole model matches: ' + cents(LW_FAM) + ' an hour for each parent, ' + (Math.round(LW_FAM / LW_MIN * 100) / 100) + ' times the minimum wage, or ' + (Math.round(LW_FAM * 40 / LW_MIN * 10) / 10) + ' hours a week each at minimum wage.'; } },
+          { kind: 'watch', say: 'Watch: what if only one parent works? Change the earners to 1.', changes: [{ cell: 'B11', from: 2, to: 1 }], show: ['B13'], showLabel: 'Updated',
+            done: function (ctx) { return 'The sheet now says ' + ctx.sheet.display('B13') + ': one earner paying for everything, child care included. But if one parent stays home, the family needs no child care. MIT’s one-earner family of four drops child care to $0 and pays less tax: $45.52 an hour. A formula is only as good as the budget behind it.'; } },
+          dlStep(), openStep('living-wage-deep'),
+          { kind: 'done', say: '<b>You built a living wage model from scratch.</b>',
+            learned: ['Inputs in their own cells: hours, earners and the minimum wage.', 'Living wage = SUM of the budget ÷ earners ÷ hours.', 'The tallest column (child care here) moves the wage most.', 'In Excel, make the chart again with Insert: the download has your formulas, not the chart.'] }
         ] }
     ]
   });

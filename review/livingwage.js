@@ -1,0 +1,43 @@
+BioLab.addReview({
+livingwage:{
+ questions:[
+  {id:'onechild',kind:'real',lvl:'bio',
+   q:'MIT’s budget for one adult and one child in Arapahoe County: $86,287 a year of basic needs plus $17,677 in taxes. What is the living wage per hour for one full-time earner?',
+   num:{ans:49.98,tol:0.01,unit:'$ per hour'},
+   steps:['Add the taxes to the budget: $86,287 + $17,677 = $103,964 a year before taxes.','Full time is 40 hours × 52 weeks = 2,080 hours.','$103,964 ÷ 2,080 ≈ $49.98 an hour.'],
+   lab:{set:{place:'arap',hh:'1a1'},act:'show',look:'Read <b>Living wage, each earner</b>.'},verify:[['lw',49.98,0.01]]},
+  {id:'dallas',kind:'test',lvl:'bio',
+   q:'In Dallas County, MIT’s budget for one adult with no children comes to $48,490 a year before taxes. What is the hourly living wage, and how many times the $7.25 Texas minimum wage is it?',
+   choices:['$23.31; about 3.2 times','$23.31; about 1.6 times','$46.62; about 6.4 times','$11.66; about 1.6 times'],correct:0,
+   steps:['$48,490 ÷ 2,080 ≈ $23.31 an hour.','$23.31 ÷ $7.25 ≈ 3.2.','Both are dollars per hour, so the multiple has no units.'],
+   lab:{set:{place:'dal',hh:'1a0'},act:'show',look:'Read <b>Living wage, each earner</b> and <b>Living wage ÷ minimum wage</b>.'},verify:[['lw',23.31,0.01],['mult',3.22,0.01]]},
+  {id:'hours',kind:'real',lvl:'honors',
+   q:'Two adults, both working, with two children in Arapahoe County need $34.68 an hour each. If each parent earns Colorado’s $15.16 minimum wage, how many hours a week must each work to earn the same pay?',
+   num:{ans:91.5,tol:0.2,unit:'hours'},
+   steps:['At $34.68 for 40 hours, each parent would earn $34.68 × 40 = $1,387.20 a week.','At $15.16 an hour, that takes $1,387.20 ÷ $15.16 ≈ 91.5 hours.','That is 51.5 hours a week more than full time, for each parent.'],
+   lab:{set:{place:'arap',hh:'2a2w2'},act:'show',look:'Read <b>Hours a week at minimum wage to earn it</b>.'},verify:[['hours',91.5,0.1]]},
+  {id:'short',kind:'real',lvl:'honors',
+   q:'One adult with no children in Arapahoe County needs $27.09 an hour (exactly $56,342 ÷ 2,080). Working full time at $15.16, about how much does that person come up short each month?',
+   num:{ans:2067,tol:3,unit:'dollars'},
+   steps:['The gap is $27.0875 − $15.16 = $11.9275 an hour.','Full time is 2,080 hours a year, or 2,080 ÷ 12 ≈ 173.3 hours a month.','$11.9275 × 173.3 ≈ $2,067 a month.'],
+   lab:{set:{place:'arap',hh:'1a0'},act:'show',look:'Read <b>Short each month at minimum wage, full time</b>.'},verify:[['short',2067,1]]},
+  {id:'vietnam',kind:'test',lvl:'honors',
+   q:'Vietnam, Minimum Wage Region 1, 2025: the Anker living wage is ₫9,294,701 a month and the legal minimum is ₫4,960,000. Rural Ecuador: US$503 against a US$470 minimum. For workers the minimum covers, which statement is true?',
+   choices:['Vietnam’s living wage is about 1.87 times its minimum; Ecuador’s about 1.07 times','You cannot compare them without exchange rates','Ecuador’s gap is bigger because $503 is more than ₫9 million in dollars'],correct:0,
+   steps:['9,294,701 ÷ 4,960,000 ≈ 1.87.','503 ÷ 470 ≈ 1.07.','Each multiple divides two amounts in the same currency, so the units cancel and the multiples can be compared directly.']},
+  {id:'informal',kind:'real',lvl:'honors',
+   q:'Rural Ecuador’s living wage is 1.07 times the minimum wage, but 68% of Ecuador’s employed people work in informal jobs (ILO, 2025). A farm worker in an informal job earns $350 a month. How many times that pay is the $503 living wage?',
+   num:{ans:1.44,tol:0.01,unit:'×'},
+   steps:['503 ÷ 350 ≈ 1.44.','For a worker paid the $470 minimum, the multiple is only 503 ÷ 470 ≈ 1.07.','The $350 is a made-up example, but informal jobs can pay less than the minimum, so the gap to a living wage is bigger for them. That is why living wage studies compare with prevailing wages, what workers are actually paid.']},
+  {id:'sensitivity',kind:'test',lvl:'ap',
+   q:'Two adults, both working, two children, Arapahoe County: child care is $36,208 of a $144,282 pre-tax budget, and taxes are 16.3% of pre-tax income. If child care costs 10% more and taxes stay at that share, what is each parent’s new living wage?',
+   num:{ans:35.72,tol:0.02,unit:'$ per hour'},
+   steps:['Basic needs (after-tax budget) rise from $120,777 to $120,777 + $3,620.80 = $124,397.80.','Taxes stay 16.29% of pre-tax income, so pre-tax income = $124,397.80 ÷ (1 − 0.1629) ≈ $148,607.','$148,607 ÷ 2 earners ÷ 2,080 ≈ $35.72 an hour, up about $1.04.'],
+   lab:{set:{place:'arap',hh:'2a2w2',cat:'care',pct:10},act:'show',look:'Read <b>Living wage, each earner</b> and <b>Biggest driver</b>.'},verify:[['lw',35.72,0.01]]},
+  {id:'anker',kind:'test',lvl:'ap',
+   q:'Rural Guatemala, 2025: a basic but decent living costs Q5,624 a month for a family of 5, and a typical family has 1.53 full-time workers. What take-home (net) wage must each worker earn? The published gross living wage is Q3,859. What is the difference for?',
+   choices:['About Q3,676; the rest covers taxes and payroll deductions','About Q1,125; the rest is savings','About Q8,605; the family needs more than it costs','About Q3,676; the rest is the margin for unexpected events'],correct:0,
+   steps:['Net living wage = family cost ÷ workers: 5,624 ÷ 1.53 ≈ Q3,676 a month.','The gross wage (Q3,859) is higher because the worker pays taxes and payroll deductions out of it.','The margin for unexpected events is already inside the Q5,624 family cost. Dividing by 5 people (Q1,125) or multiplying by workers are the common mistakes.']}
+ ]
+}
+});
