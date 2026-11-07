@@ -4,10 +4,10 @@ BioLab.COURSES = [
  {id:'alg1',name:'Algebra 1',blurb:'Algebra 1 and Honors Algebra 1, in the order your class covers it. Honors chapter numbers are in each unit’s note.',
   units:[
    {n:'Unit 1',t:'Intro to algebra: expressions and variables',ids:['formulas'],note:'Honors: Chapter 1.'},
-   {n:'Unit 2',t:'Multistep equations and proportions',ids:['scaleit','formulas'],note:'Honors: Chapter 1.'},
+   {n:'Unit 2',t:'Multistep equations and proportions',ids:['scaleit','formulas','livessaved','costofliving','carquote','livingwage','aidoptimizer','rankcolleges'],note:'Honors: Chapter 1.'},
    {n:'Unit 3',t:'Functions',ids:['checkout','rideshare','formulas'],note:'Honors: Chapter 3.'},
    {n:'Unit 4',t:'Writing and graphing linear equations',ids:['rideshare'],note:'Honors: Chapters 3 and 4.'},
-   {n:'Unit 5',t:'Systems of equations and inequalities',ids:['breakeven','budget'],note:'Honors: Chapter 2 (inequalities) and Chapter 5 (systems).'},
+   {n:'Unit 5',t:'Systems of equations and inequalities',ids:['breakeven','budget','schedule'],note:'Honors: Chapter 2 (inequalities) and Chapter 5 (systems).'},
    {n:'Unit 6',t:'Polynomials',ids:['areamodel'],note:'Honors: Chapter 7.'},
    {n:'Unit 7',t:'Graphing and solving quadratics',ids:['freethrow','ticketprice'],note:'Honors: Chapters 8 and 9.'},
    {n:'Unit 8',t:'Exponents and radicals',ids:['datasize','skidmarks'],note:'Honors: Chapter 6. Some sections take this unit before quadratics.'}
@@ -15,7 +15,7 @@ BioLab.COURSES = [
  {id:'geo',name:'Geometry',blurb:'Geometry and Honors Geometry, in the order your class covers it.',
   units:[
    {n:'Unit 1',t:'Geometry basics: distance, midpoint and the Pythagorean theorem',ids:['screens']},
-   {n:'Unit 2',t:'Logic and reasoning',ids:['logic']},
+   {n:'Unit 2',t:'Logic and reasoning',ids:['logic','kidneyswap','schoolmatch']},
    {n:'Unit 3',t:'Parallel lines and angles',ids:['parking']},
    {n:'Triangles',t:'Congruence and similarity',ids:['truss','shadow'],note:'Honors: Units 5 and 6.'},
    {n:'Right triangles',t:'Right-triangle trigonometry',ids:['ramp'],note:'Honors: Unit 8. Geometry: the first spring unit.'},
@@ -31,7 +31,7 @@ BioLab.COURSES = [
    {n:'Unit 2',t:'Quadratic functions',ids:['dish','ticketprice','freethrow']},
    {n:'Unit 3',t:'Polynomials',ids:['coaster','openbox']},
    {n:'Unit 4',t:'Radicals and rational exponents',ids:['skidmarks']},
-   {n:'Unit 5',t:'Exponential and logarithmic functions',ids:['creditcard','caffeine','decibels','passwords'],note:'Honors: Chapter 6.'},
+   {n:'Unit 5',t:'Exponential and logarithmic functions',ids:['creditcard','caffeine','decibels','passwords','stickernet','onepercent','povertypremium'],note:'Honors: Chapter 6.'},
    {n:'Unit 6',t:'Rational functions',ids:['splitcost','sharedwork'],note:'Algebra 2 only.'},
    {n:'Trig',t:'Trigonometry',ids:['daylight','noisecancel'],note:'Honors Algebra 2 / Trig only.'}
   ]},
@@ -50,30 +50,30 @@ BioLab.COURSES = [
   units:[
    {n:'Unit 1A',t:'Polynomial functions',ids:['coaster','openbox']},
    {n:'Unit 1B',t:'Rational functions',ids:['splitcost','sharedwork']},
-   {n:'Unit 2A',t:'Exponential functions',ids:['creditcard','caffeine','logscale']},
+   {n:'Unit 2A',t:'Exponential functions',ids:['creditcard','caffeine','logscale','hotspot','onepercent']},
    {n:'Unit 2B',t:'Logarithmic functions and inverses',ids:['decibels','passwords','logscale','cipher']},
    {n:'Unit 3A',t:'Trigonometric functions',ids:['daylight','noisecancel']},
    {n:'Unit 3B',t:'Polar functions and rotations',ids:['rotations']},
-   {n:'Unit 4',t:'Functions involving parameters, vectors and matrices',ids:['matrices','windvectors','orbits'],note:'Not on the AP exam.'}
+   {n:'Unit 4',t:'Functions involving parameters, vectors and matrices',ids:['matrices','windvectors','orbits','opportunity'],note:'Not on the AP exam.'}
   ]},
  {id:'stats',name:'Statistics',blurb:'Probability & Statistics (fall) and Inferential Statistics (spring), in the order your class covers it.',
   further:['pollmargin'],
   units:[
    {n:'Chapter 1',t:'Analyzing one-variable data',ids:['busroute','babysit'],note:'Probability & Statistics (fall).'},
    {n:'Chapter 2',t:'Modeling one-variable data: percentiles, z-scores and the normal model',ids:['testchoice','hoodies'],note:'Probability & Statistics (fall).'},
-   {n:'Chapter 3',t:'Analyzing two-variable data: scatterplots and regression',ids:['lawnjob'],note:'Probability & Statistics (fall).'},
-   {n:'Chapter 5',t:'Probability',ids:['lunchcount','rapidtest'],note:'Probability & Statistics (fall).'},
+   {n:'Chapter 3',t:'Analyzing two-variable data: scatterplots and regression',ids:['lawnjob','zipscores','bookshome'],note:'Probability & Statistics (fall).'},
+   {n:'Chapter 5',t:'Probability',ids:['lunchcount','rapidtest','opportunity','beatbot','makethepros','fairscore'],note:'Probability & Statistics (fall).'},
    {n:'Chapter 4',t:'Collecting data: sampling and experiments',ids:['survey','warmup'],note:'Inferential Statistics (spring).'},
    {n:'Chapter 6',t:'Random variables: expected value and the binomial',ids:['insurance','rsvp'],note:'Inferential Statistics (spring).'},
-   {n:'Chapter 7',t:'Sampling distributions',ids:['slump'],note:'Inferential Statistics (spring).'}
+   {n:'Chapter 7',t:'Sampling distributions',ids:['slump','wordgap','valueadded'],note:'Inferential Statistics (spring).'}
   ]},
  {id:'apstats',name:'AP Statistics',blurb:'AP Statistics, by College Board unit.',
   units:[
    {n:'Unit 1',t:'Exploring one-variable data',ids:['busroute','babysit','testchoice','hoodies']},
-   {n:'Unit 2',t:'Exploring two-variable data',ids:['lunchcount','lawnjob']},
-   {n:'Unit 3',t:'Collecting data',ids:['survey','warmup']},
-   {n:'Unit 4',t:'Probability, random variables and probability distributions',ids:['lunchcount','rapidtest','insurance','rsvp']},
-   {n:'Unit 5',t:'Sampling distributions',ids:['slump']},
+   {n:'Unit 2',t:'Exploring two-variable data',ids:['lunchcount','lawnjob','zipscores','bookshome']},
+   {n:'Unit 3',t:'Collecting data',ids:['survey','warmup','bookshome']},
+   {n:'Unit 4',t:'Probability, random variables and probability distributions',ids:['lunchcount','rapidtest','insurance','rsvp','opportunity','beatbot','makethepros','fairscore']},
+   {n:'Unit 5',t:'Sampling distributions',ids:['slump','wordgap','valueadded']},
    {n:'Unit 6',t:'Inference for categorical data: proportions',ids:['pollmargin']},
    {n:'Unit 7',t:'Inference for quantitative data: means',ids:['fryshort','studymethod']},
    {n:'Unit 8',t:'Inference for categorical data: chi-square',ids:['lootdrop']},
@@ -85,7 +85,7 @@ BioLab.COURSES = [
    {n:'Unit 2',t:'Differentiation: definition and basic rules',ids:['runpace','battery']},
    {n:'Unit 3',t:'The chain rule, implicit and inverse functions',ids:['camerapan']},
    {n:'Unit 4',t:'Contextual applications: motion, related rates and linearization',ids:['camerapan','battery']},
-   {n:'Unit 5',t:'Analytical applications: extrema, concavity and optimization',ids:['shortcut','viewcurve']},
+   {n:'Unit 5',t:'Analytical applications: extrema, concavity and optimization',ids:['shortcut','viewcurve','aidoptimizer']},
    {n:'Unit 6',t:'Integration and accumulation of change',ids:['speedlog','concession']},
    {n:'Unit 7',t:'Differential equations',ids:['cooling']},
    {n:'Unit 8',t:'Applications of integration: average value, motion, area and volume',ids:['concession','bottle']}
