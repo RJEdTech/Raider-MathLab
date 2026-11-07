@@ -1,0 +1,41 @@
+BioLab.addReview({
+beatbot:{
+ questions:[
+  {id:'seven',kind:'real',lvl:'bio',
+   q:'You apply to 7 jobs. Each uses its own screen that passes 30% of applicants, independently. What is the chance you get at least one interview?',
+   choices:['30%','About 70%','About 92%','100%'],correct:2,
+   steps:['Find the chance of failing every screen: 0.7 × 0.7 × … (7 times) = 0.7⁷ ≈ 0.082.','At least one interview is everything else: 1 − 0.082 = 0.918.','About 91.8%.'],
+   lab:{set:{stage:'seven',pass:30,share:1,reveal:true},look:'Read <b>At least one interview: 7 different screens</b>.'},verify:[['pDiff',91.76,0.05]]},
+  {id:'same',kind:'real',lvl:'bio',
+   q:'Now all 7 jobs use the same test, which passes 30%. Out of 100 applicants like you, how many are shut out of every job?',
+   num:{ans:70,tol:0.5,unit:'applicants'},
+   steps:['The same test gives each applicant the same verdict everywhere.','So 30% pass everywhere and 70% fail everywhere.','70 of 100 get no interview at all, against about 8 with different screens.'],
+   lab:{set:{stage:'seven',pass:30,share:7,reveal:true},look:'Read <b>Chance of at least one interview, this setup</b> and count the gray applicants.'},verify:[['pNow',30,0.05]]},
+  {id:'keywords',kind:'real',lvl:'bio',
+   q:'A grocery posting scores “customer service” 3, “cash handling” 3, “stocking” 2, “weekends” 2, “bagging” 1 and “reliable” 1. Your resume says “Ran a car wash cash box” and “Stocked shelves,” plus a sidebar with “Reliable · Free weekends.” The screener only matches exact words. What do you score?',
+   choices:['3','6','9','12'],correct:0,
+   steps:['“cash box” is not “cash handling,” and “Stocked” is not “stocking,” so those score 0.','The sidebar matches “weekends” (2) and “reliable” (1).','Score = 3. Rewording your real experience to the posting’s words would add 3 + 3 + 2 + 1 = 9, for 12.'],
+   lab:{set:{stage:'resume',job:'grocery',coach:false,fancy:false},look:'Read <b>Resume keyword score</b>, then turn on the counselor’s help.'},verify:[['kscore',3,0]]},
+  {id:'stars',kind:'test',lvl:'honors',
+   q:'A test correlates r = 0.2 with job performance and passes the top 30%. Stars are the top 20% at the job. What share of the future stars does it turn away?',
+   choices:['About 20%','About 40%','About 60%','About 80%'],correct:2,
+   steps:['With r = 0 the test is a coin toss, so it would turn away 70% of stars (the same 70% as everyone).','With r = 0.2 stars score a little higher on average, so slightly fewer are rejected.','Integrating the bivariate normal model gives about 59.8%.'],
+   lab:{set:{stage:'test',r:0.2,pass:30},look:'Read <b>Future stars the test turns away</b>.'},verify:[['starsRej',59.81,0.05]]},
+  {id:'feedback',kind:'test',lvl:'honors',
+   q:'Of the people the r = 0.2 test hires, 26.8% become stars (against 20% by chance). Why can’t the employer see that the test turned away most of the stars?',
+   choices:['Because 26.8% is high enough','Because rejected applicants are never hired, so their job performance is never measured: selection without feedback','Because stars always apply elsewhere'],correct:1,
+   steps:['The employer’s data covers only its hires.','The test’s errors live among the rejected, who never enter that data.','An audit, hiring a random sample of rejected applicants, would show stars are 17.1% of the rejected: not far below the hires.'],
+   lab:{set:{stage:'test',r:0.2,pass:30,audit:true},look:'Compare <b>Stars among the people hired</b> with <b>Stars among the rejected</b>.'},verify:[['starsHired',26.79,0.05],['starsAudit',17.09,0.05]]},
+  {id:'partial',kind:'test',lvl:'ap',
+   q:'Each screen passes p = 0.3. Of 7 employers, 4 share one test and 3 screen independently. Find P(at least one interview).',
+   num:{ans:76.0,tol:0.1,unit:'%'},
+   steps:['The 4 sharing employers act as one draw; the other 3 are separate. That is 4 independent chances.','P(no interview) = 0.7⁴ = 0.2401.','P(at least one) = 1 − 0.2401 ≈ 76.0%.'],
+   lab:{set:{stage:'seven',pass:30,share:4,reveal:true},look:'Read <b>Chance of at least one interview, this setup</b>.'},verify:[['pNow',75.99,0.05]]},
+  {id:'offer',kind:'test',lvl:'ap',
+   q:'All 7 employers share a test with p = 0.3, and each interview becomes an offer with h = 0.5. Find P(at least one offer).',
+   num:{ans:29.8,tol:0.1,unit:'%'},
+   steps:['You must pass the shared test: 0.3.','Then 7 independent interviews: P(at least one offer) = 1 − 0.5⁷ = 0.9922.','0.3 × 0.9922 ≈ 29.8%. With 7 independent screens it would be 1 − (1 − 0.15)⁷ ≈ 67.9%.'],
+   lab:{set:{stage:'seven',pass:30,share:7,h:50,reveal:true},look:'Read <b>Chance of at least one job offer</b>.'},verify:[['offer',29.77,0.05]]}
+ ]
+}
+});
