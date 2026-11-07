@@ -1,0 +1,43 @@
+BioLab.addReview({
+wordgap:{
+ questions:[
+  {id:'headline',kind:'test',lvl:'bio',
+   q:'Hart and Risley found that professional parents said about 2,153 words an hour to their child and welfare parents about 616. Using a 14-hour waking day, 365 days a year, for 4 years, how big is the gap in millions of words?',
+   num:{ans:31.4,tol:0.1,unit:'million words'},
+   steps:['Hourly difference: 2,153 − 616 = 1,537 words an hour.','Per day: 1,537 × 14 = 21,518 words.','Per 4 years: 21,518 × 365 × 4 = 31,416,280, or about 31.4 million words.'],
+   lab:{set:{design:'hr',wake:14,years:4,boost:0,cv:40,n:6},look:'Read <b>Measured gap by age 4</b> and <b>Gap per day</b>.'},verify:[['gap',31.42,0.01],['perday',21518,1]]},
+  {id:'allday',kind:'real',lvl:'bio',
+   q:'An all-day recorder study found that children of college-educated mothers heard about 14,848 adult words a day, against about 11,975 for other children. How big is the gap by age 4?',
+   choices:['About 1.0 million words','About 4.2 million words','About 31 million words','About 54 million words'],correct:1,
+   steps:['Daily difference: 14,848 − 11,975 = 2,873 words a day.','By age 4: 2,873 × 365 × 4 = 4,194,580, about 4.2 million.','That is about one seventh of the famous headline. The all-day design needs no guess about how one hour stands for a whole day.'],
+   lab:{set:{design:'lena',wake:14,years:4,boost:0,cv:40,n:6},look:'Read <b>Measured gap by age 4</b>.'},verify:[['gap',4.19,0.01]]},
+  {id:'wake10',kind:'test',lvl:'honors',
+   q:'Keep Hart and Risley’s hourly numbers but assume the observed hour stands for only 10 waking hours a day. What is the 4-year gap, and by what percent did it fall?',
+   num:{ans:22.4,tol:0.1,unit:'million words'},
+   steps:['1,537 × 10 × 365 × 4 = 22,440,200, about 22.4 million.','The factor fell from 14 to 10, which is 4/14 ≈ 29% smaller.','In a product, the answer falls by the same 29%: 31.4 × 10/14 ≈ 22.4.'],
+   lab:{set:{design:'hr',wake:10,years:4,boost:0,cv:40,n:6},look:'Read <b>Measured gap by age 4</b>.'},verify:[['gap',22.44,0.01]]},
+  {id:'margin',kind:'test',lvl:'ap',
+   q:'Assume families inside each group differ by 40% of their group’s average. With 50 families a group, what is the 95% margin of error on the Hart and Risley 4-year gap?',
+   num:{ans:5.08,tol:0.05,unit:'million words'},
+   steps:['Spreads: 0.4 × 2,153 = 861.2 and 0.4 × 616 = 246.4 words an hour.','Standard error of the hourly difference: √(861.2²/50 + 246.4²/50) = √(14,833.3 + 1,214.3) ≈ 126.7.','Margin: 1.96 × 126.7 ≈ 248.3 words an hour. Scale up: 248.3 × 14 × 365 × 4 ≈ 5.08 million words.'],
+   lab:{set:{design:'hr',n:50,cv:40,wake:14,years:4,boost:0},look:'Read <b>Give or take (95%)</b>.'},verify:[['moe',5.075,0.005]]},
+  {id:'bias',kind:'test',lvl:'ap',
+   q:'Use Hart and Risley’s design, but stop at 3 years (the last age they observed) and assume families talked 15% more while watched. What is the gap?',
+   num:{ans:20.0,tol:0.1,unit:'million words'},
+   steps:['Correct the hour for the observer effect: 14 × (1 − 0.15) = 11.9 hours a day.','1,537 × 11.9 × 365 × 3 ≈ 20,027,879.','About 20.0 million. Both changes are design choices, and together they cut the headline by 36%.'],
+   lab:{set:{design:'hr',years:3,boost:15,wake:14,cv:40,n:6},look:'Read <b>Measured gap by age 4</b> (here, by age 3).'},verify:[['gap',20.03,0.01]]},
+  {id:'hides',kind:'real',lvl:'honors',
+   q:'Hart and Risley made 1,318 one-hour observations across 42 families. The headline treats them as standing for every waking hour from birth to age 4, at 14 hours a day. What percent of those waking hours was actually recorded for a typical family?',
+   num:{ans:0.15,tol:0.02,unit:'%'},
+   steps:['Recorded per family: 1,318 ÷ 42 ≈ 31.4 hours.','Waking hours the headline describes: 14 × 365 × 4 = 20,440 hours.','31.4 ÷ 20,440 ≈ 0.0015, or about 0.15%. The other 99.85%, including all of year 4, is filled in by assumption, which is what the number hides.']},
+  {id:'debate',kind:'real',lvl:'honors',
+   q:'Sperry, Sperry and Miller report that the gap disappears when every caregiver and overheard talk count. Golinkoff and colleagues answer that talk spoken directly to a child matters most for learning. Which statement is fair to both sides?',
+   choices:['One side has the arithmetic wrong','They disagree mainly about what to count as a child’s language experience, which is a question about the measurement, not the multiplication','The debate shows talking with children does not matter','Overheard talk has been proven worthless'],correct:1,
+   steps:['Both sides accept the same arithmetic: a rate times hours times days.','They disagree about the operational definition: which words count.','Both agree that talk matters. Romeo and colleagues’ 2018 study adds evidence that back-and-forth turns predict language better than word totals.']},
+  {id:'compare',kind:'real',lvl:'honors',
+   q:'In the Providence Talks evaluation, children who started below the 50th percentile in adult words rose from the 11th to the 42nd percentile with home visits. Children in the comparison group who started low also rose, from the 11th to the 35th. What is the fairest reading?',
+   choices:['The program caused a 31-percentile gain','Part of the rise would have happened anyway, so the program’s effect is closer to the difference between the groups, and even that is uncertain without random assignment','The program made children worse','Percentiles cannot be compared'],correct:1,
+   steps:['Children picked for starting low tend to score higher next time even with no help: regression to the mean.','The comparison group’s low starters gained 24 points (11 to 35); the home-visit group gained 31 (11 to 42).','The difference, about 7 points, is a better guess at the program’s effect, but the comparison group came from other cities and was not randomly assigned, so even that is uncertain.']}
+ ]
+}
+});

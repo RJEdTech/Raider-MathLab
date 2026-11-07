@@ -1,0 +1,43 @@
+BioLab.addReview({
+opportunity:{
+ questions:[
+  {id:'nolink',kind:'test',lvl:'bio',
+   q:'Incomes are split into five equal groups (fifths). If parents’ income had no effect on their children’s, what share of children from the top fifth would end up in the bottom fifth?',
+   choices:['0%','10.9%','20%','36.5%'],correct:2,
+   steps:['With no link, a child’s fifth would not depend on the parents’ fifth at all.','Each fifth holds 20% of adults, so every child would have a 20% chance of each fifth.','The real U.S. figure is 10.9%: lower than 20%, but far from 0. Parents’ position matters without deciding everything.']},
+  {id:'missing',kind:'real',lvl:'honors',
+   q:'The 2014 study kept only children who were U.S. citizens, could be linked to a parent in tax records, and whose parents had income above zero in 1996 to 2000. Which child does the 7.5 per 100 leave out?',
+   choices:['A child born in 1981 to bottom-fifth parents who became a teacher','A child born in 1982 who earned a top-fifth income at 30','A child who could not be linked to a parent in tax records','A child born in 1980 who grew up around Denver'],correct:2,
+   steps:['The first, second and fourth children all meet the sample rules, so they are counted, whatever their outcome.','A child the researchers could not link to a parent never enters the table at all.','So the 7.5 describes the children the data could see. Any number built from records hides the people the records miss.']},
+  {id:'denver',kind:'real',lvl:'bio',
+   q:'Around Denver, 8.7 of every 100 children from the bottom fifth reach the top fifth. In a group of 300 such children, about how many would you expect to make the climb, and how many would 20-per-100 (no link) predict?',
+   choices:['About 9 and 20','About 26 and 60','About 87 and 200'],correct:1,
+   steps:['8.7 per 100 × 3 = 26.1, about 26 children.','No link: 20 per 100 × 3 = 60.','So about 34 fewer children climb than equal chances would give.'],
+   lab:{set:{place:'de',view:'kids',pq:1,reveal:true},look:'Read <b>Bottom fifth to top fifth</b> and the Denver bar.'},verify:[['q15',8.7,0.001],['even',20,0]]},
+  {id:'usline',kind:'test',lvl:'honors',
+   q:'The U.S. rank-rank slope is 0.341, and because ranks are percentiles, the line passes through the average point (50, 50). What expected rank does the line give a child whose parents are at the 25th percentile?',
+   num:{ans:41.5,tol:0.1,unit:'rank'},
+   steps:['The line: child rank = 50 + 0.341 × (parent rank − 50).','At parent rank 25: 50 + 0.341 × (−25) = 50 − 8.525 = 41.475.','About 41.5: below the middle, but much closer to it than the parents’ 25.'],
+   lab:{set:{place:'us',view:'line'},look:'Read <b>Expected rank, parents at the 25th percentile</b>.'},verify:[['aum',41.475,0.001],['slope',0.341,0.0001]]},
+  {id:'slopegap',kind:'test',lvl:'honors',
+   q:'Around Denver the rank-rank slope is 0.294. How far apart are the expected ranks of children whose parents are at the 25th and 75th percentiles?',
+   num:{ans:14.7,tol:0.05,unit:'ranks'},
+   steps:['The parents are 75 − 25 = 50 ranks apart.','Expected child gap = slope × parent gap = 0.294 × 50 = 14.7 ranks.','Around Charlotte (slope 0.397) the same parents would give a 19.9-rank gap.'],
+   lab:{set:{place:'de',view:'line'},look:'Read <b>Rank-rank slope</b> and <b>Rank gap: parents at 75th vs. 25th</b>.'},verify:[['slope',0.294,0.0001],['gap2575',14.7,0.001]]},
+  {id:'mto',kind:'real',lvl:'honors',
+   q:'In Moving to Opportunity, children who moved to a lower-poverty area before 13 earned $3,477 more a year in their mid-twenties than the control group’s $11,270. What percent increase is that, and why can researchers say the move caused it?',
+   num:{ans:31,tol:0.5,unit:'%'},
+   steps:['3,477 ÷ 11,270 ≈ 0.309, about 31%.','A lottery decided which families were offered which voucher, so the groups were alike on average in everything else.','That makes it a randomized experiment: the difference can be traced to the offer to move.']},
+  {id:'exposure',kind:'test',lvl:'ap',
+   q:'A family moves from the Charlotte area (expected rank 35.8 for children of 25th-percentile parents) to the Denver area (42.2) when their child is 13. Using 4% per year of exposure until age 23, what expected rank gain does this simple model give?',
+   num:{ans:2.56,tol:0.02,unit:'ranks'},
+   steps:['Years of exposure: 23 − 13 = 10.','Share picked up: 10 × 4% = 40%.','Gain: 0.40 × (42.2 − 35.8) = 0.40 × 6.4 = 2.56 ranks. The model treats each area’s average as its effect, which overstates it: part of the difference is who lives there.'],
+   lab:{set:{view:'expo',from:'cl',place:'de',age:13},look:'Read <b>Share of the place difference picked up</b> and <b>Expected rank change from the move</b>.'},verify:[['share',40,0.001],['gain',2.56,0.001]]},
+  {id:'twogen',kind:'test',lvl:'ap',
+   q:'Assume the U.S. transition matrix applies again in the next generation. Row 1 (parents in the bottom fifth) is 33.7, 28.0, 18.4, 12.3, 7.5 percent; the top-fifth column is 7.5, 12.3, 18.3, 25.4, 36.5 percent. What is the chance a grandchild of bottom-fifth grandparents reaches the top fifth?',
+   num:{ans:15.2,tol:0.1,unit:'of 100'},
+   steps:['Add every path through the middle generation: Σ P(1→k)·P(k→5).','0.337·0.075 + 0.280·0.123 + 0.184·0.183 + 0.123·0.254 + 0.075·0.365 = 0.0253 + 0.0344 + 0.0337 + 0.0312 + 0.0274 ≈ 0.152.','About 15.2 in 100: double the one-generation 7.5, and closer to 20. The Markov assumption has not been tested on real grandchildren.'],
+   lab:{set:{place:'us'},look:'Read <b>Bottom to top in two generations</b>.'},verify:[['two',15.2,0.01]]}
+ ]
+}
+});
