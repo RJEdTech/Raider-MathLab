@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Math helps us see, and can hide | Raider MathLab</title>
+<meta name="description" content="A guided route through the real-world tools across the Raider Labs, sorted by the math skill each one teaches: what a number can show, and what one number can hide.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="biolab.css?v=202611071400">
+<link rel="stylesheet" href="sheet/sheet.css?v=202611071400">
+<link rel="stylesheet" href="excel/excel.css?v=202611071400">
+<style>
+/* Page-only styles for seehide.html. Colors come from the biolab.css theme tokens, so light and dark follow the device. */
+.sh-box p a,.sh-box li a,.sh-links a,.sh-small a{color:var(--rj-ink)}
+.sh-head{margin:0 0 14px}
+.sh-head h2{font-size:28px;line-height:1.2;margin:0 0 8px}
+.sh-head .lede{font-size:17px}
+.sh-jump{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 8px;padding:0;list-style:none}
+.sh-jump a{display:inline-flex;align-items:baseline;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--fg);text-decoration:none;font-weight:600;font-size:14px;line-height:1.3}
+.sh-jump a:hover{border-color:var(--rj)}
+.sh-jump small{color:var(--muted);font-weight:700}
+.sh-jump-l{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);align-self:center;margin-right:2px}
+.sh-group{margin-top:30px;scroll-margin-top:12px}
+.sh-group h3{font-size:21px;line-height:1.25;margin:0 0 4px;padding-top:12px;border-top:2px solid var(--line)}
+.sh-n{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;margin-left:4px}
+.sh-skill{margin:0 0 12px;color:var(--muted);max-width:78ch;font-size:15.5px}
+.sh-skill b{color:var(--fg)}
+.sh-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
+.sh-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px 13px;display:flex;flex-direction:column;gap:7px;min-width:0}
+.sh-card p{margin:0;font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+.sh a.sh-t{font-weight:700;font-size:16.5px;line-height:1.3;color:var(--fg);text-decoration:underline;text-decoration-color:var(--rj);text-decoration-thickness:2px;text-underline-offset:3px;overflow-wrap:anywhere}
+.sh a.sh-t:hover{color:var(--rj-ink)}
+.sh-meta{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;color:var(--muted)}
+.sh-card p.sh-meta{font-size:13.5px}
+.sh-lab{display:inline-block;padding:0 8px;border:1px solid var(--line);border-radius:999px;background:var(--card2);color:var(--fg);font-weight:700;font-size:12px;letter-spacing:.02em}
+.sh-hide{padding-left:10px;border-left:3px solid var(--warn)}
+.sh-box{margin-top:34px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--rj);border-radius:12px;padding:14px 18px 16px;scroll-margin-top:12px}
+.sh-box h3{font-size:21px;line-height:1.25;margin:0 0 6px}
+.sh-box>p{margin:6px 0;max-width:78ch}
+.sh-box ol,.sh-box ul{margin:8px 0;padding-left:1.4em}
+.sh-box li{margin:5px 0;max-width:78ch}
+.sh-qs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:10px 22px;list-style:none;padding:0!important;margin:10px 0 4px!important;counter-reset:q}
+.sh-qs li{margin:0;padding-left:34px;position:relative;counter-increment:q}
+.sh-qs li::before{content:counter(q);position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;background:var(--rj);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.sh-qs b{display:block;font-size:16px}
+.sh-qs span{display:block;color:var(--muted);font-size:14px;line-height:1.4;margin-top:2px}
+.sh-rubric-wrap{overflow-x:auto;margin:10px 0 4px}
+.sh-rubric{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.4}
+.sh-rubric th,.sh-rubric td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top;white-space:normal;font-variant-numeric:normal}
+.sh-rubric tbody th{background:var(--card2);color:var(--fg);font-size:14px;font-weight:700}
+.sh-rubric thead th{color:var(--fg)}
+.sh-rubric tr:last-child td{border-bottom:1px solid var(--line)}
+.sh-rubric thead th{background:var(--card2);font-size:13px;letter-spacing:.02em;font-weight:700}
+.sh-rubric tbody th{width:24%}
+.sh-small{font-size:14px;color:var(--muted)}
+.sh .xl-entry{margin:10px 0 12px}
+.sh .xl-entry,.sh .xl-entry b{color:var(--fg)}
+.sh-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin:4px 0 10px;font-size:15px}
+.sh-open{margin-top:34px}
+.sh-open h3{font-size:21px;margin:0 0 6px}
+.sh-open ul{margin:6px 0;padding-left:1.3em}
+.sh-open li{margin:5px 0;max-width:78ch}
+@media(max-width:600px){.sh-head h2{font-size:24px}.sh-head .lede{font-size:16px}.sh-group h3,.sh-box h3,.sh-open h3{font-size:19px}.sh-box{padding:12px 14px 14px}.sh-rubric tbody th{width:30%}}
+@media print{.sh-jump,.labs,.xl-top{display:none}.sh-card,.sh-box{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header class="rj-masthead">
+  <div class="hl">
+    <img class="rj-mark" src="data:image/png;base64,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" alt="RJ">
+    <div>
+      <h1>Raider MathLab</h1>
+      <p class="tagline">Why am I learning this?</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap sh">
+  <div class="xl-top"><a class="back" href="index.html">← Raider MathLab home</a></div>
+  <nav class="labs" aria-label="Raider Labs"><span class="labs-l">Raider Labs</span><a href="https://rjedtech.github.io/Raider-BioLab/">BioLab <small>Biology</small></a><a href="https://rjedtech.github.io/Raider-ChemLab/">ChemLab <small>Chemistry</small></a><a href="https://rjedtech.github.io/Raider-PhysLab/">PhysLab <small>Physics</small></a><a href="https://rjedtech.github.io/Raider-ForensicsLab/">ForensicsLab <small>Forensic Science</small></a><a href="https://rjedtech.github.io/Raider-AnatomyLab/">AnatomyLab <small>Anatomy &amp; Physiology</small></a><a href="https://rjedtech.github.io/Raider-SportsMedLab/">SportsMedLab <small>Sports Medicine</small></a><a href="https://rjedtech.github.io/Raider-MathLab/" aria-current="page">MathLab <small>Mathematics</small></a><a href="https://rjedtech.github.io/Raider-HealthLab/">HealthLab <small>Health</small></a><a href="https://rjedtech.github.io/Raider-AILab/">AILab <small>Artificial Intelligence</small></a></nav>
+
+  <div class="sh-head">
+    <h2>Math helps us see, and can hide</h2>
+    <p class="lede">The math from your class can show a pattern no one could see by eye: a cost per person, a chance out of 1,000, a line through thousands of schools. The same math can also hide the people inside an average. Each of the 47 tools below teaches one skill on a real question, and each one names what its own number leaves out.</p>
+  </div>
+  <nav aria-label="Skills on this page"><ul class="sh-jump"><li class="sh-jump-l">Jump to a skill</li><li><a href="#g-rates">Unit rates and per-person numbers <small>10</small></a></li><li><a href="#g-percents">Percents and percent change <small>5</small></a></li><li><a href="#g-weights">Weighted averages and indexes <small>4</small></a></li><li><a href="#g-chance">Probability and conditional probability <small>9</small></a></li><li><a href="#g-normal">z-scores and cutoffs <small>4</small></a></li><li><a href="#g-regression">Correlation, regression and cause <small>3</small></a></li><li><a href="#g-growth">Growth, decay and loops <small>6</small></a></li><li><a href="#g-algorithms">Algorithms, counting and estimating <small>6</small></a></li></ul></nav>
+  <p class="sh-small">MathLab tools open here. Tools from the other Raider Labs open in a new tab.</p>
+
+  <section class="sh-group" id="g-rates" aria-labelledby="h-rates">
+    <h3 id="h-rates">Unit rates and per-person numbers <span class="sh-n">10 tools</span></h3>
+    <p class="sh-skill"><b>The skill:</b> Divide a total by a count (per person, per hour, per 1,000) so numbers of very different sizes can be compared. Algebra 1, Unit 2: multistep equations and proportions.</p>
+    <ul class="sh-list">
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#minutesofwork">What life costs, in minutes of work</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> Minutes of work = price ÷ pay per hour × 60, to compare a bus ride, gas or rent across 13 places.</p>
+      <p class="sh-hide"><b>What it can hide:</b> Which wage you divide by. A median hides the spread (in Dallas, half of workers earn less than $23.29), and some “typical” wages count only formal or full-time jobs.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#billions">Making sense of a billion</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> Divide a federal budget line by the number of Americans and by 365 to get dollars per person per day.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A per-person average spreads money over everyone, but most programs pay some people and not others. Nominal dollars also hide inflation.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#livingwage">Build a living wage</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> A year of basic needs plus taxes ÷ earners ÷ 2,080 hours: the hourly wage a household needs.</p>
+      <p class="sh-hide"><b>What it can hide:</b> It is built from assumptions, not counted: change the household or one budget line and the wage changes. The budget leaves out savings, eating out and vacations.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#costofliving">Cost of living: more than a price tag</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> Share of pay = a month of basics ÷ a month of pay, and hours of work = dollars ÷ dollars per hour.</p>
+      <p class="sh-hide"><b>What it can hide:</b> Which worker, and how steady the pay. For an informal worker the mean month can cover the basics while the median month does not: one average hides that risk.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-HealthLab/#fooddesert" target="_blank" rel="noopener">Where the groceries are: food access, time, money and health</a>
+      <p class="sh-meta"><span class="sh-lab">HealthLab</span> <span class="sh-course">Algebra 1 (Unit 2), Health (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> Time = distance ÷ speed for each leg of a grocery trip without a car, then the full cost of dinner in money, minutes and miles.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A tract’s flag covers everyone in it, including people next to a store and people with no car. Counting stores hides prices, hours, quality and whether a store sells the foods a family cooks.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-SportsMedLab/#paceload" target="_blank" rel="noopener">Pace, minutes and injuries</a>
+      <p class="sh-meta"><span class="sh-lab">SportsMedLab</span> <span class="sh-course">Sports Medicine (Unit 1: injury basics, healing and rehabilitation)</span></p>
+      <p class="sh-do"><b>You compute:</b> Injuries per 1,000 games and per 1,000 possessions, to compare two season plans by exposure instead of raw count.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A per-game rate hides minutes: a player at 40 minutes a game is on the court more than 3 times as long as one at 12.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-AILab/#promptcost" target="_blank" rel="noopener">What does one AI prompt cost?</a>
+      <p class="sh-meta"><span class="sh-lab">AILab</span> <span class="sh-course">Algebra 1, Physics</span></p>
+      <p class="sh-do"><b>You compute:</b> Phone-charge energy ÷ energy per prompt, then scale one prompt up to a class, a school and the world.</p>
+      <p class="sh-hide"><b>What it can hide:</b> Every per-prompt number depends on what was counted. One prompt is small; the totals are what grow.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-CivicsLab/#northsouth" target="_blank" rel="noopener">The world in 100 people</a>
+      <p class="sh-meta"><span class="sh-lab">CivicsLab</span> <span class="sh-course">Algebra 1 (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> Rates per 100 (part ÷ whole × 100): shrink the world to 100 people and compare what a child can expect by birthplace.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A count per 100 hides how far below the line people are, how many sit just above it, differences inside each country, and anyone household surveys do not reach.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#wordgap">The 30 million word gap: measuring a childhood</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Statistics (Chapter 7)</span></p>
+      <p class="sh-do"><b>You compute:</b> Words an hour × hours × days × years: the product behind the famous 30 million word gap, and how each study design moves it.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A group average hides overlap between families, and a recorder cannot tell talk to the child from talk between adults.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-PhysLab/#shotspotter" target="_blank" rel="noopener">Where did that bang come from? Locating sound by timing</a>
+      <p class="sh-meta"><span class="sh-lab">PhysLab</span> <span class="sh-course">Physics: waves and sound</span></p>
+      <p class="sh-do"><b>You compute:</b> Distance difference = speed of sound × time difference, for each pair of microphones, to find where a bang came from.</p>
+      <p class="sh-hide"><b>What it can hide:</b> Timing says where a sound came from, not what made it.</p>
+    </li>
+    </ul>
+  </section>
+
+  <section class="sh-group" id="g-percents" aria-labelledby="h-percents">
+    <h3 id="h-percents">Percents and percent change <span class="sh-n">5 tools</span></h3>
+    <p class="sh-skill"><b>The skill:</b> Find a percent of an amount, compare changes with ratios like new ÷ old, and keep percents of a part apart from percents of the whole. Algebra 1, Unit 2.</p>
+    <ul class="sh-list">
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-CivicsLab/#remittances" target="_blank" rel="noopener">Sending money home</a>
+      <p class="sh-meta"><span class="sh-lab">CivicsLab</span> <span class="sh-course">Algebra 1 (Unit 2), AP Macroeconomics (Unit 6)</span></p>
+      <p class="sh-do"><b>You compute:</b> Fees as a percent of each transfer, then the yearly cost of sending $300 a month.</p>
+      <p class="sh-hide"><b>What it can hide:</b> The 6.36% world average, measured on a $200 transfer, hides corridors that cost far more, small transfers where a flat fee is a bigger share, and markups that never show up as a fee.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#carquote">My first car insurance quote</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> A base price × a stack of multipliers; savings = quote × (1 − new ÷ old) for each change.</p>
+      <p class="sh-hide"><b>What it can hide:</b> One total hides its parts: some multipliers, like the policyholder’s credit tier, say nothing about how you drive.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#stickernet">Sticker price vs. what you really pay</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> Net price = sticker − grants, times the years, then the loan added up month by month.</p>
+      <p class="sh-hide"><b>What it can hide:</b> The sticker price hides what each student pays: in the same dorm, one student can pay less than half of what another pays. Loan fees and other repayment plans are left out of the model.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#povertypremium">Why it costs more to have less</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 2), Algebra 2 (Unit 5)</span></p>
+      <p class="sh-do"><b>You compute:</b> Add up a year of check-cashing fees, interest and late fees for two workers, one banked and one unbanked, and compare the totals.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A year’s total hides the worst month, the months with bills left unpaid, and anyone whose pay is not counted at all.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-AILab/#frontier" target="_blank" rel="noopener">The jagged frontier: which tasks should you hand to AI?</a>
+      <p class="sh-meta"><span class="sh-lab">AILab</span> <span class="sh-course">Algebra 1 (percents), Statistics (expected value)</span></p>
+      <p class="sh-do"><b>You compute:</b> A percent saved on part of your week as a percent of the whole week, and expected right answers = tasks × chance of being right.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A percent of a part is a smaller percent of the whole: a 25.1% speedup on 135 of 242 minutes saves about 14% of the week.</p>
+    </li>
+    </ul>
+  </section>
+
+  <section class="sh-group" id="g-weights" aria-labelledby="h-weights">
+    <h3 id="h-weights">Weighted averages and indexes <span class="sh-n">4 tools</span></h3>
+    <p class="sh-skill"><b>The skill:</b> Multiply each part by a weight and add (score = Σ w·p ÷ Σ w). Rankings, indexes and feeds are built this way. Algebra 1, Unit 2; Statistics, Chapter 1.</p>
+    <ul class="sh-list">
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#rankcolleges">Rank the colleges: who decides what “best” means?</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> A weighted average, score = Σ w·p ÷ Σ w, for every college, then sort.</p>
+      <p class="sh-hide"><b>What it can hide:</b> The weights are someone’s choice. Change what counts and a different college is “best.”</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-CivicsLab/#measurewealth" target="_blank" rel="noopener">What counts as wealth?</a>
+      <p class="sh-meta"><span class="sh-lab">CivicsLab</span> <span class="sh-course">Statistics (Chapter 1), AP Macroeconomics (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> Add up what GDP counts, rank countries by other measures, and build your own index.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A rank hides how far apart countries are: by life expectancy, Bhutan is 1.0 year ahead of India and India is 17.5 years ahead of Nigeria, and each gap is one place.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#lifesim">One life, many lives: a life simulator</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Statistics (Chapter 5), AP Statistics (Unit 4)</span></p>
+      <p class="sh-do"><b>You compute:</b> Probability as a count out of 1,000, and a weighted average to combine groups, following 1,000 children from birth to 65.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A county is not a neighborhood, and poverty lines differ by place. People without a fixed address and cash-only workers are the hardest to count, and often the people the number is about.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-HealthLab/#feedbuilder" target="_blank" rel="noopener">Build a feed: what should it rank by?</a>
+      <p class="sh-meta"><span class="sh-lab">HealthLab</span> <span class="sh-course">Health (Unit 6: Screen time and social media), Algebra 1 (Unit 1: expressions)</span></p>
+      <p class="sh-do"><b>You compute:</b> A weighted sum, score = Σ weight × signal, for each post; the feed shows the top score next.</p>
+      <p class="sh-hide"><b>What it can hide:</b> The feed sees only what the viewer does, never the habits behind it. Weights built on watch time serve what holds the viewer, not the mix they asked for.</p>
+    </li>
+    </ul>
+  </section>
+
+  <section class="sh-group" id="g-chance" aria-labelledby="h-chance">
+    <h3 id="h-chance">Probability and conditional probability <span class="sh-n">9 tools</span></h3>
+    <p class="sh-skill"><b>The skill:</b> Count outcomes, multiply chances, and always ask “out of whom?” Statistics, Chapter 5; AP Statistics, Unit 4.</p>
+    <ul class="sh-list">
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-AILab/#detector" target="_blank" rel="noopener">The AI detector flagged an essay. Was it really AI?</a>
+      <p class="sh-meta"><span class="sh-lab">AILab</span> <span class="sh-course">Statistics</span></p>
+      <p class="sh-do"><b>You compute:</b> A percent of a percent of a count: honest essays × false positive rate = honest students flagged.</p>
+      <p class="sh-hide"><b>What it can hide:</b> “99% accurate” hides who the errors land on: in this school, about 1 flag in 6 lands on a student who wrote the essay.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#fairscore">Can a risk score be fair to everyone?</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Statistics (Ch. 5), AP Statistics (Unit 4)</span></p>
+      <p class="sh-do"><b>You compute:</b> False positive rate = P(flagged | fine) for each group, from a two-way table.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A score can be equally accurate for two groups and still make different mistakes for each when their base rates differ.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-ForensicsLab/#facematch" target="_blank" rel="noopener">The wrong match: face recognition and record matching</a>
+      <p class="sh-meta"><span class="sh-lab">ForensicsLab</span> <span class="sh-course">Forensic Science (digital forensics); Statistics: probability</span></p>
+      <p class="sh-do"><b>You compute:</b> Expected false matches = photos searched × false match rate.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A false match rate that sounds tiny, times a database of millions, is a real number of wrong people.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#opportunity">Where you grow up</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Statistics (Chapter 5)</span></p>
+      <p class="sh-do"><b>You compute:</b> P(top fifth | bottom fifth) from counts, and how it changes with the place a child grows up.</p>
+      <p class="sh-hide"><b>What it can hide:</b> One average for a whole region hides every neighborhood inside it. Children who could not be linked to a parent in tax records are not counted.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#makethepros">Who makes the pros?</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Statistics (Ch. 5), AP Statistics (Unit 4)</span></p>
+      <p class="sh-do"><b>You compute:</b> P(pro) = P(college | high school) × P(pro | college), then rates per 100,000 to compare places.</p>
+      <p class="sh-hide"><b>What it can hide:</b> It counts only players on high school teams, so kids who left the sport earlier because of a club fee, gear or a ride appear in no database.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#beatbot">Will a human ever see my job application?</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Statistics (Ch. 5), AP Statistics (Unit 4)</span></p>
+      <p class="sh-do"><b>You compute:</b> P(at least one interview) = 1 − P(none), when several employers each screen you.</p>
+      <p class="sh-hide"><b>What it can hide:</b> One screen’s pass rate hides what happens when every employer uses the same test: seven independent screens passing 30% each give 91.8% at least one interview; one shared test gives 30%.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-HealthLab/#watchlie" target="_blank" rel="noopener">Is your sleep tracker lying to you?</a>
+      <p class="sh-meta"><span class="sh-lab">HealthLab</span> <span class="sh-course">Statistics (Chapter 5), Health (Unit 5)</span></p>
+      <p class="sh-do"><b>You compute:</b> Count the two kinds of error in a 2 × 2 table, comparing a wrist tracker with a sleep lab.</p>
+      <p class="sh-hide"><b>What it can hide:</b> One total can hide errors that cancel. Lying awake and still looks like sleep, so a tracker can catch almost all your sleep and still miss most of your wake.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-AILab/#nextword" target="_blank" rel="noopener">Next Word: build a tiny language model</a>
+      <p class="sh-meta"><span class="sh-lab">AILab</span> <span class="sh-course">Statistics (two-way tables and conditional probability)</span></p>
+      <p class="sh-do"><b>You compute:</b> count(the, next word) ÷ count(the): the chance of each next word in a tiny language model.</p>
+      <p class="sh-hide"><b>What it can hide:</b> Nothing in that division checks whether a sentence is true, so likely text and true text are different things.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#valueadded">Can 25 students’ test scores rate a teacher?</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Statistics (Ch. 7), AP Statistics (Unit 5)</span></p>
+      <p class="sh-do"><b>You compute:</b> The standard error of a class average, σ ÷ √n, for a class of 25 students.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A score built on 25 students is off by about 2 points, about as much as real teachers differ.</p>
+    </li>
+    </ul>
+  </section>
+
+  <section class="sh-group" id="g-normal" aria-labelledby="h-normal">
+    <h3 id="h-normal">z-scores and cutoffs: who counts as “normal”? <span class="sh-n">4 tools</span></h3>
+    <p class="sh-skill"><b>The skill:</b> Compare a measurement with a reference, z = (score − average) ÷ SD, then apply a cutoff. Statistics, Chapter 2: percentiles, z-scores and the normal model.</p>
+    <ul class="sh-list">
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-SportsMedLab/#racenorm" target="_blank" rel="noopener">Who is “normal” after a concussion?</a>
+      <p class="sh-meta"><span class="sh-lab">SportsMedLab</span> <span class="sh-course">Sports Medicine: concussion assessment; Statistics</span></p>
+      <p class="sh-do"><b>You compute:</b> z = (score − average) ÷ SD against three norm tables after a concussion, then compare with a cutoff.</p>
+      <p class="sh-hide"><b>What it can hide:</b> “Normal” is always normal compared with someone: against your own baseline a 12-point drop is flagged; against the population average it takes 22.5.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-AnatomyLab/#spirometry" target="_blank" rel="noopener">Lung function: who counts as normal?</a>
+      <p class="sh-meta"><span class="sh-lab">AnatomyLab</span> <span class="sh-course">Anatomy &amp; Physiology: the respiratory system; Statistics</span></p>
+      <p class="sh-do"><b>You compute:</b> A z-score comparing a breath test with a predicted “normal” from age, height and sex.</p>
+      <p class="sh-hide"><b>What it can hide:</b> The reference is a choice: change it and the same breath goes from z = −1.96 to z = −0.95. For decades, many labs used a lower “normal” for Black patients.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-AnatomyLab/#egfr" target="_blank" rel="noopener">Kidney math: who counts as sick enough?</a>
+      <p class="sh-meta"><span class="sh-lab">AnatomyLab</span> <span class="sh-course">Anatomy &amp; Physiology: the urinary system</span></p>
+      <p class="sh-do"><b>You compute:</b> Evaluate the 2009 and 2021 kidney equations one factor at a time, then compare with the transplant waiting-list line.</p>
+      <p class="sh-hide"><b>What it can hide:</b> An equation is a set of choices: the 2009 equation multiplied by 1.159 for Black patients, which changed who counted as sick enough.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-PhysLab/#oximeter" target="_blank" rel="noopener">Inside the pulse oximeter</a>
+      <p class="sh-meta"><span class="sh-lab">PhysLab</span> <span class="sh-course">Physics: light and optics</span></p>
+      <p class="sh-do"><b>You compute:</b> The ratio of ratios, R = red pulse ÷ infrared pulse; a calibration curve turns R into an oxygen reading.</p>
+      <p class="sh-hide"><b>What it can hide:</b> Who the curve was fit on is part of the result. A screen reading 92 to 96% when true oxygen is below 88% is low oxygen the screen hides.</p>
+    </li>
+    </ul>
+  </section>
+
+  <section class="sh-group" id="g-regression" aria-labelledby="h-regression">
+    <h3 id="h-regression">Correlation, regression and cause <span class="sh-n">3 tools</span></h3>
+    <p class="sh-skill"><b>The skill:</b> Fit a line, read r and r², and ask what else could explain the pattern. Statistics, Chapter 3; AP Statistics, Unit 2.</p>
+    <ul class="sh-list">
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#zipscores">Zip code and test scores</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Statistics (Chapter 3), AP Statistics (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> Correlation r and r²: how much of the differences in district test scores a line through family resources accounts for.</p>
+      <p class="sh-hide"><b>What it can hide:</b> One district average stands for thousands of students, and r = 0.68 across 11,315 districts says nothing certain about one family or one student.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#bookshome">Books on the shelf</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Statistics (Chapter 3)</span></p>
+      <p class="sh-do"><b>You compute:</b> The slope of a fitted line, and the share left after accounting for family background.</p>
+      <p class="sh-hide"><b>What it can hide:</b> The survey counted books in the home at age 16, so library books and stories told aloud do not show up.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-HealthLab/#checkclaim" target="_blank" rel="noopener">Check the claim: how good is the evidence?</a>
+      <p class="sh-meta"><span class="sh-lab">HealthLab</span> <span class="sh-course">Health (Unit 2: Nutrition: labels, fad diets and supplements), Statistics (Unit 3: collecting data)</span></p>
+      <p class="sh-do"><b>You compute:</b> Score a study by its control group, randomization and sample size, then watch a 10-person study “prove” a product that does nothing.</p>
+      <p class="sh-hide"><b>What it can hide:</b> Without a randomized control group, people getting better on their own looks just like a product that works.</p>
+    </li>
+    </ul>
+  </section>
+
+  <section class="sh-group" id="g-growth" aria-labelledby="h-growth">
+    <h3 id="h-growth">Growth, decay and loops <span class="sh-n">6 tools</span></h3>
+    <p class="sh-skill"><b>The skill:</b> Multiply by the same factor again and again, or feed each step’s result into the next. Algebra 2, Unit 5: exponential and logarithmic functions; AP Precalculus, Unit 2A.</p>
+    <ul class="sh-list">
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#onepercent">1% apart: what a slightly higher rate really costs</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 2 (Unit 5)</span></p>
+      <p class="sh-do"><b>You compute:</b> The loan payment formula at two rates one percentage point apart, then every dollar paid over the loan.</p>
+      <p class="sh-hide"><b>What it can hide:</b> “Just 1%” is charged every month on what you still owe, so a bigger loan or a longer term turns it into hundreds or thousands of dollars.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-HealthLab/#caffeinecurve" target="_blank" rel="noopener">How much caffeine is still in you at bedtime?</a>
+      <p class="sh-meta"><span class="sh-lab">HealthLab</span> <span class="sh-course">Algebra 2 (Unit 5), Health (Unit 7)</span></p>
+      <p class="sh-do"><b>You compute:</b> Amount left = dose × (1/2)^(hours ÷ 5) for each drink, added up at bedtime.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A 5-hour half-life is a typical figure: how fast caffeine clears varies from person to person, roughly 3 to 7 hours.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-HealthLab/#cprclock" target="_blank" rel="noopener">The cardiac arrest clock: what you do in the first minutes</a>
+      <p class="sh-meta"><span class="sh-lab">HealthLab</span> <span class="sh-course">Algebra 2 (Unit 5), Health</span></p>
+      <p class="sh-do"><b>You compute:</b> Exponential decay: keep 90% of what is left each minute until help arrives, and see what CPR and an AED change.</p>
+      <p class="sh-hide"><b>What it can hide:</b> “Falls 10% a minute” can be read two ways. As a share of what is left (exponential) or as a fixed amount (linear), the answers differ a lot.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#hotspot">The hot spot loop</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">AP Precalculus (Unit 2A), Algebra 1 (Unit 3)</span></p>
+      <p class="sh-do"><b>You compute:</b> A recursive sequence: each week’s patrol share = A² ÷ (A² + B²).</p>
+      <p class="sh-hide"><b>What it can hide:</b> A minor offense is written up only if someone is there to see it, so the count partly records where people looked. A rule that follows the data can manufacture its own proof.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-AILab/#learnwith" target="_blank" rel="noopener">Learn with AI, not from it</a>
+      <p class="sh-meta"><span class="sh-lab">AILab</span> <span class="sh-course">Algebra 2 (sequences)</span></p>
+      <p class="sh-do"><b>You compute:</b> Close a fixed share of the gap to mastery each session, 10 sessions in a row (a recursive sequence).</p>
+      <p class="sh-hide"><b>What it can hide:</b> A practice score earned with help measures the student plus the help; the test measures only the student.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-AILab/#agreeable" target="_blank" rel="noopener">The Agreeable Machine: how a chatbot learns to flatter</a>
+      <p class="sh-meta"><span class="sh-lab">AILab</span> <span class="sh-course">Algebra 2 / Precalculus (exponential and logistic functions)</span></p>
+      <p class="sh-do"><b>You compute:</b> σ(x) = 1/(1 + e^(−x)) turns a small score gap into a vote share, added to the log-odds every round.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A 55% head-to-head preference looks close to even. Added every round, it took flattery from 18% to 62% in 20 rounds.</p>
+    </li>
+    </ul>
+  </section>
+
+  <section class="sh-group" id="g-algorithms" aria-labelledby="h-algorithms">
+    <h3 id="h-algorithms">Algorithms, counting and estimating <span class="sh-n">6 tools</span></h3>
+    <p class="sh-skill"><b>The skill:</b> List every case, follow a rule step by step, or build the comparison you cannot count. Geometry, Unit 2: logic and reasoning; Algebra 1.</p>
+    <ul class="sh-list">
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#kidneyswap">Kidney swap: getting the most patients a kidney</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Geometry (Unit 2, Logic and reasoning)</span></p>
+      <p class="sh-do"><b>You compute:</b> List every swap plan and keep the one that gets the most patients a kidney (an exhaustive search).</p>
+      <p class="sh-hide"><b>What it can hide:</b> The first swap that works is not always part of the best plan, and a count of transplants leaves out tissue type, distance and time waited, which real exchanges also weigh.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#schoolmatch">The school match: is it safe to tell the truth?</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Geometry (Unit 2, Logic and reasoning)</span></p>
+      <p class="sh-do"><b>You compute:</b> Trace two matching rules round by round on the same ranked lists.</p>
+      <p class="sh-hide"><b>What it can hide:</b> Whether a list shows a family’s true favorite depends on the rule: under the old Boston rule, listing a popular school first can cost you.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#aidoptimizer">The Aid Optimizer: you set the price</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> Revenue = students × price; check award sizes to find the scholarship that brings in the most tuition.</p>
+      <p class="sh-hide"><b>What it can hide:</b> Total revenue hides whose decision the aid changed: for first-choice fans, 211 of the 260 who enroll would have come with no award.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#schedule">What does it cost to schedule people fairly?</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 5)</span></p>
+      <p class="sh-do"><b>You compute:</b> Baristas needed = customers ÷ customers per barista, rounded up; cost = hours × wage, with and without each scheduling rule.</p>
+      <p class="sh-hide"><b>What it can hide:</b> A rule’s price in dollars leaves out availability, call-outs and training, which real stores also deal with.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="https://rjedtech.github.io/Raider-BioLab/#whogetscare" target="_blank" rel="noopener">Who gets extra care?</a>
+      <p class="sh-meta"><span class="sh-lab">BioLab</span> <span class="sh-course">Biology (Go further)</span></p>
+      <p class="sh-do"><b>You compute:</b> Rank patients by a label (last year’s cost or number of chronic conditions), flag the top 3%, and compare each group’s share.</p>
+      <p class="sh-hide"><b>What it can hide:</b> Cost measured who got care, not who needed it. With an access gap, ranking by cost under-flags the group that gets less care.</p>
+    </li>
+    <li class="sh-card">
+      <a class="sh-t" href="index.html#livessaved">Lives saved: an estimate, not a count</a>
+      <p class="sh-meta"><span class="sh-lab">MathLab</span> <span class="sh-course">Algebra 1 (Unit 2)</span></p>
+      <p class="sh-do"><b>You compute:</b> Lives saved = deaths in a modeled world without the vaccine − deaths that happened, built three ways.</p>
+      <p class="sh-hide"><b>What it can hide:</b> No one can count deaths that did not happen, so “lives saved” is an estimate that depends on how the world without the vaccine is built, and it comes with a range.</p>
+    </li>
+    </ul>
+  </section>
+
+  <section class="sh-box" id="questions" aria-labelledby="h-questions">
+    <h3 id="h-questions">Questions to ask any number</h3>
+    <p>Several of the tools above end with this card. Use it on any number you meet, in a tool or in the news.</p>
+    <ol class="sh-qs">
+      <li><b>Who counted, and how?</b><span>A wrist tracker guesses sleep from movement and heart rate (Is your sleep tracker lying to you?).</span></li>
+      <li><b>Per what? What is the denominator?</b><span>Per person, per household, per worker, per 1,000 games. Injuries per game hide minutes played (Pace, minutes and injuries).</span></li>
+      <li><b>Average or median?</b><span>The world’s mean income is $21.61 a day; the median person lives on about $9.22 (The world in 100 people).</span></li>
+      <li><b>Who is missing?</b><span>Kids who left a sport because of fees never reach a roster (Who makes the pros?).</span></li>
+      <li><b>What changed the count?</b><span>More patrols find more write-ups, so the count follows the patrols (The hot spot loop).</span></li>
+      <li><b>Compared to what?</b><span>The same test score is “impaired” or not depending on the norm table (Who is “normal” after a concussion?).</span></li>
+      <li><b>What would change the answer?</b><span>Change one budget line and the living wage changes (Build a living wage).</span></li>
+      <li><b>What does this number hide?</b><span>Every tool on this page gives one answer. Find another.</span></li>
+    </ol>
+  </section>
+
+  <section class="sh-box" id="investigate" aria-labelledby="h-investigate">
+    <h3 id="h-investigate">Your turn: investigate</h3>
+    <p>Do with a number from the news what the tools do with theirs.</p>
+    <ol>
+      <li><b>Pick a number in the news:</b> a total, a percent, a rate or a ranking.</li>
+      <li><b>Find its source.</b> Follow the story back to the report or data table it came from. Note who counted, when, and how.</li>
+      <li><b>Recompute it per person</b> (or per hour, per household, per 1,000). Find the count you divide by, cite where it came from, and show the division with units.</li>
+      <li><b>Find one thing it hides.</b> Use the questions above: a group it leaves out, a spread inside an average, a choice of denominator.</li>
+      <li><b>Write one question it raises:</b> one the number alone cannot answer.</li>
+    </ol>
+    <p><b>Turn in:</b> the number, the source link, your calculation, one sentence on what it hides, and your question.</p>
+    <div class="sh-rubric-wrap">
+      <table class="sh-rubric">
+        <caption class="sh-small" style="text-align:left;caption-side:top;padding-bottom:4px">Rubric: 8 points. A part that is missing earns 0.</caption>
+        <thead><tr><th scope="col">Part</th><th scope="col">2 points</th><th scope="col">1 point</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Source found</th><td>Links the original report or data table and names who counted, and when.</td><td>Names a source, but only a story that repeated the number.</td></tr>
+          <tr><th scope="row">Recomputed correctly</th><td>Shows total ÷ count with units and a cited count, and the answer checks out.</td><td>The setup is right, with an arithmetic or unit slip.</td></tr>
+          <tr><th scope="row">What it hides</th><td>Names one specific group, spread or choice the number leaves out, with a detail from the source.</td><td>A general point (“averages hide things”) with no specific.</td></tr>
+          <tr><th scope="row">Question asked</th><td>An open question the number raises that more data could help answer.</td><td>A yes-or-no question, or one the source already answers.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sh-box" id="build" aria-labelledby="h-build">
+    <h3 id="h-build">Build your own measure in Excel</h3>
+    <p>Every number above was built by someone who chose the inputs, the formula and the denominator. Start with one that is already built, then build your own.</p>
+    <a class="xl-entry" href="excel.html#build-livingwage"><span class="xl-entry-k">Excel from zero: Build it</span> <b>Living wage</b> <span class="xl-entry-d">One year of basic needs for a family in Aurora’s county, from MIT’s calculator. Build the sheet that turns it into an hourly wage: =SUM(B2:B8)/B9.</span></a>
+    <p class="sh-links"><a href="excel.html#build-livingwage-closer">Closer look: six households, one formula</a><a href="excel.html#build-livingwage-deep">Deep dive: from a mostly blank sheet, with a chart</a><a href="excel.html">New to Excel? Start with lesson 1</a></p>
+    <p><b>Then build a measure of your own:</b></p>
+    <ol>
+      <li><b>Pick a question with a “per” in the answer.</b> Minutes of work for something you buy (price ÷ hourly pay × 60), the cost per person of a budget line (total ÷ population), or a score with weights you choose (as in Rank the colleges).</li>
+      <li><b>Give every input its own cell.</b> A label in column A, the number in column B, and where it came from in column C.</li>
+      <li><b>Put the denominator in its own cell</b>, like the 2,080 full-time hours in the living wage sheet.</li>
+      <li><b>Write one formula with cell references, not typed numbers</b>, so it updates when an input changes. The living wage pattern: =SUM(B2:B8)/B9.</li>
+      <li><b>Compare several cases.</b> Put each case in a row, lock the shared cells with $ (like $B$1), and fill the formula down, as in the Closer look households.</li>
+      <li><b>Test it.</b> Raise one input by 10% at a time. Which one moves the answer most? The Deep dive asks the same question about its chart.</li>
+      <li><b>Chart the parts.</b> Download your sheet with <b>Download as Excel file</b>, then make the chart in Excel with Insert. <a href="excel.html#lesson-11">Lesson 11</a> shows how to open the file in Excel and turn it in on Canvas.</li>
+      <li><b>Under the result, write what it hides.</b> Answer the questions to ask any number about your own measure.</li>
+    </ol>
+  </section>
+
+  <section class="sh-open" aria-labelledby="h-open">
+    <h3 id="h-open">Questions to keep open</h3>
+    <ul>
+      <li>When is one number enough to make a decision about a person?</li>
+      <li>Who should choose the weights in a ranking, and should they be shown?</li>
+      <li>How many students would you want behind a score before it decided someone’s job?</li>
+      <li>Which number would you put in a headline, and what would you say it counts?</li>
+      <li>What would you want counted that no one counts yet?</li>
+    </ul>
+  </section>
+
+  <details class="notes" id="notes">
+    <summary>For teachers: how this page works</summary>
+    <div class="cols">
+      <div>
+        <h4>A route by skill</h4>
+        <p>Each group names the math skill and the course unit it comes from. Each card gives the tool’s own course line, what students compute, and what the tool itself says its number can hide. Nothing on this page adds facts beyond what the tools say; sources are in each tool’s About this model.</p>
+        <h4>Link to one part</h4>
+        <p>Add the part to the page address: <code>seehide.html#questions</code>, <code>seehide.html#investigate</code>, <code>seehide.html#build</code>, or a skill group such as <code>seehide.html#g-percents</code>.</p>
+      </div>
+      <div>
+        <h4>Using the project</h4>
+        <p>“Your turn: investigate” fits one class period plus homework. The rubric is on the page so students can check their own work. The Excel project uses the Living wage Build it in Excel from zero; students can download their sheet and turn in the .xlsx on Canvas.</p>
+        <h4>Privacy</h4>
+        <p>This page saves nothing and has no logins.</p>
+      </div>
+    </div>
+  </details>
+  <p class="foot">RJ Ed Tech · Raider MathLab · Simplified models for instruction<br><a href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=4SwuQZc-CEClZjjFdYLisQzihhIB-7hPp9L3AOSeJONUOVJaVTVMOE9YMFNSVVM3TUNOOFVQR1pYTi4u&amp;rc59cb41123d3497584d2ca10cb9e1c54=%22Raider%20MathLab%22" target="_blank" rel="noopener">Report a bug or request a feature</a> (Microsoft Form, RJ sign-in)</p>
+</main>
+
+<script>
+/* Jump links scroll without changing the address, so the page-view counter below does not count each jump as a page. */
+document.querySelectorAll('.sh-jump a').forEach(function(a){a.addEventListener('click',function(e){var t=document.getElementById(a.getAttribute('href').slice(1));if(!t)return;e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'});var h=t.querySelector('h3');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}});});
+</script>
+<!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents.
+     Each tool (#id) counts as its own page; anything after = or @ in the address is never sent. -->
+<script>
+window.goatcounter={no_onload:true};
+(function(){var last=null,tries=0;
+function route(){var h=(location.hash||'').slice(1).split(/[=@?&]/)[0].replace(/[^A-Za-z0-9_-]/g,'').slice(0,40);return location.pathname.replace(/index\.html$/,'')+(h?'#'+h:'');}
+function go(){var p=route();if(p===last)return;var g=window.goatcounter;if(!g||typeof g.count!=='function'){if(tries++<40)setTimeout(go,250);return;}last=p;try{g.count({path:p});}catch(e){}}
+window.addEventListener('hashchange',go);if(document.readyState==='complete')go();else window.addEventListener('load',go);})();
+</script>
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
