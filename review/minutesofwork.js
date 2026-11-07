@@ -1,0 +1,40 @@
+BioLab.addReview({
+minutesofwork:{
+ questions:[
+  {id:'matatu',kind:'real',lvl:'bio',
+   q:'A matatu (minibus) ride from central Nairobi to Kasarani costs KSh 100. The Nairobi minimum wage works out to about KSh 80.09 an hour. To the nearest minute, how many minutes of work pay for the ride?',
+   num:{ans:75,tol:1,unit:'min'},
+   steps:['Minutes of work = price ÷ pay per hour × 60.','100 ÷ 80.09 ≈ 1.249 hours.','1.249 × 60 ≈ 74.9, about 75 minutes. In Aurora a $2.75 ride takes 2.75 ÷ 15.16 × 60 ≈ 10.9 minutes.'],
+   lab:{set:{item:'ride',worker:'min',show:true,basket:'none',pick:'nbo'},look:'Read <b>Minutes of work at your pick</b>.'},verify:[['pmin',74.92,0.05]]},
+  {id:'gallon',kind:'test',lvl:'bio',
+   q:'Gasoline in the Denver-Aurora area averaged $4.200 a gallon in September 2026. One gallon is 3.78541 liters. How many minutes of work at Colorado’s $15.16 minimum wage pay for one liter? Round to the nearest hundredth.',
+   num:{ans:4.39,tol:0.02,unit:'min'},
+   steps:['Convert the unit first: 4.200 ÷ 3.78541 ≈ $1.1095 a liter.','Divide by the wage: 1.1095 ÷ 15.16 ≈ 0.07319 hours.','× 60 ≈ 4.39 minutes.'],
+   lab:{set:{item:'gas',worker:'min',show:true,basket:'none',pick:'aur'},look:'Read <b>Minutes of work at your pick</b>.'},verify:[['pmin',4.39,0.01]]},
+  {id:'cancel',kind:'test',lvl:'bio',
+   q:'Why can you compare minutes of work in Tokyo and Memphis without an exchange rate?',
+   choices:['Because the yen and the dollar are worth about the same','Because price and wage are both in yen (or both in dollars), so the currency cancels when you divide','Because minutes of work are always in dollars','You cannot: you must convert to dollars first'],correct:1,
+   steps:['Minutes = (yen) ÷ (yen per hour) × 60 = hours × 60.','The currency unit appears on top and bottom, so it cancels, the same way miles cancel in (miles) ÷ (miles per hour).','What is left is time, which means the same thing in both places.']},
+  {id:'index',kind:'test',lvl:'honors',
+   q:'The breakfast basket (1 kg of the local staple + 12 eggs) takes 27.45 minutes of minimum-wage work in Aurora and 51.49 minutes in Dallas. With Aurora as the base (= 100), what is Dallas’s index? Round to the nearest tenth.',
+   num:{ans:187.6,tol:0.3,unit:''},
+   steps:['Index = 100 × value ÷ base value.','100 × 51.49 ÷ 27.45 ≈ 187.6.','The basket costs fewer dollars in Dallas ($6.22 against $6.93), but Texas’s $7.25 minimum is less than half of Colorado’s $15.16, so it takes almost twice as long to earn.'],
+   lab:{set:{basket:'food',worker:'min',show:true,pick:'dal',base:'aur'},look:'Read <b>Index at your pick</b>.'},verify:[['idx',187.6,0.1]]},
+  {id:'hides',kind:'real',lvl:'honors',
+   q:'In rural Ecuador, a month of 200 kWh of electricity takes 458 minutes of work at the minimum wage but 605 minutes at the typical (mean) wage. What explains this?',
+   choices:['The typical wage there, $2.11 an hour, is below the $2.78 legal minimum, because most rural workers are informal and the minimum binds formal jobs','Electricity costs more for typical workers','The mean is always below the minimum','It is a rounding error'],correct:0,
+   steps:['Minutes = $21.22 ÷ wage × 60. At $2.781: about 458 minutes. At $2.106: about 605 minutes.','A lower wage means more minutes for the same price.','79% of rural workers in Ecuador were informal in December 2023. A table built only on the legal minimum would hide most of them.'],
+   lab:{set:{item:'power',worker:'typ',show:true,basket:'none',pick:'ehi'},look:'Read <b>Minutes of work at your pick</b>, then switch to Minimum wage.'},verify:[['pmin',604.6,0.1]]},
+  {id:'ppp',kind:'test',lvl:'ap',
+   q:'Rent + 200 kWh of power costs ¥82,511 a month in Tokyo and $1,677.27 in Aurora. The market rate is ¥157.47 per dollar. Find the basket PPP (yen per dollar) and Tokyo’s price level with Aurora = 100.',
+   choices:['PPP ≈ 49.2; price level ≈ 31','PPP ≈ 157.5; price level = 100','PPP ≈ 31.2; price level ≈ 49','PPP ≈ 0.020; price level ≈ 3'],correct:0,
+   steps:['PPP = local cost ÷ base cost = 82,511 ÷ 1,677.27 ≈ 49.2 yen per dollar.','Price level = PPP ÷ exchange rate × 100 = 49.2 ÷ 157.47 × 100 ≈ 31.','At market rates this basket is about 69% cheaper in Tokyo. In minutes of minimum-wage work, it is 64.5 hours in Tokyo against 110.6 in Aurora.'],
+   lab:{set:{basket:'home',worker:'min',show:true,pick:'tyo',view:'usd'},look:'Read <b>PPP</b> and <b>Price level</b>.'},verify:[['ppp',49.19,0.01],['plevel',31.24,0.05]]},
+  {id:'whichwage',kind:'real',lvl:'ap',
+   q:'In Nairobi the typical wage in this tool (KSh 365.45 an hour) is the mean pay of formal wage employees, and the minimum is KSh 80.09. By what factor do minutes of work shrink when you switch from the minimum to the typical wage, and why should you be careful with the smaller number?',
+   choices:['About 4.56 times; wage employees hold only about 15% of the jobs counted, so the typical wage describes a minority','About 4.56 times; it describes most workers','About 1.2 times; the wages are close','They do not change, because the price is the same'],correct:0,
+   steps:['Minutes are proportional to 1 ÷ wage, so the factor is 365.45 ÷ 80.09 ≈ 4.56.','A liter of petrol: 170 minutes at the minimum, 170 ÷ 4.56 ≈ 37 minutes at the typical wage.','KNBS counts 3.315 million wage employees out of 21.6 million jobs outside small farms: 3.315 ÷ 21.6 ≈ 15%. The mean also leans toward high earners.'],
+   lab:{set:{item:'gas',worker:'min',show:true,basket:'none',pick:'nbo'},look:'Read <b>Minutes at the minimum ÷ minutes at the typical wage</b>.'},verify:[['wratio',4.563,0.002]]}
+ ]
+}
+});

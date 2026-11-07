@@ -4,7 +4,7 @@ BioLab.COURSES = [
  {id:'alg1',name:'Algebra 1',blurb:'Algebra 1 and Honors Algebra 1, in the order your class covers it. Honors chapter numbers are in each unit’s note.',
   units:[
    {n:'Unit 1',t:'Intro to algebra: expressions and variables',ids:['formulas'],note:'Honors: Chapter 1.'},
-   {n:'Unit 2',t:'Multistep equations and proportions',ids:['scaleit','formulas','livessaved','costofliving','carquote','livingwage','aidoptimizer','rankcolleges','billions'],note:'Honors: Chapter 1.'},
+   {n:'Unit 2',t:'Multistep equations and proportions',ids:['scaleit','formulas','livessaved','costofliving','carquote','livingwage','aidoptimizer','rankcolleges','billions','minutesofwork'],note:'Honors: Chapter 1.'},
    {n:'Unit 3',t:'Functions',ids:['checkout','rideshare','formulas'],note:'Honors: Chapter 3.'},
    {n:'Unit 4',t:'Writing and graphing linear equations',ids:['rideshare'],note:'Honors: Chapters 3 and 4.'},
    {n:'Unit 5',t:'Systems of equations and inequalities',ids:['breakeven','budget','schedule'],note:'Honors: Chapter 2 (inequalities) and Chapter 5 (systems).'},
@@ -110,7 +110,7 @@ BioLab.COURSES = [
  13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
  16:['runpace','battery','camerapan','shortcut','viewcurve'],17:['speedlog','concession','cooling','bottle'],18:['leadpass','sprinkler','caffeinedaily','sincode'],
  19:['stickernet','aidoptimizer','rankcolleges','carquote','valueadded','hotspot','beatbot','schedule','fairscore','onepercent'],
- 20:['kidneyswap','schoolmatch','livessaved','costofliving','livingwage','povertypremium'],
+ 20:['kidneyswap','schoolmatch','livessaved','costofliving','livingwage','povertypremium','minutesofwork'],
  21:['zipscores','wordgap','bookshome','opportunity','makethepros','lifesim']};
 BioLab.setSections({units:{},extra:{1:'Expressions, equations and proportions',2:'Linear functions and systems',3:'Quadratics and polynomials',4:'Exponents, radicals and logarithms',5:'Rational functions',6:'Functions, inverses and transformations',7:'Logic and reasoning',8:'Distance, angles and triangles',12:'Shapes, solids and motion',10:'Circles',9:'Trigonometry and waves',13:'Describing data',14:'Collecting data and probability',15:'Statistical inference',16:'Derivatives: rates of change',17:'Integrals: accumulation',18:'Calculus BC: motion, polar and series',19:'Who’s scoring you? The math deciding your life',20:'Math that works for people',21:'Who gets a head start? Measuring opportunity',11:'Go further'},
  order:[1,2,3,4,5,6,7,8,12,10,9,13,14,15,16,17,18,19,20,21,11],further:11,unitPrefix:''});
