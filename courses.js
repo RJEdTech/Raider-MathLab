@@ -5,7 +5,7 @@ BioLab.COURSES = [
   units:[
    {n:'Unit 1',t:'Intro to algebra: expressions and variables',ids:['formulas'],note:'Honors: Chapter 1.'},
    {n:'Unit 2',t:'Multistep equations and proportions',ids:['scaleit','formulas'],note:'Honors: Chapter 1.'},
-   {n:'Unit 3',t:'Functions',ids:['rideshare','formulas']},
+   {n:'Unit 3',t:'Functions',ids:['checkout','rideshare','formulas'],note:'Honors: Chapter 3.'},
    {n:'Unit 4',t:'Writing and graphing linear equations',ids:['rideshare'],note:'Honors: Chapters 3 and 4.'},
    {n:'Unit 5',t:'Systems of equations and inequalities',ids:['breakeven','budget'],note:'Honors: Chapter 2 (inequalities) and Chapter 5 (systems).'},
    {n:'Unit 6',t:'Polynomials',ids:['areamodel'],note:'Honors: Chapter 7.'},
@@ -27,7 +27,7 @@ BioLab.COURSES = [
  {id:'alg2',name:'Algebra 2',blurb:'Algebra 2 and Honors Algebra 2 / Trigonometry, in the order your class covers it.',
   further:['fontcurves'],
   units:[
-   {n:'Unit 1',t:'Parent functions and transformations',ids:['photofilter']},
+   {n:'Unit 1',t:'Parent functions and transformations',ids:['pondday','photofilter']},
    {n:'Unit 2',t:'Quadratic functions',ids:['dish','ticketprice','freethrow']},
    {n:'Unit 3',t:'Polynomials',ids:['coaster','openbox']},
    {n:'Unit 4',t:'Radicals and rational exponents',ids:['skidmarks']},
@@ -39,7 +39,7 @@ BioLab.COURSES = [
   further:['matrices','windvectors','orbits'],
   units:[
    {n:'Unit 0',t:'Complex numbers',ids:['rotations']},
-   {n:'Unit 1',t:'Function basics: composition and inverses',ids:['cipher','photofilter']},
+   {n:'Unit 1',t:'Function basics: composition and inverses',ids:['checkout','pondday','cipher','photofilter']},
    {n:'Unit 2',t:'Polynomial and rational functions',ids:['coaster','splitcost']},
    {n:'Unit 3',t:'Triangle trigonometry',ids:['triangulate','ramp']},
    {n:'Unit 4',t:'Trigonometry and the unit circle',ids:['daylight']},
@@ -51,7 +51,7 @@ BioLab.COURSES = [
    {n:'Unit 1A',t:'Polynomial functions',ids:['coaster','openbox']},
    {n:'Unit 1B',t:'Rational functions',ids:['splitcost','sharedwork']},
    {n:'Unit 2A',t:'Exponential functions',ids:['creditcard','caffeine','logscale']},
-   {n:'Unit 2B',t:'Logarithmic functions and inverses',ids:['decibels','passwords','cipher']},
+   {n:'Unit 2B',t:'Logarithmic functions and inverses',ids:['decibels','passwords','logscale','cipher']},
    {n:'Unit 3A',t:'Trigonometric functions',ids:['daylight','noisecancel']},
    {n:'Unit 3B',t:'Polar functions and rotations',ids:['rotations']},
    {n:'Unit 4',t:'Functions involving parameters, vectors and matrices',ids:['matrices','windvectors','orbits'],note:'Not on the AP exam.'}
@@ -62,7 +62,7 @@ BioLab.COURSES = [
    {n:'Chapter 1',t:'Analyzing one-variable data',ids:['busroute','babysit'],note:'Probability & Statistics (fall).'},
    {n:'Chapter 2',t:'Modeling one-variable data: percentiles, z-scores and the normal model',ids:['testchoice','hoodies'],note:'Probability & Statistics (fall).'},
    {n:'Chapter 3',t:'Analyzing two-variable data: scatterplots and regression',ids:['lawnjob'],note:'Probability & Statistics (fall).'},
-   {n:'Chapter 5',t:'Probability',ids:['rapidtest'],note:'Probability & Statistics (fall).'},
+   {n:'Chapter 5',t:'Probability',ids:['lunchcount','rapidtest'],note:'Probability & Statistics (fall).'},
    {n:'Chapter 4',t:'Collecting data: sampling and experiments',ids:['survey','warmup'],note:'Inferential Statistics (spring).'},
    {n:'Chapter 6',t:'Random variables: expected value and the binomial',ids:['insurance','rsvp'],note:'Inferential Statistics (spring).'},
    {n:'Chapter 7',t:'Sampling distributions',ids:['slump'],note:'Inferential Statistics (spring).'}
@@ -70,9 +70,9 @@ BioLab.COURSES = [
  {id:'apstats',name:'AP Statistics',blurb:'AP Statistics, by College Board unit.',
   units:[
    {n:'Unit 1',t:'Exploring one-variable data',ids:['busroute','babysit','testchoice','hoodies']},
-   {n:'Unit 2',t:'Exploring two-variable data',ids:['lawnjob']},
+   {n:'Unit 2',t:'Exploring two-variable data',ids:['lunchcount','lawnjob']},
    {n:'Unit 3',t:'Collecting data',ids:['survey','warmup']},
-   {n:'Unit 4',t:'Probability, random variables and probability distributions',ids:['rapidtest','insurance','rsvp']},
+   {n:'Unit 4',t:'Probability, random variables and probability distributions',ids:['lunchcount','rapidtest','insurance','rsvp']},
    {n:'Unit 5',t:'Sampling distributions',ids:['slump']},
    {n:'Unit 6',t:'Inference for categorical data: proportions',ids:['pollmargin']},
    {n:'Unit 7',t:'Inference for quantitative data: means',ids:['fryshort','studymethod']},
@@ -104,10 +104,10 @@ BioLab.COURSES = [
   ]}
 ];BioLab.TOPIC_ORDER = {
  1:['formulas','scaleit'],2:['rideshare','breakeven','budget'],3:['areamodel','freethrow','ticketprice','dish','coaster','openbox'],
- 4:['datasize','skidmarks','creditcard','caffeine','decibels','passwords','logscale'],5:['splitcost','sharedwork'],6:['photofilter','cipher','rotations'],
+ 4:['datasize','skidmarks','creditcard','caffeine','decibels','passwords','logscale'],5:['splitcost','sharedwork'],6:['checkout','pondday','photofilter','cipher','rotations'],
  7:['logic'],8:['screens','parking','truss','shadow','ramp','triangulate'],12:['tiling','packaging','sprites'],10:['gps','tires','shotangle'],
  9:['daylight','noisecancel'],11:['fontcurves','matrices','windvectors','orbits'],
- 13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
+ 13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
  16:['runpace','battery','camerapan','shortcut','viewcurve'],17:['speedlog','concession','cooling','bottle'],18:['leadpass','sprinkler','caffeinedaily','sincode']};
 BioLab.setSections({units:{},extra:{1:'Expressions, equations and proportions',2:'Linear functions and systems',3:'Quadratics and polynomials',4:'Exponents, radicals and logarithms',5:'Rational functions',6:'Functions, inverses and transformations',7:'Logic and reasoning',8:'Distance, angles and triangles',12:'Shapes, solids and motion',10:'Circles',9:'Trigonometry and waves',13:'Describing data',14:'Collecting data and probability',15:'Statistical inference',16:'Derivatives: rates of change',17:'Integrals: accumulation',18:'Calculus BC: motion, polar and series',11:'Go further'},
  order:[1,2,3,4,5,6,7,8,12,10,9,13,14,15,16,17,18,11],further:11,unitPrefix:''});
