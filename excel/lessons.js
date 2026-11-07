@@ -434,7 +434,7 @@
       { kind: 'card', say: 'Now open it in real Excel. Pick the Excel you will use, then follow each picture.', next: 'I turned it in',
         render: function (box, ctx) { XL.openCard(box, { file: ctx.data.downloaded || 'monthly-budget.xlsx' }); } },
       { kind: 'done', say: '<b>Your work is in real Excel.</b> Last lesson: the two kinds of Excel, and when to use which.',
-        learned: ['<b>Download as Excel file</b> saves an .xlsx file with your formulas.', 'Excel for the web: excel.office.com, signed in with your RJ account.', 'The desktop app: open the file, then click <b>Enable Editing</b>.', 'Turn it in: attach the .xlsx file to the Canvas assignment.'] }
+        learned: ['<b>Download as Excel file</b> saves an .xlsx file with your formulas.', 'Excel for the web: excel.cloud.microsoft, signed in with your RJ account.', 'The desktop app: open the file. If a yellow Protected View bar shows, click <b>Enable Editing</b>.', 'Turn it in: attach the .xlsx file to the Canvas assignment.'] }
     ]
   });
 
@@ -447,7 +447,7 @@
       { kind: 'card', say: 'Read the card, then answer three quick questions.', next: 'Next: 3 questions', render: function (box) { XL.twoExcelsCard(box); } },
       { kind: 'choice', say: '<b>Question 1 of 3.</b> You need a t-Test from the Data Analysis button. Which Excel?',
         choices: [
-          { t: 'Excel for the web', why: 'Not this time. The Data Analysis button is only in the desktop app. In Excel for the web, choose Editing &gt; Open in Desktop App and keep going in the same file.' },
+          { t: 'Excel for the web', why: 'Not this time. The Data Analysis button is only in the desktop app. In Excel for the web, choose Editing &gt; Open in Desktop and keep going in the same file.' },
           { t: 'The desktop app', ok: true, why: 'Right. The Data Analysis button, with Regression, t-Test and Histogram, is only in the desktop app.' },
           { t: 'Either one', why: 'The Data Analysis button is only in the desktop app.' }
         ] },
@@ -463,7 +463,7 @@
           { t: 'No, only in the desktop app', why: 'It works in both. Excel for the web supports most formulas, including STDEV.S.' }
         ] },
       { kind: 'done', say: '<b>You finished Spreadsheet basics.</b> Now build a real model: try Build it.',
-        learned: ['Same .xlsx file and same formulas in both.', 'Excel for the web: any device, saves itself to OneDrive, edit with a partner at once. Needs internet.', 'The desktop app: the Data Analysis button, Power Pivot, macros, more chart options, very big files, no internet needed.', 'Button missing? Choose <b>Editing &gt; Open in Desktop App</b>.'] }
+        learned: ['Same .xlsx file and same formulas in both.', 'Excel for the web: any device, saves itself to OneDrive, edit with a partner at once. Needs internet.', 'The desktop app: the Data Analysis button, Power Pivot, macros, more chart options, very big files, no internet needed.', 'Button missing? Choose <b>Editing &gt; Open in Desktop</b>.'] }
     ]
   });
 })();

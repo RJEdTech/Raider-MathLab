@@ -53,15 +53,15 @@
       'Screenshot: Edge or Chrome on an RJ laptop, downloads panel open, showing the .xlsx file');
   };
   F.signin = function () {
-    return fig(browser('excel.office.com',
+    return fig(browser('excel.cloud.microsoft',
       tile(20, 46, 52, 30) + t(84, 66, 'Sign in to use Excel', 'f-t f-b') +
       r(84, 84, 200, 26, 'f-field', 5) + t(94, 101, 'Your RJ email', 'f-t f-sm f-mut') + hl(84, 84, 200, 26, 1) +
       btn(204, 124, 80, 'Next', 'f-btn-p') + hl(204, 124, 80, 24, 2)),
-      'The Excel for the web sign-in page at excel.office.com. The email box is outlined and marked 1 (type your RJ email), and the Next button is marked 2.',
+      'The Microsoft sign-in page for Excel for the web. The email box is outlined and marked 1 (type your RJ email), and the Next button is marked 2.',
       'Screenshot: excel.office.com sign-in page as a student sees it');
   };
   F.upload = function (file) {
-    return fig(browser('excel.office.com',
+    return fig(browser('excel.cloud.microsoft',
       tile(14, 40, 42, 24) + t(64, 57, 'Excel', 'f-t f-b') +
       r(14, 76, 70, 50, 'f-panel', 5) + t(49, 140, 'Blank workbook', 'f-t f-xs', 'middle') +
       btn(232, 40, 74, 'Upload') + hl(232, 40, 74, 24, 1) +
@@ -72,7 +72,7 @@
   };
   F.webOpen = function (file) {
     var name = file.replace(/\.xlsx$/, '');
-    return fig(browser('excel.office.com',
+    return fig(browser('excel.cloud.microsoft',
       r(1, 32, W - 2, 22, 'f-xlbar', 0) + t(12, 47, 'Excel', 'f-t f-tw f-b') + t(64, 47, name + ' · Saved', 'f-t f-tw f-sm') + hl(62, 35, 132, 16, 1) +
       ribbon(54, ['File', 'Home', 'Insert', 'Formulas', 'Data']) +
       r(1, 76, W - 2, 18, 'f-panel', 0) + t(10, 89, 'fx', 'f-t f-sm f-mut') + t(30, 89, '=SUM(B4:B8)', 'f-t f-sm f-mono') +
@@ -81,7 +81,7 @@
       'Screenshot: the downloaded budget open in Excel for the web, showing the Saved status next to the file name');
   };
   F.webCopy = function () {
-    return fig(browser('excel.office.com',
+    return fig(browser('excel.cloud.microsoft',
       r(1, 32, 130, 162, 'f-panel', 0) + t(14, 52, 'File', 'f-t f-b') +
       t(14, 78, 'New', 'f-t f-sm') + t(14, 100, 'Open', 'f-t f-sm') + t(14, 122, 'Save As', 'f-t f-sm f-b') + hl(10, 110, 112, 18, 1) +
       r(140, 108, 160, 34, 'f-win', 5) + t(152, 129, 'Download a Copy', 'f-t f-sm') + hl(146, 112, 148, 26, 2)),
@@ -122,13 +122,13 @@
       'Screenshot: Windows Start search on an RJ student laptop, typing Excel, with the Excel app as the best match');
   };
   F.openDesktop = function () {
-    return fig(browser('excel.office.com',
+    return fig(browser('excel.cloud.microsoft',
       r(1, 32, W - 2, 22, 'f-xlbar', 0) + t(12, 47, 'Excel', 'f-t f-tw f-b') + t(64, 47, 'lab data · Saved', 'f-t f-tw f-sm') +
       ribbon(54, ['File', 'Home', 'Insert', 'Data']) + btn(232, 56, 74, 'Editing ▾') + hl(232, 56, 74, 18, 1) +
-      r(150, 82, 160, 64, 'f-win', 5) + t(162, 102, 'Editing', 'f-t f-sm') + t(162, 120, 'Viewing', 'f-t f-sm f-mut') + t(162, 138, 'Open in Desktop App', 'f-t f-sm f-b') + hl(156, 126, 148, 18, 2) +
+      r(150, 82, 160, 64, 'f-win', 5) + t(162, 102, 'Editing', 'f-t f-sm') + t(162, 120, 'Viewing', 'f-t f-sm f-mut') + t(162, 138, 'Open in Desktop', 'f-t f-sm f-b') + hl(156, 126, 148, 18, 2) +
       grid(10, 84, 2, 4, 60, 22)),
-      'Excel for the web. The Editing button at the right of the ribbon is outlined and marked 1. Its menu shows Open in Desktop App, marked 2.',
-      'Screenshot: Excel for the web, Editing menu open, showing Open in Desktop App');
+      'Excel for the web. The Editing button at the right of the ribbon is outlined and marked 1. Its menu shows Open in Desktop, marked 2.',
+      'Screenshot: Excel for the web, Editing menu open, showing Open in Desktop');
   };
   F.canvasStart = function () {
     return fig(browser('canvas: your course',
@@ -153,6 +153,22 @@
   function step(n, title, html, figure) {
     return '<li class="xl-ostep"><div class="xl-otext"><p class="xl-on">' + (typeof n === 'number' || /^\d/.test(n) ? 'Step ' + n : n) + '</p><h4>' + title + '</h4><p>' + html + '</p></div>' + figure + '</li>';
   }
+  /* Real screenshots, taken Nov 6, 2026 on an RJ laptop and RJ accounts (cropped; no names shown). */
+  F.shot = function (src, alt) { return '<figure class="xl-fig xl-shot"><img src="excel/img/' + src + '" alt="' + esc(alt) + '" loading="lazy" decoding="async"></figure>'; };
+  F.downloads = function () { return F.shot('edge-download-arrow.jpg', 'The Microsoft Edge toolbar. The download arrow is outlined and marked 1.'); };
+  F.folder = function () { return F.shot('explorer-downloads.jpg', 'File Explorer showing the Downloads folder. The file monthly-budget is outlined and marked 1.'); };
+  F.upload = function () { return F.shot('web-upload.jpg', 'Excel for the web start page. The Upload a file button is outlined and marked 1.'); };
+  F.webOpen = function () { return F.shot('web-saved.jpg', 'The budget open in Excel for the web. The cloud icon with a check mark, next to the file name, is outlined and marked 1.'); };
+  F.webCopy = function () { return F.shot('web-download-copy.jpg', 'The File menu in Excel for the web. Create a Copy is marked 1 and Download a Copy is marked 2.'); };
+  F.save = function () { return F.shot('desktop-autosave.jpg', 'The top left of desktop Excel. The AutoSave switch, set to On, is marked 1, and the Save button is marked 2.'); };
+  F.findExcel = function () { return F.shot('start-search.jpg', 'The Windows Start button, marked 1, and the Start search box, marked 2.'); };
+  F.openDesktop = function () { return F.shot('web-open-desktop.jpg', 'Excel for the web. The More options button is marked 1, Editing is marked 2, and Open in Desktop is marked 3.'); };
+  F.canvasStart = function () { return F.shot('canvas-choose-upload.jpg', 'A Canvas assignment, student view. Under Choose a submission type, the Upload button is outlined and marked 1.'); };
+  F.canvasUpload = function (file, mark) {
+    return mark === 'upload'
+      ? F.shot('canvas-choose-file.jpg', 'The Canvas upload box. The link Choose a file to upload is outlined and marked 1.')
+      : F.shot('canvas-submit.jpg', 'Canvas with monthly-budget.xlsx attached, marked 1, and the Submit Assignment button, marked 2.');
+  };
   /* tabs with arrow-key support */
   function tabs(box, names) {
     var list = box.querySelector('[role=tablist]'), btns = list.querySelectorAll('[role=tab]'), panels = box.querySelectorAll('[role=tabpanel]');
@@ -179,27 +195,27 @@
     o = o || {}; var file = o.file || 'your-file.xlsx', id = 'xo' + (++uid);
     box.innerHTML = '<div class="xl-open">' +
       '<h3>Open it in Excel</h3>' +
-      '<ol class="xl-osteps">' + step(1, 'Find the file', 'Your browser saved <b>' + esc(file) + '</b> in your <b>Downloads</b> folder. Most browsers also list it under the download arrow at the top right of the window.', F.downloads(file)) + '</ol>' +
+      '<ol class="xl-osteps">' + step(1, 'Find the file', 'Your browser saved <b>' + esc(file) + '</b> in your <b>Downloads</b> folder. In Edge, click the <b>download arrow</b> at the top right to see your recent downloads.', F.downloads(file)) + '</ol>' +
       '<p class="xl-which">Step 2: open it. Pick the Excel you will use:</p>' +
       '<div class="xl-tabs" role="tablist" aria-label="Which Excel">' +
       '<button type="button" role="tab" id="' + id + '-tw" aria-controls="' + id + '-pw">Excel for the web</button>' +
       '<button type="button" role="tab" id="' + id + '-td" aria-controls="' + id + '-pd">Excel desktop app</button></div>' +
       '<div role="tabpanel" id="' + id + '-pw" aria-labelledby="' + id + '-tw" class="xl-panel"><ol class="xl-osteps">' +
-      step('2a', 'Sign in', 'Go to <b>excel.office.com</b> and sign in with your <b>RJ account</b>. It works on any computer with a browser: nothing to install.', F.signin()) +
-      step('2b', 'Upload the file', 'Choose <b>Upload</b>, then pick <b>' + esc(file) + '</b> from your Downloads folder. No Upload button? Go to OneDrive (onedrive.com, same RJ sign-in), choose <b>Add new &gt; Files upload</b>, pick the file, then click its name to open it in Excel for the web.', F.upload(file)) +
-      step('2c', 'It saves itself', 'Your sheet opens in the browser with all your formulas. Excel for the web saves to your OneDrive as you go, so there is no Save button to press.', F.webOpen(file)) +
+      step('2a', 'Sign in', 'Go to <b>excel.cloud.microsoft</b> (typing excel.office.com takes you there too) and sign in with your <b>RJ account</b> if it asks. It works on any computer with a browser: nothing to install.', F.signin()) +
+      step('2b', 'Upload the file', 'Choose <b>Upload a file</b>, then pick <b>' + esc(file) + '</b> from your Downloads folder. It opens in Excel for the web.', F.upload(file)) +
+      step('2c', 'It saves itself', 'Your sheet opens in the browser with all your formulas. The little cloud with a check mark next to the file name means it is saved to your OneDrive. There is no Save button to press.', F.webOpen(file)) +
       '</ol></div>' +
       '<div role="tabpanel" id="' + id + '-pd" aria-labelledby="' + id + '-td" class="xl-panel" hidden><ol class="xl-osteps">' +
-      step('2a', 'Open the file', 'Open your <b>Downloads</b> folder and double-click <b>' + esc(file) + '</b>. It opens in the Excel desktop app.', F.folder(file)) +
-      step('2b', 'Click Enable Editing', 'See a yellow bar that says <b>Protected View</b>? Excel opens files that came from the internet as read-only at first, to keep you safe. You made this file, so click <b>Enable Editing</b>.', F.protected(file)) +
-      step('2c', 'Save it', 'Press <b>Ctrl+S</b> to save (on a Mac, <b>Cmd+S</b>). To keep it somewhere safe, choose <b>File &gt; Save As</b> and pick your OneDrive.', F.save()) +
+      step('2a', 'Open the file', 'Open your <b>Downloads</b> folder and double-click <b>' + esc(file) + '</b>. (Windows may hide the .xlsx ending, so look for the name with the green Excel icon.) It opens in the Excel desktop app.', F.folder(file)) +
+      step('2b', 'If you see a yellow bar', 'See a yellow bar that says <b>Protected View</b>? Excel opens some files from the internet as read-only at first, to keep you safe. You made this file, so click <b>Enable Editing</b>. No yellow bar? Skip this step.', F.protected(file)) +
+      step('2c', 'Save it', 'Look at the top left. If <b>AutoSave</b> is <b>On</b>, Excel is already saving your work to OneDrive. If it is Off, press <b>Ctrl+S</b> (on a Mac, <b>Cmd+S</b>) and pick your OneDrive.', F.save()) +
       step('If you need it', 'Can’t find the desktop app?', 'Excel is already installed on your RJ laptop. Click <b>Start</b> (or press the <b>Windows key</b>), type <b>Excel</b>, and open the app. If it asks you to sign in, use your <b>RJ account</b>. Still stuck? Use Excel for the web for now (everything in these lessons works there) and ask your teacher or RJ tech support.', F.findExcel()) +
       '</ol></div>' +
       '<h3 class="xl-canvas-h">Turn it in on Canvas</h3>' +
       '<ol class="xl-osteps">' +
-      step(3, 'Start the assignment', 'Open the assignment in Canvas and press <b>Start Assignment</b>.', F.canvasStart()) +
-      step(4, 'Attach your file', 'Choose <b>File Upload</b>, press <b>Upload File</b>, and pick your saved .xlsx file. Used Excel for the web? Canvas needs the file itself: in Excel, choose <b>File &gt; Save As &gt; Download a Copy</b> (some versions say <b>File &gt; Create a Copy &gt; Download a Copy</b>), then upload that copy.', F.canvasUpload(file, 'upload')) +
-      step(5, 'Submit', 'Press <b>Submit Assignment</b>. Done.', F.canvasUpload(file, 'submit')) +
+      step(3, 'Choose Upload', 'Open the assignment in Canvas. Under <b>Choose a submission type</b>, click <b>Upload</b>.', F.canvasStart()) +
+      step(4, 'Attach your file', 'Click <b>Choose a file to upload</b> (or drag your file into the box) and pick your saved .xlsx file. Used Excel for the web? Canvas needs the file itself: in Excel for the web, choose <b>File &gt; Create a Copy &gt; Download a Copy</b>, then upload that copy.', F.canvasUpload(file, 'upload')) +
+      step(5, 'Submit', 'Check that your file is listed with a green check, then press <b>Submit Assignment</b>. Done.', F.canvasUpload(file, 'submit')) +
       '</ol>' +
       '<details class="xl-webcopy"><summary>Picture: Download a Copy in Excel for the web</summary>' + F.webCopy() + '</details>' +
       '</div>';
@@ -211,7 +227,7 @@
     box.innerHTML = '<div class="xl-two">' +
       '<h3>Two Excels. Same file. Pick the right one.</h3>' +
       '<div class="xl-two-cols">' +
-      '<section class="xl-two-c"><h4>Excel for the web</h4><p class="xl-two-sub">excel.office.com, signed in with your RJ account</p><ul>' +
+      '<section class="xl-two-c"><h4>Excel for the web</h4><p class="xl-two-sub">excel.cloud.microsoft, signed in with your RJ account</p><ul>' +
       '<li>Works on any computer with a browser. Nothing to install.</li>' +
       '<li>Saves itself to your OneDrive as you go.</li>' +
       '<li>Your lab partner can work in the same file at the same time.</li>' +
@@ -223,7 +239,7 @@
       '<li>Handles very big files.</li></ul></section>' +
       '</div>' +
       '<p class="xl-two-same"><b>The same in both:</b> the same .xlsx file and the same formulas. Everything in Spreadsheet basics and Build it works in either one. (Macros: the desktop app runs VBA macros; the web version uses Office Scripts instead.)</p>' +
-      '<div class="xl-rule"><p><b>Rule of thumb:</b> start in either one. If a button you need is missing, you’re probably in the web version: choose <b>Editing &gt; Open in Desktop App</b> and keep going in the same file.</p>' + F.openDesktop() + '</div>' +
+      '<div class="xl-rule"><p><b>Rule of thumb:</b> start in either one. If a button you need is missing, you’re probably in the web version: choose <b>Editing &gt; Open in Desktop</b> (in a narrow window, click <b>…</b> first) and keep going in the same file.</p>' + F.openDesktop() + '</div>' +
       '</div>';
   };
 })();

@@ -230,3 +230,7 @@ body.xl-inlesson .rj-masthead{margin-bottom:22px!important}
   .xl-cursor,.xl-cap,.xl-call{transition:none}
   .xl-cursor.xl-clk::before{animation:none;display:none}
 }
+
+/* real screenshots */
+.xl-shot{display:flex;align-items:center;justify-content:center}
+.xl-shot img{display:block;max-width:100%;height:auto;border:1px solid var(--line,#ccc);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
