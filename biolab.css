@@ -506,3 +506,8 @@ html.embed .u-back,html.embed .pb-back+.none{display:none!important}
 /* a choice of rules or answers reads best as a stacked list of buttons */
 .gs-ctl .seg,.controls .seg.stack{display:flex;flex-direction:column;align-items:stretch}
 .gs-ctl .seg button{text-align:left;white-space:normal;line-height:1.35;padding:7px 10px}
+
+.xl-entry{display:block;margin:14px 0 4px;padding:12px 16px;border:1px solid var(--line);border-left:4px solid var(--rj);border-radius:10px;background:var(--card);color:var(--fg);text-decoration:none;max-width:72ch}
+.xl-entry:hover{border-color:var(--rj)}
+.xl-entry-k{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rj-ink)}
+.xl-entry-d{display:block;color:var(--muted);font-size:14px;margin-top:2px}

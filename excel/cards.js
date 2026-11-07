@@ -185,7 +185,7 @@
       '<button type="button" role="tab" id="' + id + '-td" aria-controls="' + id + '-pd">Excel desktop app</button></div>' +
       '<div role="tabpanel" id="' + id + '-pw" aria-labelledby="' + id + '-tw" class="xl-panel"><ol class="xl-osteps">' +
       step('2a', 'Sign in', 'Go to <b>excel.office.com</b> and sign in with your <b>RJ account</b>. It works on any computer with a browser: nothing to install.', F.signin()) +
-      step('2b', 'Upload the file', 'Choose <b>Upload</b>, then pick <b>' + esc(file) + '</b> from your Downloads folder. (If the file is already in your OneDrive, open it from there instead.)', F.upload(file)) +
+      step('2b', 'Upload the file', 'Choose <b>Upload</b>, then pick <b>' + esc(file) + '</b> from your Downloads folder. No Upload button? Go to OneDrive (onedrive.com, same RJ sign-in), choose <b>Add new &gt; Files upload</b>, pick the file, then click its name to open it in Excel for the web.', F.upload(file)) +
       step('2c', 'It saves itself', 'Your sheet opens in the browser with all your formulas. Excel for the web saves to your OneDrive as you go, so there is no Save button to press.', F.webOpen(file)) +
       '</ol></div>' +
       '<div role="tabpanel" id="' + id + '-pd" aria-labelledby="' + id + '-td" class="xl-panel" hidden><ol class="xl-osteps">' +
