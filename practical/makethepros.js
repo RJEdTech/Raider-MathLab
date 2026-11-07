@@ -7,6 +7,6 @@ makethepros:{
   'Recruiting decisions: the NCAA publishes these probabilities for each sport every year so players and families can see the real odds. For 2024-25: 3.6% of high school men’s basketball players, 5.9% of men’s soccer players and 8.1% of football players went on to NCAA teams.',
   'Public health statistics: the CDC reports births, deaths and disease by county as rates per 100,000 people, so a county of 20,000 and a county of 2 million can be compared fairly. Stephens-Davidowitz started from that same CDC birth data.'
  ],
- takeaway:'Long odds come from multiplying shares, and the stories we hear are the survivors, not the base rate. Talent and work matter; so do the reps money buys. Opportunity is unequal, and you can measure it. If you got a head start, that is a gift to be grateful for, and to share.'
+ takeaway:'Long odds come from multiplying shares: 3.6% × 1.0% ≈ 3.6 per 10,000. Families earning $100,000+ spend $1,591 a year on a main sport; those under $50,000 spend $604. At $25 an hour, that is about 39 more coached hours. Who on your team gets them?'
 }
 });

@@ -59,6 +59,11 @@ const waitList=st=>[...Array(N).keys()].filter(j=>!inPlan(st,j));
 const nm=j=>'Pair '+(j+1);
 const listNames=a=>a.length===0?'none':a.length===1?nm(a[0]):a.length===2?nm(a[0])+' and '+nm(a[1]):a.slice(0,-1).map(nm).join(', ')+' and '+nm(a[a.length-1]);
 const pl=(n,w)=>n+' '+w+(n===1?'':'s');
+/* While the student counts the possible swaps ("Your turn"), the dashed swap lines and the loop count stay hidden. */
+const pend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const swaps=sim=>cycles(M(sim).E,2);
+const giveList=sim=>{const E=M(sim).E;return E.map((e,j)=>`Pair ${j+1} → ${e.length?e.map(i=>i+1).join(', '):'nobody'}`).join('<br>');};
+const plansChecked=sim=>{const m=M(sim);return countPlans(m.E,m.L);};
 function clearGut(sim){if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
 function newRules(sim){if(sim.st){sim.st.key=null;S(sim);}clearGut(sim);}
 function setPlan(sim,B){const st=S(sim);st.loops=B.loops.map(c=>c.slice());st.chain=B.chain?B.chain.slice():null;st.path=[];st.building=false;st.msg='';}
@@ -108,9 +113,10 @@ function hit(sim,x,y,k){const d=dims(k);for(let j=0;j<N;j++){const p=pos(j);if(M
 
 const SIM={
  id:'kidneyswap',hash:'kidneyswap',apUnit:20,order:1,tab:'Kidney swap',kind:'Simulation',
+ skills:{bio:'Counting cases and an exhaustive search: list every plan, keep the best · Geometry (Unit 2, Logic and reasoning)',honors:'Directed graphs, cycles and exhaustive search · Geometry (Unit 2, Logic and reasoning)',ap:'Paths, cycles and an exhaustive search over a graph · Geometry (Unit 2, Logic and reasoning)'},
  card:'Arrange kidney swaps between patients whose own donors can’t give to them, then let an exhaustive search find the plan that helps the most people.',
  title:'Kidney swap: getting the most patients a kidney',
- lede:{bio:'Each pair is a patient who needs a kidney and a family member or friend who wants to give one, but can’t give to their own patient. Swap donors between pairs and more people get a kidney. Unlike the hidden scores in “Who’s scoring you?”, the rules here are public and the goal is the real one: transplants.',
+ lede:{bio:'Each pair is a patient who needs a kidney and a family member or friend who wants to give one, but can’t give to their own patient. Swap donors between pairs and more people get a kidney.',
   honors:'Draw each pair as a point and draw an arrow from pair i to pair j when i’s donor can give to j’s patient. A swap is a cycle in this directed graph. Allowing 3-way cycles, not just 2-way swaps, can reach patients no 2-way swap can.',
   ap:'An altruistic donor gives to a stranger and asks nothing back, so her gift starts a chain: a path in the graph, not a cycle. The math searches every chain and every packing of cycles that share no pair, and keeps the one with the most transplants.'},
  scale:'One hospital exchange with 8 patient-donor pairs. Blood type (ABO) decides who can give to whom; at Deep dive, a crossmatch check adds antibodies. Labels are generic: no real patients.',
@@ -135,7 +141,7 @@ const SIM={
  metrics:[
   {id:'tx',label:'Patients who get a kidney',unit:'of 8',d:0,min:0,max:8,get:sim=>helped(S(sim))},
   {id:'wait',label:'Patients still waiting',unit:'',d:0,min:0,max:8,get:sim=>N-helped(S(sim))},
-  {id:'opts',label:'Possible loops with these rules',unit:'',d:0,lvl:'honors',min:0,max:null,get:sim=>M(sim).nLoops},
+  {id:'opts',label:'Possible loops with these rules',unit:'',d:0,lvl:'honors',min:0,max:null,get:sim=>pend(sim)?null:M(sim).nLoops},
   {id:'surg',label:'Most operations at the same time',unit:'',d:0,lvl:'honors',min:0,max:8,get:sim=>surgeries(S(sim))}
  ],
  graphs:[{id:'cmp',label:'Most patients helped, by rule',custom:true}],defaultGraph:'cmp',
@@ -150,7 +156,7 @@ const SIM={
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   const tour=sim.tour&&sim.tour.on;
   /* faint lines: every possible loop among free pairs (2-way only, to keep the picture readable) */
-  if(!st.path.length&&!st.building){ctx.globalAlpha=.4;cycles(E,2).forEach(c=>{if(c.some(x=>inPlan(st,x)))return;const a=pos(c[0]),b=pos(c[1]);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);});ctx.globalAlpha=1;}
+  if(!st.path.length&&!st.building&&!pend(sim)){ctx.globalAlpha=.4;cycles(E,2).forEach(c=>{if(c.some(x=>inPlan(st,x)))return;const a=pos(c[0]),b=pos(c[1]);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);});ctx.globalAlpha=1;}
   /* candidates from the pair (or donor) being built from */
   const from=st.building?(st.chain&&st.chain.length?st.chain[st.chain.length-1]:-1):(st.path.length?st.path[st.path.length-1]:null);
   const cand=from===null?[]:(from===-1?[...Array(N).keys()].filter(j=>altCan(m.alt,P,j)):E[from]).filter(j=>!inPlan(st,j)&&!st.path.includes(j)||(st.path.length>1&&j===st.path[0]));
@@ -179,7 +185,7 @@ const SIM={
   /* header (bottom left) and key (top corners) */
   const G=sim.gutS,n=helped(st);sim._k=k;
   txt(ctx,`${n} of 8 patients get a kidney`,14,440,{s:15*Math.min(k,1.25),w:800,c:PAL['cv-ink']});
-  if(G&&G.g&&G.m&&!tour)txt(ctx,`Your gut plan: ${G.g.v}   Best: ${G.m.v}`,14,440-22*Math.min(k,1.25),{s:12*k,w:700,c:PAL['cv-soft']});
+  if(G&&G.g&&G.m&&!tour)txt(ctx,`Your gut plan: ${G.g.v}   Best: ${G.m.v}   Plans checked: ${plansChecked(sim).toLocaleString('en-US')}${m.alt!=='none'?' per chain':''}`,14,440-22*Math.min(k,1.25),{s:12*k,w:700,c:PAL['cv-soft']});
   const ky=20*Math.min(k,1.3);
   txt(ctx,'Ring = patient’s type',14,ky,{s:12*k,c:PAL['cv-soft']});
   txt(ctx,'Dot = donor’s type',14,ky+16*k,{s:12*k,c:PAL['cv-soft']});
@@ -198,15 +204,25 @@ const SIM={
   ask:{bio:'Make the swaps yourself. <b>Click a pair</b> in the picture (or choose it from the list here), then click the pair that gets its donor’s kidney. If the two can trade, the swap is made. Click a pair again to undo its swap. Help as many patients as you can, then lock in your plan.'},
   lock(sim){const st=S(sim),v=helped(st);return {v,full:!canAddLoop(sim),loops:st.loops.map(c=>c.slice()),chain:st.chain?st.chain.slice():null,wait:waitList(st),label:`${v} of 8 patients get a kidney`};},
   solve(sim){const B=M(sim).best;setPlan(sim,B);const st=S(sim);return {v:B.v,wait:waitList(st),label:`${B.v} of 8 patients get a kidney`};},
+  hint:{bio:'Lock in your plan. Then you will count the possible swaps yourself, the first step of the search.'},
+  calc:{unit:'swaps',d:0,tol:0,
+   prompt:sim=>`The search starts by listing every possible 2-way swap. Where each donor’s kidney can go:<br>${giveList(sim)}<br>Two pairs can swap only if each donor can give to the other’s patient, so check both directions. With 8 pairs there are 8 × 7 ÷ 2 = 28 pairs of pairs to check. How many 2-way swaps are possible?`,
+   answer:sim=>swaps(sim).length,
+   hint:'Take each pair of pairs, like 2 and 4: is 4 in Pair 2’s list, and 2 in Pair 4’s list? Count the ones where both are true.',
+   steps(sim){const C=swaps(sim),by=[];for(let i=0;i<N;i++){const w=C.filter(c=>c[0]===i);if(w.length)by.push(`Pair ${i+1}: ${w.map(c=>`${c[0]+1} ⇄ ${c[1]+1}`).join(', ')}`);}
+    return [`There are 8 × 7 ÷ 2 = 28 pairs of pairs. Each counts only if the arrows go both ways.`,`The ones that work, by the lower pair number: ${by.length?by.join('; '):'none'}.`,`In all, <b>${C.length}</b> possible swap${C.length===1?'':'s'}. A plan is a set of these that share no pair.`];}},
+  formula(sim){const m=M(sim),B=m.best,n=plansChecked(sim),parts=B.loops.map(c=>c.map(x=>x+1).join(c.length===2?' ⇄ ':' → ')+(c.length>2?' → '+(c[0]+1):''));if(B.chain)parts.push('donor → '+B.chain.map(x=>x+1).join(' → '));
+   return `Possible ${m.L===2?'2-way swaps':'loops (2- and 3-way)'}: ${m.nLoops}. Plans checked: ${n.toLocaleString('en-US')} sets of loops that share no pair${m.alt!=='none'?', for every chain the donor could start':''}.<br>Best = the plan with the most transplants = ${B.v} of 8${parts.length?': '+parts.join(', '):''}.`;},
   how:{bio:'The math lists every set of swaps that don’t share a pair, counts the transplants in each one, and keeps the biggest. With 8 pairs there are few enough sets for a computer to check them all in a blink. That is an exhaustive search: it can’t miss the best plan.',
    honors:'The math lists every 2-way and 3-way cycle in the directed graph, then checks every way to pack cycles that share no pair, and keeps the packing with the most transplants.',
    ap:'The math tries every chain the altruistic donor could start (every path out of her node), and for each one finds the best packing of cycles among the pairs left. It keeps the overall best: an exhaustive search over a small graph.'},
-  compare(sim,g,m){const gain=m.v-g.v;
-   if(gain<=0)return `Your gut was right on: your plan gets <b>${g.v} of 8 patients</b> a kidney, and the search proves no plan does better with these rules. ${g.wait.length?`${listNames(g.wait)} still can’t be helped by any plan here.`:'Every patient is helped.'}`;
-   return `The best plan gets <b>${pl(gain,'more patient')} a kidney</b>: ${g.v} → ${m.v} of 8. ${gain===1?'That is one more person who gets':'Those are '+gain+' more people who get'} a transplant this month instead of still waiting. Your plan left ${listNames(g.wait)} waiting; the best plan leaves ${m.wait.length?listNames(m.wait):'nobody'} waiting. ${g.full?'No more loops fit in your plan, yet a different arrangement helps more: a swap that works can still block others.':'Your plan still had room for more loops among the waiting pairs.'}`;},
+  compare(sim,g,m){const gain=m.v-g.v,pc=` The search checked ${plansChecked(sim).toLocaleString('en-US')} plans${M(sim).alt!=='none'?' for each chain':''}.`;
+   if(gain<=0)return `Your gut was right on: your plan gets <b>${g.v} of 8 patients</b> a kidney, and the search proves no plan does better with these rules. ${g.wait.length?`${listNames(g.wait)} still can’t be helped by any plan here.`:'Every patient is helped.'}`+pc;
+   return `The best plan gets <b>${pl(gain,'more patient')} a kidney</b>: ${g.v} → ${m.v} of 8. ${gain===1?'That is one more person who gets':'Those are '+gain+' more people who get'} a transplant this month instead of still waiting. Your plan left ${listNames(g.wait)} waiting; the best plan leaves ${m.wait.length?listNames(m.wait):'nobody'} waiting. ${g.full?'No more loops fit in your plan, yet a different arrangement helps more: a swap that works can still block others.':'Your plan still had room for more loops among the waiting pairs.'}`+pc;},
   again(sim){sim.p.seed=1+Math.floor(Math.random()*99);newRules(sim);}
  },
  challenges:[
+  {lvl:'bio',kind:'num',q:'A new exchange with 5 pairs. Where each donor’s kidney can go: Pair 1 → 2, 3; Pair 2 → 1, 4; Pair 3 → 4; Pair 4 → 2, 3; Pair 5 → 1. How many 2-way swaps are possible?',answer:3,tol:0,unit:'swaps',hint:'A swap needs arrows both ways. Check each pair of pairs: is each one in the other’s list?',explain:'1 ⇄ 2 works (1 → 2 and 2 → 1). 2 ⇄ 4 works, and 3 ⇄ 4 works. 1 ⇄ 3 fails (3 cannot give to 1), and Pair 5 can give to 1 but nobody gives to 5. That is 3 swaps out of 5 × 4 ÷ 2 = 10 pairs of pairs.'},
   {lvl:'bio',instant:true,q:'Pair 1’s donor has type O blood. Why is an O donor so valuable in an exchange?',choices:['Type O blood can be given to a patient of any type','Type O is the rarest blood type','Type O patients can receive from anyone'],correct:0,explain:'An O donor can give to O, A, B and AB patients. In this set, Pair 1’s O donor could give to any of the other 7 patients, so where you spend that kidney matters.'},
   {lvl:'bio',instant:true,q:'Pair 6’s patient has type O blood. Which donors could give her a kidney?',choices:['Only type O donors','Any donor except type AB','Any donor at all'],correct:0,explain:'A type O patient can receive only from a type O donor. Here that means Pair 1’s or Pair 5’s donor. Type O patients are the hardest to match in an exchange.'},
   {lvl:'bio',instant:true,q:'You swap Pair 1 with Pair 2 first, because it works. With 2-way swaps only, what is the most patients you can now help?',choices:['6, the same as the best plan','4','2'],correct:1,explain:'After 1 ⇄ 2, the only swap left among the other pairs is 5 ⇄ 6, so you reach 4. The best plan uses Pair 1’s O donor for a pair nobody else can help and reaches 6. A swap that works can still block others.'},
@@ -236,7 +252,7 @@ const SIM={
   {t:'Chain',d:'A path that starts at an altruistic donor and runs from pair to pair without returning.',lvl:'ap'},
   {t:'Crossmatch',d:'A lab test that checks whether a patient’s antibodies would attack a particular donor’s kidney.',lvl:'ap'}
  ],
- about:'<p><b>The model.</b> Pair i can give to pair j when i’s donor’s blood type fits j’s patient (O gives to all, A to A and AB, B to B and AB, AB only to AB). With the crossmatch check on, one highly sensitized patient also refuses donors her antibodies would attack. The search lists every 2-cycle (and 3-cycle, if allowed), every chain from the altruistic donor, and every way to combine them without sharing a pair, and keeps the plan with the most transplants. Ties keep the first plan found. A chain’s last donor is not counted.</p><p><b>What is simplified.</b> Real matching also weighs tissue type, age, distance and how long each patient has waited, and real exchanges have hundreds of pairs, so they use integer programming instead of listing every plan. The sets of pairs here are made up for illustration, and the blood-type mix is not the real one. This is a simplified model, not medical advice.</p><p><b>Why this counts as a good algorithm.</b> The goal is the real one (transplants), the rules can be published and checked, and no pair is made worse off: a pair that isn’t matched is right where it started. Compare <a href="#valueadded">Can 25 students’ test scores rate a teacher?</a>, where a noisy stand-in for the real goal decides who gets fired.</p><p><b>Real numbers.</b> The National Kidney Registry, one U.S. kidney exchange, facilitated its first transplant in 2008, its 5,000th in June 2021 and its 10,000th living-donor transplant by January 2025, with 1,744 in 2024. These counts are company-reported and may include some directed donations, not only swaps (<a href="https://kidneyregistry.com/news/national-kidney-registry-facilitates-10000th-living-donor-kidney-transplant" target="_blank" rel="noopener">NKR, January 2025</a>). Alvin Roth and Lloyd Shapley shared the 2012 Nobel Prize in Economic Sciences for the theory and practice of market design, which includes kidney exchange (<a href="https://www.nobelprize.org/prizes/economic-sciences/2012/popular-information/" target="_blank" rel="noopener">Nobel Prize, 2012</a>).</p>'
+ about:'<p><b>The model.</b> Pair i can give to pair j when i’s donor’s blood type fits j’s patient (O gives to all, A to A and AB, B to B and AB, AB only to AB). With the crossmatch check on, one highly sensitized patient also refuses donors her antibodies would attack. The search lists every 2-cycle (and 3-cycle, if allowed), every chain from the altruistic donor, and every way to combine them without sharing a pair, and keeps the plan with the most transplants. Ties keep the first plan found. A chain’s last donor is not counted.</p><p><b>What is simplified.</b> Real matching also weighs tissue type, age, distance and how long each patient has waited, and real exchanges have hundreds of pairs, so they use integer programming instead of listing every plan. The sets of pairs here are made up for illustration, and the blood-type mix is not the real one. This is a simplified model, not medical advice.</p><p><b>Why this counts as a good algorithm.</b> Unlike the hidden scores in “Who’s scoring you?”, the rules here are public. The goal is the real one (transplants), the rules can be published and checked, and no pair is made worse off: a pair that isn’t matched is right where it started. Compare <a href="#valueadded">Can 25 students’ test scores rate a teacher?</a>, where a noisy stand-in for the real goal decides who gets fired.</p><p><b>Real numbers.</b> The National Kidney Registry, one U.S. kidney exchange, facilitated its first transplant in 2008, its 5,000th in June 2021 and its 10,000th living-donor transplant by January 2025, with 1,744 in 2024. These counts are company-reported and may include some directed donations, not only swaps (<a href="https://kidneyregistry.com/news/national-kidney-registry-facilitates-10000th-living-donor-kidney-transplant" target="_blank" rel="noopener">NKR, January 2025</a>). Alvin Roth and Lloyd Shapley shared the 2012 Nobel Prize in Economic Sciences for the theory and practice of market design, which includes kidney exchange (<a href="https://www.nobelprize.org/prizes/economic-sciences/2012/popular-information/" target="_blank" rel="noopener">Nobel Prize, 2012</a>).</p>'
 };
 BioLab.register(SIM);
 })();

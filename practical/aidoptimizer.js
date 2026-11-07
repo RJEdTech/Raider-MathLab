@@ -7,6 +7,6 @@ aidoptimizer:{
   'What your family can do: because offers come from models, information is your leverage. Run each college’s net price calculator before you apply, line up real offers side by side by net price, and ask each aid office whether an offer can be reviewed, especially if another college offered more.',
   'Airline seats and hotel rooms: revenue management forecasts how many people will buy at each price and sets prices to bring in the most money. It is the same trade-off you just solved: more buyers, or more from each buyer.'
  ],
- takeaway:'Revenue = students × price. A scholarship pays off for the college only while it changes enough decisions; past that point it just discounts students who were coming anyway. Knowing that, compare offers and ask questions.'
+ takeaway:'Revenue = students × price. A scholarship pays off for the college only while it changes enough decisions. For first-choice fans, 211 of the 260 who enroll would have come with no award. Should a scholarship go to the students it changes, or to everyone?'
 }
 });

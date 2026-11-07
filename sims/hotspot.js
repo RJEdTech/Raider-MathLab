@@ -20,14 +20,23 @@ function run(sim){const P=PL(sim),H=P.H,g=gam(sim),rr_=rho(sim),cnt=sim.p.count,
  for(let t=0;t<WEEKS;t++){share.push(s.slice());const m=s.map(si=>binom(MINOR,DET*si,r));minor.push(m);
   m.forEach((x,i)=>{T[i]+=x+SER;C[i]+=(cnt==='all'?x:0)+SER;});tot.push(T.slice());cum.push(C.slice());
   const w=C.map(c=>Math.pow(c,g)),sw=w.reduce((a,b)=>a+b);s=w.map(x=>rr_/H+(1-rr_)*x/sw);}
- return RC[key]={share,minor,tot,H};}
-const wk=sim=>clamp(Math.round(sim.p.week),1,WEEKS)-1;
+ return RC[key]={share,minor,tot,cum,H};}
+/* While the student works out week 2 ("Your turn"), the picture and readouts stay on week 1 so they do not give it away. */
+const pend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const wk=sim=>pend(sim)?0:clamp(Math.round(sim.p.week),1,WEEKS)-1;
 const shareAt=(sim,i,w)=>run(sim).share[w===undefined?wk(sim):w][i];
 const ans=sim=>Math.round(100*shareAt(sim,0,WEEKS-1));
 const totAt=(sim,i,w)=>{const R=run(sim);return i<R.H?R.tot[w===undefined?wk(sim):w][i]:null;};
 const gain=sim=>{const H=PL(sim).H;return sim.p.count==='all'?gam(sim)*(1-rho(sim))*MINOR*DET/(MINOR*DET+SER*H):0;};
 const GS=sim=>(sim.tour&&sim.tour.on)?null:sim.gutS;
-const shown=sim=>!!(GS(sim)&&GS(sim).g);
+const shown=sim=>!!(GS(sim)&&GS(sim).g&&!pend(sim));
+const SUP={1:'',2:'²',3:'³'};
+const fx=v=>String(+v.toFixed(3));
+/* the rule in symbols: A’s share = A² ÷ (A² + B²), with the evenly spread part in front when there is one */
+function ruleSym(sim){const H=PL(sim).H,p=SUP[gam(sim)],r_=rho(sim),n=L3.slice(0,H);const e=`A${p} ÷ (${n.map(x=>x+p).join(' + ')})`;return r_>0?`${fx(r_/H)} + ${fx(1-r_)} × ${e}`:e;}
+/* the same rule with the counted write-ups after week w (index w − 1), giving A’s share in week w + 1 */
+function shareExpr(sim,w){const R=run(sim),H=R.H,p=SUP[gam(sim)],r_=rho(sim),c=R.cum[w-1];const e=`${c[0]}${p} ÷ (${c.map(x=>x+p).join(' + ')})`;return r_>0?`${fx(r_/H)} + ${fx(1-r_)} × ${e}`:e;}
+const calcAns=sim=>Math.round(1000*shareAt(sim,0,1))/10;
 const pc=v=>Math.round(100*v)+'%';
 function clearGut(sim){if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
 /* whole-number split of n units by shares (largest remainder) */
@@ -38,6 +47,7 @@ function car(ctx,x,y,c,sz){ctx.fillStyle=c;rr(ctx,x-sz,y-sz*0.5,sz*2,sz,sz*0.3);
 
 const SIM={
  id:'hotspot',hash:'hotspot',apUnit:19,order:6,tab:'Hot spot loop',kind:'Simulation',
+ skills:{bio:'A recursive sequence: each week’s share = A² ÷ (A² + B²) · AP Precalculus (Unit 2A), Algebra 1 (Unit 3)',honors:'Recursive sequences and power rules · AP Precalculus (Unit 2A)',ap:'Recursive sequences, stability and loop gain · AP Precalculus (Unit 2A)'},
  card:'Guess where the patrols end up when two hallways behave exactly alike, then watch the write-ups feed the schedule week by week.',
  title:'The hot spot loop',
  lede:{bio:'Send patrols where the write-ups are. It sounds fair. But a minor offense only gets written up if someone is there to see it, so more patrols find more, and more write-ups bring more patrols.',
@@ -98,7 +108,13 @@ const SIM={
    for(let d=0;d<MINOR+SER;d++){const cx=bx+14+(d%cols)*ds+ds/2,cy=gy+Math.floor(d/cols)*ds+ds/2;if(cy+dotR>sy-4)break;const serious=d>=MINOR,hit=serious||d<mi[i];
     ctx.beginPath();if(serious){ctx.rect(cx-dotR,cy-dotR,dotR*2,dotR*2);}else ctx.arc(cx,cy,dotR,0,7);
     if(hit){ctx.fillStyle=serious?PAL['cv-ink']:col;ctx.fill();}else{ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.stroke();}}}
-  txt(ctx,k>1.3?`Week ${w+1}: same offenses everywhere. Filled = written up.`:`Week ${w+1}: every ${P.area.toLowerCase()} had ${MINOR} minor offenses (circles) and ${SER} serious (squares). Filled = written up.`,12,by+bh+18*k,{s:12*k,c:PAL['cv-soft']});
+  const rev=!!(G&&G.m);
+  if(rev&&w>0){const T=R.tot[w],core=`Week ${w+1}: ${shareExpr(sim,w)} = ${pc(sh[0])}`,full='Rule: A = '+ruleSym(sim)+'. '+core,right=`${T.map((x,i)=>L3[i]+' '+x).join(' vs. ')} write-ups, same ${(w+1)*(MINOR+SER)} offenses each`;
+   const W=t=>{ctx.font=(12*k)+'px '+FONT;return ctx.measureText(t).width*1.08;};
+   let left=full,showR=true;if(W(left)+W(right)+24>776){left=core;if(W(left)+W(right)+24>776)showR=false;}if(!showR&&W(full)<776)left=full;
+   txt(ctx,left,12,by+bh+18*k,{s:12*k,w:700,c:PAL['cv-ink']});
+   if(showR)txt(ctx,right,788,by+bh+18*k,{s:12*k,c:PAL['cv-soft'],a:'right'});}
+  else txt(ctx,k>1.3?`Week ${w+1}: same offenses everywhere. Filled = written up.`:`Week ${w+1}: every ${P.area.toLowerCase()} had ${MINOR} minor offenses (circles) and ${SER} serious (squares). Filled = written up.`,12,by+bh+18*k,{s:12*k,c:PAL['cv-soft']});
   /* share over the weeks */
   const cL=56,cT=by+bh+30*k+8,cR=780,cB=440-14*k,X=t=>cL+(t-1)/(WEEKS-1)*(cR-cL-40*k),Y=v=>cB-(v)*(cB-cT);
   ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;[0,0.5,1].forEach(v=>{ctx.beginPath();ctx.moveTo(cL,Y(v));ctx.lineTo(X(WEEKS),Y(v));ctx.stroke();txt(ctx,Math.round(v*100)+'%',cL-6,Y(v)+4,{s:12*k,c:PAL['cv-soft'],a:'right'});});
@@ -112,7 +128,7 @@ const SIM={
   const over=ends[ends.length-1].y-(cB-2);if(over>0)ends.forEach(e=>{e.y-=over;});
   ends.forEach(e=>txt(ctx,L3[e.i],X(w+1)+8,e.y+4,{s:12*k,w:700,c:areaCol(e.i)}));},
  narrate(sim){const P=PL(sim),R=run(sim),w=wk(sim),a=R.tot[w][0],b=R.tot[w][1],s=R.share[w][0],tr=(w+1)*(MINOR+SER);
-  if(sim.p.count==='serious')return `Week ${w+1}: A gets ${pc(s)} of the patrols. The schedule counts only serious incidents, which get reported whether or not anyone is watching, so <b>the data match reality</b> and every ${P.area.toLowerCase()} stays even. Minor write-ups so far: A ${a}, B ${b}.`;
+  if(sim.p.count==='serious')return `Week ${w+1}: A gets ${pc(s)} of the patrols. The schedule counts only serious incidents, which get reported whether or not anyone is watching, so <b>the counts stay equal</b> and every ${P.area.toLowerCase()} stays even. Minor write-ups so far: A ${a}, B ${b}.`;
   if(w===0)return `Week 1: patrols split evenly. Every ${P.area.toLowerCase()} had the same ${MINOR+SER} offenses, but chance decided how many minor ones a patrol happened to see: A ${a}, B ${b}${P.H>2?', C '+R.tot[0][2]:''} write-ups. <b>Next week’s schedule follows these numbers.</b>`;
   const lead=R.tot[w].indexOf(Math.max(...R.tot[w]));
   return `Week ${w+1}: A gets ${pc(s)} of the patrols. Every ${P.area.toLowerCase()} has had ${tr} offenses, but ${P.areas} with more patrols see more of the minor ones: <b>${L3[lead]} has ${Math.max(...R.tot[w])} write-ups, and more write-ups bring more patrols.</b>`;},
@@ -121,15 +137,33 @@ const SIM={
    honors:'Read week 1 in the picture, then set the slider here by feel: what share of the patrols will A get in week 20? Lock it in.'},
   lock(sim){const a=ans(sim);return {v:Math.abs(sim.p.guess-a),guess:sim.p.guess,label:`A gets ${sim.p.guess}% in week 20`};},
   solve(sim){const a=ans(sim);sim.p.week=WEEKS;return {v:0,guess:a,label:`A gets ${a}% in week 20`};},
+  hint:{bio:'Lock in your gut answer. Then you will work out week 2 yourself from the week-1 write-ups.'},
+  calc:{unit:'%',d:1,tol:1,
+   prompt:sim=>{const R=run(sim),H=R.H,P=PL(sim),g=gam(sim),p=SUP[g],r_=rho(sim),c=R.cum[0],n=L3.slice(0,H),ser=sim.p.count==='serious';
+    const cnt=c.map((x,i)=>`${P.area} ${n[i]} <b>${x}</b>`).join(', ');
+    const rule=`its count${p} ÷ (${n.map(x=>x+p).join(' + ')})`;
+    return `Counted after week 1: ${cnt}${ser?' (only serious incidents count)':' '+P.wr}. The rule: each ${P.area.toLowerCase()}’s share of week 2’s ${P.unit} = ${rule}${r_>0?`. But first ${pc(r_)} of the shifts are spread evenly (${fx(100*r_/H)}% each), and only the other ${pc(1-r_)} follow the rule`:''}. What percent of the ${P.unit} does ${P.area} A get in week 2?`;},
+   answer:calcAns,
+   hint:'Square each count, then divide A’s square by the sum of all the squares.',
+   steps(sim){const R=run(sim),H=R.H,g=gam(sim),p=SUP[g],r_=rho(sim),c=R.cum[0],pw=c.map(x=>Math.pow(x,g)),S=pw.reduce((a,b)=>a+b),f=pw[0]/S,out=[];
+    out.push(`Counted after week 1: ${c.map((x,i)=>L3[i]+' '+x).join(', ')}${sim.p.count==='serious'?' (serious incidents only)':''}.`);
+    if(g>1)out.push(`Raise each count to the power ${g}: ${c.map((x,i)=>x+p+' = '+pw[i]).join(', ')}.`);
+    out.push(`A’s part: ${pw[0]} ÷ (${pw.join(' + ')}) = ${pw[0]} ÷ ${S} ≈ ${f.toFixed(3)}.`);
+    if(r_>0)out.push(`Add the evenly spread part: ${fx(r_/H)} + ${fx(1-r_)} × ${f.toFixed(3)} ≈ ${(r_/H+(1-r_)*f).toFixed(3)}.`);
+    out.push(`A gets <b>${calcAns(sim).toFixed(1)}%</b> of the shifts in week 2.`);
+    return out;}},
+  formula(sim){const R=run(sim),T=R.tot[WEEKS-1];
+   return `A’s share = ${ruleSym(sim)}, using the counted write-ups so far.<br>Week 2: ${shareExpr(sim,1)} = ${(100*R.share[1][0]).toFixed(1)}%. Week 20, from the write-ups through week 19: ${shareExpr(sim,WEEKS-1)} = ${pc(R.share[WEEKS-1][0])}.<br>Write-ups after 20 weeks: ${T.map((x,i)=>L3[i]+' '+x).join(', ')}, for the same ${WEEKS*(MINOR+SER)} offenses each.`;},
   how:{bio:'The math does not guess. It plays the 20 weeks forward: each week it splits the patrols by the write-ups so far, rolls the chance of seeing each minor offense, and adds up the new write-ups.',
    honors:'A recursive sequence: share(t + 1) = (write-ups so far)^g ÷ the sum over all areas, and expected write-ups(t) = 16 × share(t) + 3. The simulation adds the chance of seeing each offense.'},
   compare(sim,g,m){const P=PL(sim),R=run(sim),T=R.tot[WEEKS-1],a=T[0],b=T[1],sh=R.share[WEEKS-1][0],sp=Math.round(sh*P.per),gs=Math.round(g.guess/100*P.per);
-   const tail=sim.p.count==='serious'?` Counting only incidents that get reported anyway keeps the data honest: write-ups are A ${a}, B ${b}.`:` Over 20 weeks, ${P.area.toLowerCase()} A logged <b>${a} write-ups and B ${b}</b>${P.H>2?' (C '+T[2]+')':''}, for exactly the same behavior (${WEEKS*(MINOR+SER)} offenses each).`;
+   const tail=sim.p.count==='serious'?` Counting only incidents that get reported anyway keeps the counts equal, so the schedule stays even. All write-ups: A ${a}, B ${b}.`:` Over 20 weeks, ${P.area.toLowerCase()} A logged <b>${a} write-ups and B ${b}</b>${P.H>2?' (C '+T[2]+')':''}, for exactly the same behavior (${WEEKS*(MINOR+SER)} offenses each).`;
    if(g.v<=3)return `Your gut was right on: A ends up with ${m.guess}% of the patrols.${tail}`;
    return `Your gut was off by <b>${g.v} points</b>: A gets ${m.guess}% of the patrols in week 20, not ${g.guess}%.${P.H===2?` That is ${sp} of ${P.per} ${P.unit} instead of ${gs}.`:''}${tail}`;},
   again(sim){sim.p.seed=1+Math.floor(Math.random()*40);sim.p.week=1;sim.p.guess=50;}
  },
  challenges:[
+  {lvl:'bio',kind:'num',q:'A new case: Hallway A has 15 write-ups so far and Hallway B has 9. Under the hot-spot rule, share = A² ÷ (A² + B²), what percent of next week’s shifts does A get?',answer:73.5,tol:0.6,unit:'%',d:1,hint:'Square both counts. Then divide A’s square by the sum of the two squares.',explain:'15² = 225 and 9² = 81. A’s share = 225 ÷ (225 + 81) = 225 ÷ 306 ≈ 0.735, so 73.5%. A has 62.5% of the write-ups (15 of 24) but gets 73.5% of the shifts: squaring stretches the lead.'},
   {lvl:'bio',instant:true,q:'Both hallways behave exactly alike every week, and every write-up counts. After 20 weeks of “patrol where the write-ups are,” what does the schedule look like?',choices:['About 50/50: it evens out over time','Lopsided: whichever hallway got lucky early ends up with most of the patrols','It flips back and forth every week'],correct:1,explain:'In run 34, A gets 59% in week 2 and 90% by week 20, with 324 write-ups against 107 for B. Same behavior, very different records. More patrols find more minor offenses, and those write-ups bring more patrols.'},
   {lvl:'bio',instant:true,q:'Switch to counting only serious incidents, which get reported whether or not anyone patrols. What happens to the split?',choices:['It stays at 50/50','It still runs away to one hallway','Patrols go to the hallway with fewer write-ups'],correct:0,explain:'Every hallway has 3 serious incidents a week no matter who is watching, so the counts stay equal and so does the schedule. The minor offenses still get written up, but they no longer steer the patrols.'},
   {lvl:'honors',instant:true,q:'Use the proportional rule (2× the write-ups, 2× the patrols) in the school, run 34. Does the loop still run away?',choices:['Yes, just as fast','No: the split wanders but stays near even, because serious incidents pull it back','Patrols flip to B'],correct:1,explain:'With a proportional rule, a hallway with 55% of the patrols records 55% of the minor write-ups, but only 50% of the serious ones, so its new share of write-ups falls back toward 50%. In run 34, A ends week 20 with 54% of the patrols. A hot-spot rule exaggerates any lead, and then it runs away.'},
@@ -143,7 +177,7 @@ const SIM={
   {title:'The rule',text:'The proposal: schedule by write-ups. A hallway with twice the write-ups gets four times the monitor shifts. Watch week 2: A had 12 write-ups and B had 10, so A gets 59% of the shifts.',pause:true,setup:sim=>BioLab.setValues(sim,{week:2})},
   {title:'The loop',text:'More monitors in A see more of A’s minor offenses, so A logs more write-ups, so A gets even more monitors. By week 10 A has 85% of the shifts.',pause:true,setup:sim=>BioLab.setValues(sim,{week:10})},
   {title:'Locked in',text:'By week 20, A has 90% of the shifts and 324 write-ups, against 107 in B. Both hallways had exactly 460 offenses. The record says A is the problem hallway, and the record made itself.',pause:true,setup:sim=>BioLab.setValues(sim,{week:20})},
-  {title:'A healthy rule',text:'Now count only serious incidents, which get reported whether or not anyone is watching. The data match reality, and the monitors stay split evenly every week.',pause:true,setup:sim=>BioLab.setValues(sim,{count:'serious',week:20})},
+  {title:'Count only serious incidents',text:'Now count only serious incidents, which get reported whether or not anyone is watching. The counts stay equal, and the monitors stay split evenly every week.',pause:true,setup:sim=>BioLab.setValues(sim,{count:'serious',week:20})},
   {title:'The city version',text:'Same math with 3 neighborhoods and patrol officers. Predictive policing software like PredPol, used in Reading, Pennsylvania, in 2013, marked hot-spot squares about the size of two football fields. O’Neil argues that counting nuisance crimes creates exactly this loop.',pause:true,setup:sim=>BioLab.setValues(sim,{place:'city',count:'all',week:20})},
   {lvl:'ap',title:'Loop gain',text:'Near an even split, the share of new write-ups moves L times as far from even as the share of patrols did, with L = g(1 − r) × 16 ÷ (16 + 3H). The running share x obeys x(t+1) − ½ ≈ (x(t) − ½)(t + L) ÷ (t + 1): it grows when L > 1.',pause:true,setup:sim=>BioLab.setValues(sim,{place:'school',count:'all',week:20})}
  ],

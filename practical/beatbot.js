@@ -7,6 +7,6 @@ beatbot:{
   'Personality and “fit” tests in online job applications: according to O’Neil, Kyle Behm was rejected by several employers that all used the same test. One shared score can close many doors at once.',
   'AI hiring lawsuits: in Mobley v. Workday, a federal court in California preliminarily certified a nationwide age-discrimination collective on May 16, 2025. The claims are allegations, and the case was ongoing as of that ruling.'
  ],
- takeaway:'Independent chances add up; one shared verdict does not. When every employer uses the same test, its mistakes follow you everywhere, and because the rejected are never hired, nobody sees the mistakes.'
+ takeaway:'Seven independent screens that each pass 30%: 1 − 0.7⁷ ≈ 91.8% of applicants get at least one interview. One shared test: 30%. If you hired for a store, would you use the same test every other store uses?'
 }
 });

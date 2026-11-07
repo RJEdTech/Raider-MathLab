@@ -17,7 +17,7 @@ zipscores:{
    steps:['Predicted: ŷ = 0.6664 × (−0.5) = −0.333.','Residual = actual − predicted = 0.4 − (−0.333) = 0.733.','It does about 0.73 grade levels better than its family resources predict. A district like that is worth a closer look.']},
   {id:'cousin',kind:'real',lvl:'bio',
    q:'Two districts: A has the highest average scores in the county and the richest families. B has middle-of-the-pack averages but the fastest growth from 3rd to 8th grade. Which statement fits the evidence best?',
-   choices:['A has the better schools, since its scores are highest','B’s students may be gaining more during the school years; A’s high average partly reflects its families’ head start','Growth and averages always agree, so it is a tie'],correct:1,
+   choices:['A has the better schools, since its scores are highest','B’s students may be gaining more during the school years; A’s high average partly reflects its families’ resources before school','Growth and averages always agree, so it is a tie'],correct:1,
    steps:['Averages correlate 0.68 with SES; growth correlates only 0.32.','Averages and growth correlate at just −0.13, so a high average says almost nothing about growth.','Growth is the better clue to what the school years add, though neither number tells the whole story.'],
    lab:{set:{outcome:'growth',show:true},look:'Compare <b>Correlation r</b> for averages and for growth.'},verify:[['r',0.32,0.001]]},
   {id:'growth5',kind:'test',lvl:'ap',

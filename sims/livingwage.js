@@ -38,6 +38,10 @@ const f1=v=>fmtNum(v,1),f2=v=>fmtNum(v,2);
 const P=sim=>PLACES[sim.p.place]||PLACES.arap;
 const H=sim=>P(sim).hh[sim.p.hh]||P(sim).hh['1a1'];
 const shown=sim=>!!(sim.peek||(sim.gutS&&sim.gutS.g));
+/* While the student works out the hourly wage ("Your turn"), the budget shows but the hourly answer stays hidden. */
+const pend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const shownLW=sim=>shown(sim)&&!pend(sim);
+const calcAns=sim=>Math.round(100*lw(sim))/100;
 /* The model. Category amounts (annual), the Deep dive change to one category and the margin, then taxes.
    Taxes: MIT computes them with a tax model. Here, when you change the budget, taxes stay the same share of
    pre-tax income as in MIT's figures (a simplification). With no change, the total is MIT's to the dollar. */
@@ -63,6 +67,7 @@ function worldRows(sim){const m=model(sim),rows=[];
 
 const SIM={
  id:'livingwage',hash:'livingwage',apUnit:20,order:5,tab:'Build a living wage',kind:'Simulation',
+ skills:{bio:'A unit rate: dollars a year ÷ 2,080 hours, and a ratio as a multiple · Algebra 1 (Unit 2)',honors:'Unit rates and ratios as multiples: living wage ÷ minimum wage · Algebra 1 (Unit 2)',ap:'Unit rates and sensitivity: how one input moves the output · Algebra 1 (Unit 2)'},
  card:'Guess the hourly wage a family needs to cover the basics, then build it the way a living wage calculator does: a budget, taxes, ÷ earners ÷ 2,080 hours.',
  title:'Build a living wage',
  lede:{bio:'A living wage is the hourly pay one full-time job needs to cover a household’s basic needs with no outside help. Nobody counts it. It is built: pick a household, price each basic need, add taxes, then divide by the hours worked.',
@@ -75,7 +80,7 @@ const SIM={
   {id:'guess',label:'Your guess: the hourly wage each earner needs',type:'range',min:5,max:100,step:0.5,def:20,unit:'',help:'Dollars per hour, before taxes, working full time. This is your gut pick: the orange line on the picture moves with it.'},
   {id:'place',label:'Place',type:'seg',def:'arap',lvl:'honors',noGut:true,onChange:clearGut,options:[{v:'arap',l:'Arapahoe County, CO'},{v:'dal',l:'Dallas County, TX'}],help:'Regis Jesuit is in Aurora, in Arapahoe County. Dallas County is the second U.S. place.'},
   {id:'hh',label:'Household',type:'select',def:'1a1',lvl:'honors',noGut:true,onChange:clearGut,options:HH.map(h=>({v:h.v,l:h.l}))},
-  {id:'view',label:'Picture',type:'seg',def:'budget',lvl:'honors',noGut:true,options:[{v:'budget',l:'This household'},{v:'world',l:'Around the world'}]},
+  {id:'view',label:'Picture',type:'seg',def:'budget',lvl:'ap',noGut:true,options:[{v:'budget',l:'This household'},{v:'world',l:'Around the world'}]},
   {id:'cat',label:'Change one budget line',type:'select',def:'house',lvl:'ap',noGut:true,options:CATS.map(c=>({v:c.id,l:c.l}))},
   {id:'pct',label:'by this much',type:'range',min:-50,max:50,step:5,def:0,unit:'%',lvl:'ap',noGut:true,help:'A what-if: cheaper housing, pricier child care. Taxes are kept at the same share of income.'},
   {id:'margin',label:'Margin for unexpected events',type:'range',min:0,max:10,step:1,def:0,unit:'%',lvl:'ap',noGut:true,help:'The Anker method adds “a small margin” for illness, accidents and emergencies. MIT adds none. The size here is your choice.'}
@@ -83,13 +88,13 @@ const SIM={
  actions:[{id:'show',label:'Skip the guess and show the numbers',run(sim){sim.peek=true;sim.infoDirty=true;}}],
  init(){return {};},step(){},
  metrics:[
-  {id:'lw',label:'Living wage, each earner',unit:'$ per hour',d:2,min:0,max:null,get:sim=>shown(sim)?lw(sim):null},
+  {id:'lw',label:'Living wage, each earner',unit:'$ per hour',d:2,min:0,max:null,get:sim=>shownLW(sim)?lw(sim):null},
   {id:'year',label:'Needed per year, before taxes',unit:'dollars',d:0,min:0,max:null,get:sim=>shown(sim)?model(sim).gross:null},
   {id:'minw',label:'Minimum wage here',unit:'$ per hour',d:2,min:0,max:null,get:sim=>P(sim).min},
-  {id:'short',label:'Short each month at minimum wage, full time',unit:'dollars',d:0,min:0,max:null,get:sim=>shown(sim)?Math.max(0,(lw(sim)-P(sim).min)*HOURS/12):null},
-  {id:'hours',label:'Hours a week at minimum wage to earn it',unit:'hours',d:1,min:0,max:null,get:sim=>shown(sim)?lw(sim)*40/P(sim).min:null},
-  {id:'mult',label:'Living wage ÷ minimum wage',unit:'×',d:2,lvl:'honors',min:0,max:null,get:sim=>shown(sim)?lw(sim)/P(sim).min:null},
-  {id:'povx',label:'Living wage ÷ poverty wage',unit:'×',d:2,lvl:'honors',min:0,max:null,get:sim=>shown(sim)?lw(sim)/H(sim)[2]:null},
+  {id:'short',label:'Short each month at minimum wage, full time',unit:'dollars',d:0,min:0,max:null,get:sim=>shownLW(sim)?Math.max(0,(lw(sim)-P(sim).min)*HOURS/12):null},
+  {id:'hours',label:'Hours a week at minimum wage to earn it',unit:'hours',d:1,min:0,max:null,get:sim=>shownLW(sim)?lw(sim)*40/P(sim).min:null},
+  {id:'mult',label:'Living wage ÷ minimum wage',unit:'×',d:2,lvl:'honors',min:0,max:null,get:sim=>shownLW(sim)?lw(sim)/P(sim).min:null},
+  {id:'povx',label:'Living wage ÷ poverty wage',unit:'×',d:2,lvl:'honors',min:0,max:null,get:sim=>shownLW(sim)?lw(sim)/H(sim)[2]:null},
   {id:'tax',label:'Taxes, share of pre-tax income',unit:'%',d:1,lvl:'ap',min:0,max:null,get:sim=>shown(sim)?100*model(sim).t:null},
   {id:'driver',label:'Biggest driver: +10% on one line',lvl:'ap',text:true,get:sim=>{if(!shown(sim))return 'Lock in your guess first';const s=sens(sim).sort((a,b)=>b.d-a.d)[0];return s.c.l+': +'+cents(s.d)+' an hour';}}
  ],
@@ -105,8 +110,8 @@ const SIM={
   ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2.5;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(box.L,ax.Y(pl.min));ctx.lineTo(box.L+box.W,ax.Y(pl.min));ctx.stroke();ctx.setLineDash([]);
   htxt(ctx,pl.state+' minimum wage '+cents(pl.min),box.L+box.W-6,ax.Y(pl.min)-7,{s:12,w:700,c:PAL['s4'],a:'right'});},
  draw(sim,ctx,vdt,k){const W=800,Hh=450;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,W,Hh);
-  if(sim.p.view==='world'&&atLeast('honors'))return drawWorld(sim,ctx,k);
-  const m=model(sim),sh=shown(sim),G=sim.gutS,kk=Math.min(k,1.8);
+  if(sim.p.view==='world'&&atLeast('ap'))return drawWorld(sim,ctx,k);
+  const m=model(sim),sh=shown(sim),sl=shownLW(sim),G=sim.gutS,kk=Math.min(k,1.8);
   /* title */
   txt(ctx,hhName(sim),16,28,{s:14*kk,w:700});
   txt(ctx,P(sim).name+' · per year',16,28+18*kk,{s:12*kk,c:PAL['cv-soft']});
@@ -120,11 +125,11 @@ const SIM={
   /* total and the division */
   ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(16,y1+4);ctx.lineTo(470,y1+4);ctx.stroke();
   txt(ctx,'Before taxes: '+(sh?money(m.gross):'?')+' a year',16,y1+24*kk,{s:13*kk,w:700});
-  const eq=sh?money(m.gross)+' ÷ '+m.earners+' earner'+(m.earners>1?'s':'')+' ÷ 2,080 hours = '+cents(m.lw)+' an hour':'Total ÷ earners ÷ 2,080 hours = ? an hour';
-  pill(ctx,eq,400,Hh-22,sh?PAL['rj']:PAL['cv-soft'],'#fff',Math.min(13*kk,19));
+  const eq=sh?money(m.gross)+' ÷ '+m.earners+' earner'+(m.earners>1?'s':'')+' ÷ 2,080 hours = '+(sl?cents(m.lw):'?')+' an hour':'Total ÷ earners ÷ 2,080 hours = ? an hour';
+  pill(ctx,eq,400,Hh-22,sl?PAL['rj']:PAL['cv-soft'],'#fff',Math.min(13*kk,19));
   /* right panel: dollars per hour */
-  const L=500,R=790,B=318,T=96,cols=[{l:['Poverty','wage'],v:m.pov,c:PAL['s6']},{l:['Minimum','wage'],v:m.min,c:PAL['s4']},{l:['Living','wage'],v:sh?m.lw:null,c:PAL['rj']}];
-  const gv=G&&G.g?G.g.guess:sim.p.guess,top=Math.max(sh?m.lw:0,gv,m.min,20)*1.12,Y=v=>B-v/top*(B-T);
+  const L=500,R=790,B=318,T=96,cols=[{l:['Poverty','wage'],v:m.pov,c:PAL['s6']},{l:['Minimum','wage'],v:m.min,c:PAL['s4']},{l:['Living','wage'],v:sl?m.lw:null,c:PAL['rj']}];
+  const gv=G&&G.g?G.g.guess:sim.p.guess,top=Math.max(sl?m.lw:0,gv,m.min,20)*1.12,Y=v=>B-v/top*(B-T);
   txt(ctx,'Per hour, each earner',(L+R)/2,72,{s:13*kk,w:700,a:'center'});
   ctx.strokeStyle=PAL['line'];ctx.beginPath();ctx.moveTo(L,B);ctx.lineTo(R,B);ctx.stroke();
   const cw=(R-L)/3,boxes=[],vs=12*kk;cols.forEach((c,i)=>{const cx=L+cw*(i+.5),bw=Math.min(64,cw*0.62);
@@ -140,8 +145,9 @@ const SIM={
    htxt(ctx,lab,at[0]+3,at[1]+ls*0.9,{s:ls,w:700,c:PAL['s4']});}},
  narrate(sim){const m=model(sim),pl=P(sim);
   if(!shown(sim))return `MIT priced six kinds of basic needs for <b>${hhName(sim).toLowerCase()}</b> in ${pl.name}. The minimum wage here is ${cents(pl.min)} an hour. <b>Lock in your guess</b> to see what one full year of basics costs.`;
+  if(pend(sim))return `The basics come to ${money(m.after)} a year, and taxes add ${money(m.tax)}: <b>${money(m.gross)}</b> before taxes, for ${m.earners} earner${m.earners>1?'s':''}. <b>Work out the hourly wage:</b> total ÷ earners ÷ 2,080 hours.`;
   const hrs=m.lw*40/m.min,extra=m.marg>0?` That includes a ${sim.p.margin}% margin for the unexpected.`:'';
-  if(sim.p.view==='world'&&atLeast('honors'))return `Divide each living wage by the local minimum wage and the currency drops out. <b>Here, ${HHL[sim.p.hh].l.toLowerCase()} needs ${f2(m.lw/m.min)} times the minimum wage.</b> Rural Ecuador’s is 1.07 times, Dhaka’s 2.44 times, for workers the minimum actually covers. But 84% of jobs in Bangladesh are informal: <b>many workers earn less than the minimum</b>, on irregular days, without social security, so their gap to a living wage is bigger than the multiple shows.`;
+  if(sim.p.view==='world'&&atLeast('ap'))return `Divide each living wage by the local minimum wage and the currency drops out. <b>Here, ${HHL[sim.p.hh].l.toLowerCase()} needs ${f2(m.lw/m.min)} times the minimum wage.</b> Rural Ecuador’s is 1.07 times, Dhaka’s 2.44 times, for workers the minimum actually covers. But 84% of jobs in Bangladesh are informal: <b>many workers earn less than the minimum</b>, on irregular days, without social security, so their gap to a living wage is bigger than the multiple shows.`;
   const big=m.lines.slice().sort((a,b)=>b.a-a.a)[0];
   return `The basics come to ${money(m.after)} a year, and taxes add ${money(m.tax)}.${extra} Split over ${m.earners} earner${m.earners>1?'s':''} and 2,080 hours, that is <b>${cents(m.lw)} an hour</b>. The biggest line is ${big.l.toLowerCase()}. At ${cents(m.min)}, ${m.earners>1?'each earner':'the earner'} would need <b>${f1(hrs)} hours a week</b>${hrs>84?', more than 12 hours a day, every day':''}.`;},
  gut:{better:'lower',controls:['guess'],
@@ -150,6 +156,19 @@ const SIM={
   lockLabel:'Lock in my guess',
   lock(sim){const v=lw(sim);return {v:Math.abs(sim.p.guess-v),guess:sim.p.guess,label:cents(sim.p.guess)+' an hour'};},
   solve(sim){const v=lw(sim);sim.p.guess=clamp(Math.round(v*2)/2,5,100);return {v:0,guess:v,label:cents(v)+' an hour ('+money(model(sim).gross)+' a year)'};},
+  hint:{bio:'Lock in your guess. Then you will work out the hourly wage yourself from the year’s budget.'},
+  calc:{unit:'$',d:2,tol:0.05,
+   prompt:{bio:sim=>{const m=model(sim);return `The budget for ${hhName(sim).toLowerCase()} in ${P(sim).name} comes to <b>${money(m.gross)}</b> a year before taxes. ${m.earners>1?`It is split between <b>${m.earners}</b> earners, each`:'One earner works'} full time: 40 hours × 52 weeks. What hourly wage does ${m.earners>1?'each earner':'the earner'} need?`;},
+    honors:sim=>{const m=model(sim);return `The budget for ${hhName(sim).toLowerCase()} in ${P(sim).name}: <b>${money(m.after)}</b> a year of basic needs plus <b>${money(m.tax)}</b> in taxes. There ${m.earners>1?'are':'is'} <b>${m.earners}</b> full-time earner${m.earners>1?'s':''}. What hourly wage does each earner need?`;}},
+   answer:calcAns,
+   hint:'Full time is 40 × 52 = 2,080 hours a year. Divide the year’s pre-tax total by the earners, then by 2,080.',
+   steps(sim){const m=model(sim),out=[];
+    if(atLeast('honors'))out.push(`Add the taxes to the budget: ${money(m.after)} + ${money(m.tax)} = ${money(m.gross)} a year before taxes.`);
+    out.push(`Full time is 40 hours × 52 weeks = 2,080 hours a year.`);
+    if(m.earners>1)out.push(`Split between ${m.earners} earners: ${money(m.gross)} ÷ ${m.earners} = ${money(m.gross/m.earners)} each.`);
+    out.push(`${money(m.gross/m.earners)} ÷ 2,080 ≈ <b>${cents(calcAns(sim))}</b> an hour.`);
+    return out;}},
+  formula(sim){const m=model(sim);return `Budget + taxes: ${money(m.after)} + ${money(m.tax)} = ${money(m.gross)} a year.<br>Living wage = ${money(m.gross)} ÷ ${m.earners} earner${m.earners>1?'s':''} ÷ 2,080 hours = ${cents(m.lw)} an hour.<br>As a multiple of the minimum wage: ${cents(m.lw)} ÷ ${cents(m.min)} = ${f2(m.lw/m.min)}×.`;},
   how:{bio:'The math builds a budget for one year: food, housing, child care, transportation, health care and other necessities. It adds the taxes on the pay that covers them. Then it divides by the hours one full-time job works in a year: 40 × 52 = 2,080.',
    honors:'Living wage = (basic-needs budget + taxes) ÷ earners ÷ 2,080. The budget lines come from public data: MIT uses the USDA low-cost food plan, HUD fair market rents and federal surveys of what families spend.',
    ap:'MIT sums the budget, then uses a tax model to find the pre-tax income whose take-home pay covers it. This tool keeps taxes at MIT’s share of income when you change a line: gross = budget ÷ (1 − tax share).'},
@@ -161,13 +180,12 @@ const SIM={
  },
  onTourExit(sim){sim.peek=false;},
  challenges:[
-  {lvl:'bio',instant:true,q:'MIT’s budget for one adult and one child in Arapahoe County comes to $103,964 a year before taxes. What hourly wage is that for one full-time earner?',choices:['$8,664 an hour','$49.98 an hour','$41.48 an hour','$24.99 an hour'],correct:1,explain:'$103,964 ÷ 2,080 hours = $49.98. ($8,664 is the amount per month. $41.48 forgets the taxes: $86,287 ÷ 2,080. $24.99 splits it between two earners, but this household has one.)'},
+  {lvl:'bio',kind:'num',q:'A new household: one adult and two children in Arapahoe County. MIT’s budget comes to $139,519 a year before taxes, and the adult is the only earner. What hourly wage does that adult need, working full time?',answer:67.08,tol:0.05,unit:'$',d:2,hint:'Full time is 40 hours × 52 weeks = 2,080 hours a year. Divide the year’s total by the hours.',explain:'$139,519 ÷ 1 earner ÷ 2,080 hours ≈ $67.08 an hour. Dividing by 12 instead gives the monthly amount ($11,627), not an hourly wage.'},
   {lvl:'bio',instant:true,q:'Why does the calculator divide by 2,080?',choices:['40 hours a week × 52 weeks: one full-time job for a year','The number of working days in a year','It is the minimum wage in cents'],correct:0,explain:'40 × 52 = 2,080 hours. The living wage is the hourly pay that covers the year’s budget if you work full time, every week, with no overtime.'},
   {lvl:'bio',instant:true,q:'That parent earns Colorado’s minimum wage, $15.16 an hour. How many hours a week would it take to earn what $49.98 an hour pays in 40?',choices:['About 52 hours','About 92 hours','About 132 hours'],correct:2,explain:'$49.98 × 40 = $1,999 a week. $1,999 ÷ $15.16 ≈ 132 hours, which is 92 hours more than full time and more than 18 hours a day, every day.'},
   {lvl:'honors',instant:true,q:'Two adults, both working, with two children in Arapahoe County need $144,282 a year before taxes. What is each parent’s living wage?',choices:['$69.37 an hour','$34.68 an hour','$17.34 an hour'],correct:1,explain:'$144,282 ÷ 2 earners ÷ 2,080 hours = $34.68 each. $69.37 is what one earner would need to cover all of it. $17.34 divides by 4 people instead of 2 earners.'},
   {lvl:'honors',instant:true,q:'With two children in Arapahoe County, one earner needs $45.52 an hour and each of two earners needs $34.68. Why isn’t two earners’ wage simply half of $45.52?',choices:['With both parents working, the budget adds $36,208 of child care, and taxes rise too','Two earners always pay less tax','MIT made a rounding error'],correct:0,explain:'MIT assumes the second parent stays home in the one-earner household, so child care is $0. When both work, child care ($36,208) joins the budget and taxes rise from $10,111 to $23,505. The total grows from $94,680 to $144,282.'},
   {lvl:'honors',instant:true,q:'In Dhaka, the 2025 living wage is ৳30,459 a month and the garment minimum wage is ৳12,500. For a worker the minimum covers, what is the living wage as a multiple of the minimum?',choices:['About 0.41×','About 1.4×','About 2.4×','You need the exchange rate first'],correct:2,explain:'30,459 ÷ 12,500 ≈ 2.44. Both numbers are in taka, so the units cancel: a multiple needs no exchange rate. 0.41 is the ratio upside down.'},
-  {lvl:'honors',instant:true,q:'In Bangladesh, 84% of employed people work in informal jobs (ILO, 2024). Dhaka’s living wage is 2.44 times the garment minimum. For a typical worker there, what does that multiple leave out?',choices:['Nothing: everyone earns at least the minimum','Many informal workers earn less than the minimum, on irregular days, so their gap to a living wage is bigger than 2.44×','Informal workers earn more, so the gap is smaller'],correct:1,explain:'A minimum wage protects the workers it actually covers. Informal jobs are, in the ILO’s words, “not covered by formal arrangements” in law or in practice, so many pay less than the minimum, with irregular days and no social security. That is why living wage researchers compare a living wage with prevailing wages, what workers are really paid, not only with the minimum.'},
   {lvl:'ap',instant:true,q:'Two adults, both working, two children, Arapahoe County. One budget line rises 10%. Which one raises each parent’s wage the most?',choices:['Housing ($25,109)','Child care ($36,208)','Food ($13,336)','They all raise it the same'],correct:1,explain:'The biggest line moves the total most. Child care +10% is $3,621 more a year; with taxes kept at 16.3% of income that is $4,325 before taxes, or about $1.04 an hour for each parent. Housing +10% adds about $0.72.'},
   {lvl:'ap',instant:true,q:'The Anker estimate for Dhaka: a basic but decent living costs ৳48,022 a month for a family of 4 with 1.58 full-time workers. What is the take-home (net) living wage?',choices:['৳12,006','৳30,394','৳48,022','৳75,875'],correct:1,explain:'48,022 ÷ 1.58 ≈ ৳30,394 take-home. Add payroll deductions and you reach the published gross living wage of ৳30,459. ৳12,006 divides by people, not workers; ৳75,875 multiplies.'},
   {lvl:'ap',instant:true,q:'Why does an Anker living wage divide by 1.58 workers while MIT divides by 1 or 2?',choices:['Anker uses the typical number of full-time-equivalent workers per family in that place; MIT picks a household type with whole earners','Anker counts children as workers','They are the same number written differently'],correct:0,explain:'Anker estimates how many full-time-equivalent workers a typical local family has (1.58 in Dhaka, 1.61 in rural Ecuador). MIT lets you choose a household with 1 or 2 full-time earners. Both are modeling choices.'}
@@ -179,11 +197,11 @@ const SIM={
   {title:'Divide by the hours',text:'One full-time job is 40 hours × 52 weeks = 2,080 hours a year. $103,964 ÷ 1 earner ÷ 2,080 = $49.98 an hour.',pause:true,focus:[[0,400,800,50]]},
   {title:'Compare',text:'Colorado’s minimum wage is $15.16. At that pay she would come up $6,036 a month short. Earning $103,964 would take about 132 hours of work a week.',pause:true,focus:[[490,50,310,350]]},
   {lvl:'honors',title:'Two earners split the bill',text:'Two adults, both working, two children: $144,282 ÷ 2 earners ÷ 2,080 = $34.68 each. Child care is now the biggest line, because nobody is home with the kids.',pause:true,setup:sim=>BioLab.setValues(sim,{hh:'2a2w2'})},
-  {lvl:'honors',title:'Around the world',text:'Divide a living wage by the local minimum wage and the currency cancels. Rural Ecuador’s living wage is 1.07 times its minimum; Dhaka’s is 2.44 times; Vietnam’s Region 1, 1.87 times. That is for workers the minimum covers. In Bangladesh 84% of jobs are informal (ILO, 2024), so many people earn less than the minimum and the real gap is bigger.',pause:true,setup:sim=>BioLab.setValues(sim,{view:'world'})},
+  {lvl:'ap',title:'Around the world',text:'Divide a living wage by the local minimum wage and the currency cancels. Rural Ecuador’s living wage is 1.07 times its minimum; Dhaka’s is 2.44 times; Vietnam’s Region 1, 1.87 times. That is for workers the minimum covers. In Bangladesh 84% of jobs are informal (ILO, 2024), so many people earn less than the minimum and the real gap is bigger.',pause:true,setup:sim=>BioLab.setValues(sim,{view:'world'})},
   {lvl:'ap',title:'Which assumption matters?',text:'Back to the family of four. Make child care 10% more expensive and each parent’s wage rises about $1.04 an hour; housing +10% adds about $0.72. The biggest lines carry the most weight.',pause:true,setup:sim=>BioLab.setValues(sim,{view:'budget',cat:'care',pct:10})}
  ],
  lab:{bio:'<p><b>Question:</b> Which basic need costs this household the most, and how much of the hourly wage does it explain?</p><ol><li>Press <b>Skip the guess</b> if you have not locked in a guess.</li><li>Read each budget line. Divide the biggest one by 2,080.</li><li>Divide the whole pre-tax total by 2,080 and check it against the living wage.</li></ol><p>Write one sentence: what share of the living wage pays for that one need?</p>',
-  honors:'<p><b>Question:</b> How does the living wage change with the household and the place?</p><ol><li>For each household type, record a trial in Arapahoe County, then in Dallas County.</li><li>Compare <b>Living wage ÷ minimum wage</b> for the two places.</li><li>Switch the picture to <b>Around the world</b> and compare the multiples.</li></ol><p>Explain why a multiple can be compared across currencies but a wage cannot.</p>',
+  honors:'<p><b>Question:</b> How does the living wage change with the household and the place?</p><ol><li>For each household type, record a trial in Arapahoe County, then in Dallas County.</li><li>Compare <b>Living wage ÷ minimum wage</b> for the two places.</li><li>Compute one multiple yourself from the two hourly wages and check it.</li></ol><p>Explain why a multiple has no units, and why that lets you compare places with different prices.</p>',
   ap:'<p><b>Question:</b> Which modeling choice moves the living wage most?</p><ol><li>Pick one household. For each budget line, set it to +10% and record the living wage.</li><li>Set the lines back to 0% and add margins of 0%, 5% and 10%.</li><li>Compare one line +10% with a 5% margin on everything.</li></ol><p><b>CER:</b> Claim which assumption a calculator most needs to get right, with evidence from your trials and reasoning about why.</p>'},
  terms:[
   {t:'Living wage',d:'The pay one full-time worker needs to cover a household’s basic needs in one place, with no outside help. It is an estimate built on stated assumptions.'},
@@ -192,9 +210,9 @@ const SIM={
   {t:'Minimum wage',d:'The lowest hourly pay the law allows. Colorado’s was $15.16 in January 2026; Texas uses the federal $7.25.'},
   {t:'Poverty wage',d:'The federal poverty guideline for the household’s size, divided by 2,080 hours and the number of earners. It is a much lower bar than a living wage.',lvl:'honors'},
   {t:'Multiple',d:'One quantity divided by another in the same units, like living wage ÷ minimum wage. The units cancel, so it needs no exchange rate.',lvl:'honors'},
-  {t:'Informal employment',d:'Work that, in law or in practice, is not covered by formal arrangements such as labor law and social security. Many informal workers earn less than the minimum wage. The ILO measures it as a share of all employed people.',lvl:'honors'},
-  {t:'Prevailing wage',d:'What workers in a place and job are actually paid. Living wage researchers measure the gap between prevailing wages and the living wage.',lvl:'honors'},
-  {t:'Exchange rate',d:'How many units of one currency buy one U.S. dollar on a given date. Converting with it adds a second estimate on top of the first.',lvl:'honors'},
+  {t:'Informal employment',d:'Work that, in law or in practice, is not covered by formal arrangements such as labor law and social security. Many informal workers earn less than the minimum wage. The ILO measures it as a share of all employed people.',lvl:'ap'},
+  {t:'Prevailing wage',d:'What workers in a place and job are actually paid. Living wage researchers measure the gap between prevailing wages and the living wage.',lvl:'ap'},
+  {t:'Exchange rate',d:'How many units of one currency buy one U.S. dollar on a given date. Converting with it adds a second estimate on top of the first.',lvl:'ap'},
   {t:'Sensitivity',d:'How much an output changes when one input changes. Here: the change in the hourly wage when one budget line rises 10%.',lvl:'ap'},
   {t:'Gross and net',d:'Gross pay is before taxes and payroll deductions; net (take-home) pay is after. A living wage must be gross enough that the net covers the budget.',lvl:'ap'}
  ],
@@ -208,8 +226,9 @@ const SIM={
   '<li>Vietnam, Minimum Wage Region 1: ₫9,294,701 a month (2025 update, Oct 6, 2025; family of 4, 1.76 workers): <a href="https://globallivingwage.org/living-wage-benchmarks/living-wage-for-minimum-wage-region-1-vietnam/" target="_blank" rel="noopener">GLWC</a>. Minimum: Region 1, ₫4,960,000 a month from July 1, 2024 (Decree 74/2024/NĐ-CP, as summarized by <a href="https://crowe.com/vn/news/increases-in-regional-minimum-wages" target="_blank" rel="noopener">Crowe Vietnam</a>). Multiple: 1.87.</li></ul>'+
   '<p><b>Who the minimum wage covers.</b> A living wage ÷ minimum wage multiple describes a worker the minimum actually covers. Where most work is informal, many workers earn less than the minimum, work irregular days and have no social security, so the gap between a living wage and real earnings can be far bigger than the multiple shows. The ILO describes informal activities as those that, in law or in practice, are “not covered by formal arrangements” (<a href="https://ilostat.ilo.org/topics/informality/" target="_blank" rel="noopener">ILOSTAT</a>). That is why the Anker manual measures “the gap between prevailing wages and the living wage” (<a href="https://globallivingwage.org/announcements/anker-methodology-for-estimating-living-wages-published/" target="_blank" rel="noopener">GLWC</a>), not only the gap to the minimum. Share of employed people in informal employment (ILO data for SDG indicator 8.3.1, 13th ICLS definition, from the UN SDG Global Database): Ecuador 68.45% in 2025 (<a href="https://unstats.un.org/sdgapi/v1/sdg/Series/Data?seriesCode=SL_ISV_IFEM&amp;areaCode=218&amp;pageSize=500" target="_blank" rel="noopener">data</a>), Guatemala 75.93% in 2024 (<a href="https://unstats.un.org/sdgapi/v1/sdg/Series/Data?seriesCode=SL_ISV_IFEM&amp;areaCode=320&amp;pageSize=500" target="_blank" rel="noopener">data</a>), Bangladesh 84.04% in 2024 (<a href="https://unstats.un.org/sdgapi/v1/sdg/Series/Data?seriesCode=SL_ISV_IFEM&amp;areaCode=50&amp;pageSize=500" target="_blank" rel="noopener">data</a>), Vietnam 67.03% in 2024 (<a href="https://unstats.un.org/sdgapi/v1/sdg/Series/Data?seriesCode=SL_ISV_IFEM&amp;areaCode=704&amp;pageSize=500" target="_blank" rel="noopener">data</a>). In the United States few workers earn exactly the minimum: in 2024, 1.0% of workers paid by the hour earned the federal $7.25 or less (82,000 at exactly $7.25 and 760,000 below it), so most low-wage workers are paid somewhat more than the minimum but can still fall short of a living wage (<a href="https://www.bls.gov/opub/reports/minimum-wage/2024" target="_blank" rel="noopener">BLS, Characteristics of minimum wage workers, 2024</a>).</p>'+
   '<p><b>Exchange rates.</b> U.S. dollar amounts for Guatemala, Bangladesh and Vietnam use the rate implied by the U.S. dollar figure GLWC shows on each 2025 benchmark page: about Q7.69 (Sept 2025), ৳122.8 (Nov 2025) and ₫26,100 (Oct 2025) per U.S. dollar. Rates move every day, so the multiples of the minimum wage, which need no conversion, are the safer comparison. Monthly minimums leave out annual bonuses (such as Ecuador’s 13th and 14th month pay). Comparing an MIT household with an Anker reference family is itself a choice: they differ in family size, number of workers and what counts as basic.</p>'+
-  '<p><b>The just wage.</b> Catholic social teaching has long asked what a fair wage must cover. Pope Leo XIII wrote that wages “ought not to be insufficient to support a frugal and well-behaved wage-earner” (<a href="https://www.vatican.va/content/leo-xiii/en/encyclicals/documents/hf_l-xiii_enc_15051891_rerum-novarum.html" target="_blank" rel="noopener"><i>Rerum Novarum</i></a>, 1891, §45). Pope John Paul II described a family wage as “remuneration which will suffice for establishing and properly maintaining a family” (<a href="https://www.vatican.va/content/john-paul-ii/en/encyclicals/documents/hf_jp-ii_enc_14091981_laborem-exercens.html" target="_blank" rel="noopener"><i>Laborem Exercens</i></a>, 1981, §19). What a wage <i>should</i> be is a question of values, and this tool does not score it or take a position on minimum-wage laws. The math question, what wage a given budget requires, has an answer.</p>'+
-  '<p><b>See also:</b> <a href="#costofliving">Cost of living</a> compares what a basket of goods costs in hours of work in Quito, Dallas and Aurora. This tool builds the calculator itself.</p>'
+  '<p><b>The just wage.</b> Catholic social teaching has long asked what a fair wage must cover. Pope Leo XIII wrote that wages “ought not to be insufficient to support a frugal and well-behaved wage-earner” (<a href="https://www.vatican.va/content/leo-xiii/en/encyclicals/documents/hf_l-xiii_enc_15051891_rerum-novarum.html" target="_blank" rel="noopener"><i>Rerum Novarum</i></a>, 1891, §45). Pope John Paul II described a family wage as “remuneration which will suffice for establishing and properly maintaining a family” (<a href="https://www.vatican.va/content/john-paul-ii/en/encyclicals/documents/hf_jp-ii_enc_14091981_laborem-exercens.html" target="_blank" rel="noopener"><i>Laborem Exercens</i></a>, 1981, §19). What a wage <i>should</i> be is a question of values, and this tool does not score it or take a position on minimum-wage laws. The math question, what wage a given budget requires, has an answer. Pick a household: what does your number say?</p>'+
+  '<p><b>See also:</b> <a href="#costofliving">Cost of living</a> compares what a basket of goods costs in hours of work in Quito, Dallas and Aurora. This tool builds the calculator itself.</p>'+
+   '<p><b>See also in Raider CivicsLab:</b> <a href="https://rjedtech.github.io/Raider-CivicsLab/#measurewealth" target="_blank" rel="noopener">What counts as wealth?</a> (GDP vs. other measures), <a href="https://rjedtech.github.io/Raider-CivicsLab/#remittances" target="_blank" rel="noopener">Sending money home</a> (transfer fees as a percent) and <a href="https://rjedtech.github.io/Raider-CivicsLab/#northsouth" target="_blank" rel="noopener">The world in 100 people</a> (income by region, per 100).</p>'
 };
 BioLab.register(SIM);
 

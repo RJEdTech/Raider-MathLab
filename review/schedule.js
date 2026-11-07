@@ -12,7 +12,7 @@ schedule:{
    lab:{set:{staff:7,foot:true,rainDays:3,noclop:false,posted:false,min20:false,reveal:true},look:'Read <b>Price of no clopening</b> and <b>Clopenings this week</b>.'},verify:[['pban',0,0.5],['cost',3968,0.5]]},
   {id:'need',kind:'test',lvl:'bio',
    q:'At 8 am on a rainy Wednesday the forecast is 65 customers. One barista can serve 20 customers an hour. How many baristas does the cafe need that hour?',
-   choices:['3','3.25','4','5'],correct:2,
+   num:{ans:4,tol:0,unit:'baristas'},
    steps:['65 ÷ 20 = 3.25 baristas.','You can’t schedule a quarter of a person, so round up.','4 baristas.']},
   {id:'posted',kind:'real',lvl:'honors',
    q:'A week ahead, rain is possible Wednesday, Saturday and Tuesday. It only rains Wednesday. With 7 baristas at $16 an hour, what does posting the schedule 7 days ahead cost per week?',

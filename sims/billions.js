@@ -57,7 +57,9 @@ const pct=(v,d)=>(v<0?'−':'')+Math.abs(v).toFixed(d===undefined?2:d)+'%';
 
 /* ---------- state helpers ---------- */
 const GS=sim=>(sim.tour&&sim.tour.on)?null:sim.gutS;
-const hideAns=sim=>sim.mode==='guided'&&!(sim.gutS&&sim.gutS.g);
+/* The per-person answers stay hidden before the lock (Guided) and while the student works them out ("Your turn"). */
+const pending=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const hideAns=sim=>(sim.mode==='guided'&&!(sim.gutS&&sim.gutS.g))||pending(sim);
 function clearGut(sim){if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
 function font(ctx,s,w){ctx.font=(w||400)+' '+s+'px '+FONT;}
 function tw(ctx,s,sz,w){font(ctx,sz,w);return ctx.measureText(s).width;}
@@ -120,7 +122,8 @@ function drawPeople(sim,ctx,k){const hide=hideAns(sim),A=lineA(sim),G=GS(sim),ph
   txt(ctx,M(perYr(r.v),ph?0:2),cx[2],mid,Object.assign({a:'right'},o));
   txt(ctx,M(perDay(r.v),2),cx[3],mid,Object.assign({a:'right',c:isA?PAL['s2']:PAL['cv-ink']},o));
   txt(ctx,M(hhMo(r.v),ph?0:2),cx[4],mid,Object.assign({a:'right'},o));});
- txt(ctx,hide?'Lock in your answer to fill in the columns.':(G&&G.g?`Your answer for ${A.s}: ${M(G.g.guess,2)} a day. The math: ${M(truth(sim),2)}.`:`Per person = dollars ÷ 341.8 million people. Per day = that ÷ 365.`),400,top-12-20*k,{s:12*k,w:700,c:G&&G.g?PAL['s4']:PAL['cv-soft'],a:'center'});}
+ const head=pending(sim)?'Work out the per-day cost in Your turn to fill in the columns.':hide?'Lock in your answer to fill in the columns.':(G&&G.m?`The math: ${B1(A.v)} ÷ 341.8 million ÷ 365 = ${M(truth(sim),2)} a day. Your answer: ${M(G.g.guess,2)}.`:G&&G.g?`Your answer for ${A.s}: ${M(G.g.guess,2)} a day. The math: ${M(truth(sim),2)}.`:`Per person = dollars ÷ 341.8 million people. Per day = that ÷ 365.`);
+ txt(ctx,head,400,top-12-20*k,{s:Math.min(12*k,12*k*740/Math.max(1,tw(ctx,head,12*k,700))),w:700,c:G&&G.g&&!pending(sim)?PAL['s4']:PAL['cv-soft'],a:'center'});}
 
 /* ---------- view: the household scale model ---------- */
 function drawHouse(sim,ctx,k){const X=sim.p.hh,ph=k>1.35,sz=12*k;
@@ -186,6 +189,7 @@ function drawCompare(sim,ctx,k){const A=lineA(sim),Bl=lineB(sim),r=A.v/Bl.v,ph=k
  const per=Math.min(40,Math.ceil(n)),rowsN=Math.ceil(Math.ceil(n)/per),bs=Math.min(28,(W-40)/per-3),bh=Math.min(20*k,Math.max(8,(H-by-130*k)/Math.max(1,rowsN)-3));
  for(let i=0;i<Math.ceil(n)&&i<400;i++){const rr2=Math.floor(i/per),cc=i%per,f=Math.min(1,n-i);ctx.fillStyle=bigL===A?PAL['s2']:PAL['s4'];ctx.globalAlpha=.8;ctx.fillRect(x0+cc*(bs+3),by+10+rr2*(bh+3),bs*f,bh);ctx.globalAlpha=1;}
  const ty=Math.round(by+10+rowsN*(bh+3)+26*k),d=perYr(A.v)-perYr(Bl.v);
+ if(pending(sim)){txt(ctx,'Per American: work out your line in Your turn first.',x0,ty,{s:13*k});return;}
  txt(ctx,`Per American per year: ${M(perYr(A.v),2)} vs ${M(perYr(Bl.v),2)}`,x0,ty,{s:13*k});
  txt(ctx,`Difference: ${M(d,2)} a year, ${M(d/DAYS,2)} a day, per person`,x0,ty+22*k,{s:13*k,w:700});
  if(atLeast('ap'))txt(ctx,`log₁₀(${B1(A.v)} ÷ ${B1(Bl.v)}) = ${Math.log10(r).toFixed(3)} factors of 10 apart`,x0,ty+44*k,{s:13*k,c:PAL['s5'],w:700});}
@@ -211,13 +215,13 @@ function draw(sim,ctx,vdt,k){ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,W,H);
 const QUESTIONS='<div class="qcard"><h3>Questions to ask any number</h3><ul><li>Who counted, and how?</li><li>Who is missing?</li><li>Average or median?</li><li>Per what?</li><li>Compared to what?</li><li>What would change the answer?</li><li>What does this number hide?</li></ul></div>';
 function info(sim){const v=sim.p.view,A=lineA(sim);let h='';
  if(v==='scale')h+=`<h3>Three words, three sizes</h3><p>Million = 10⁶. Billion = 10⁹. Trillion = 10¹². Each word is 1,000 times the one before. On a linear line, ${B1(A.v)} and $1 billion look like the same dot near zero next to ${B1(TOT)}. On a log line, each step is a factor of 10, so all of them fit.</p>`;
- if(v==='people')h+=`<h3>Per person, per day, per household</h3><p>Per person per year = line ÷ 341.8 million people. Per day = that ÷ 365. Per household per month = line ÷ 134.79 million households ÷ 12. ${hideAns(sim)?'Work out one row yourself before you lock in.':`For ${A.s}: ${B1(A.v)} ÷ 341.8 million = ${M(perYr(A.v),2)} a year, or ${M(perDay(A.v),2)} a day.`}</p>`;
+ if(v==='people')h+=`<h3>Per person, per day, per household</h3><p>Per person per year = line ÷ 341.8 million people. Per day = that ÷ 365. Per household per month = line ÷ 134.79 million households ÷ 12. ${hideAns(sim)?(pending(sim)?'Work out your line in Your turn first.':'Work out one row yourself before you lock in.'):`For ${A.s}: ${B1(A.v)} ÷ 341.8 million = ${M(perYr(A.v),2)} a year, or ${M(perDay(A.v),2)} a day.`}</p>`;
  if(v==='house')h+=`<h3>A scale model</h3><p>Every line is multiplied by the same factor: your household’s yearly spending ÷ ${B1(TOT)}. A scale model keeps every ratio the same, so the borrowed share (${pct((TOT-REV)/TOT*100,1)}) stays the same at any size. The number you type stays in this browser tab; nothing is saved or sent.</p><p class="help">A government is not a household: it can borrow for decades and its spending changes the economy around it. The model shows sizes, not how a government should budget.</p>`;
  if(v==='claim')h+=`<h3>Checking a claimed saving</h3><p>A claim says something will cost ${B1(sim.p.save)} less a year. Convert it first: share of all spending, per person, and against one line. Then check it later with actual outlays: the Treasury’s <a href="https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/" target="_blank" rel="noopener">Monthly Treasury Statement</a> reports what each agency and line actually spent. Compare the same months a year apart, and ask what else changed (inflation, how many people were eligible, one-time costs).</p><p class="help">A saving is measured against a baseline: what would have happened without the change. That baseline is itself an estimate, so a saving can be real even when outlays rise, or claimed even when outlays do not fall. The tool shows the method; it does not judge any particular claim.</p>`;
  if(v==='impact')h+=`<h3>Dollars ÷ cost per unit = units</h3><p>${B1(Math.abs(sim.p.chg))} ÷ ${M(PROG[sim.p.prog].unit,PROG[sim.p.prog].unit<1e4?2:0)} = ${big(Math.abs(units(sim)))} ${PROG[sim.p.prog].noun}.</p>
   <p><b>The worked example.</b> In July 2025 the Congressional Budget Office (CBO) estimated that Public Law 119-21 lowers federal nutrition spending, mostly SNAP, by $186.65B and raises defense spending by about $149.5B over 2025–2034, relative to CBO’s January 2025 baseline. CBO also estimated its SNAP work-requirement provisions lower participation by roughly 2.4 million people in an average month.</p>
   <p><b>Try the division:</b> the yearly average SNAP change, ${B1(CBO.snap/10)}, ÷ $2,272.32 per person-year is ${big(Math.abs(CBO.snap/10)*1e9/PROG.snap.unit)} person-years. That is not the same as CBO’s 2.4 million people. Part of the federal change shifts costs to states (CBO: about $41B over 2028–2034), and part comes from smaller average benefits (CBO projects $213 a month in 2034 instead of $227), not fewer people.</p>
-  <p><b>A CBO estimate is a model.</b> It assumes how people and states will respond, it covers a fixed 10-year window, each provision is estimated alone, and CBO uses a range of possible state responses. Real outlays will differ. Supporters of these changes pointed to lower federal spending, work expectations and military needs; opponents pointed to people losing food help and the larger deficit. Weighing that is a question of values, which this tool does not score. For the policy side, try the <a href="https://rjedtech.github.io/Raider-CivicsLab/#budget" target="_blank" rel="noopener">CivicsLab budget tool</a>.</p>`;
+  <p>CBO’s estimate is a model, not a count; see <b>About this model</b>. Weighing the policy is a question of values, which this tool does not score.</p>`;
  if(v==='compare')h+=`<h3>Ratio and difference</h3><p>Ratio = ${B1(A.v)} ÷ ${B1(lineB(sim).v)} = ${(A.v/lineB(sim).v).toFixed(2)}. Difference per person = (${B1(A.v)} − ${B1(lineB(sim).v)}) ÷ 341.8 million = ${M(perYr(A.v)-perYr(lineB(sim).v),2)} a year. A ratio says “how many times”; a difference says “how much more.” Both are true; they answer different questions.</p>`;
  if(v==='deep')h+=`<h3>Logs and GDP</h3><p>log₁₀ counts factors of 10. log₁₀(A) − log₁₀(B) = log₁₀(A ÷ B). Share of budget divides by spending (${B1(TOT)}); percent of GDP divides by the whole economy (${B1(GDP)}, a CBO projection). The same line looks about ${(GDP/TOT).toFixed(2)} times smaller as a percent of GDP.</p>`;
  h+=`<div class="qcard"><h3>What this number hides</h3><ul><li>A total hides who receives it. ${B1(L('ss').v)} for Social Security goes to retirees, survivors and people with disabilities, not to every American.</li><li>A per-person average spreads money over everyone, but most programs pay some people and not others. ${M(perYr(L('ss').v),0)} per person a year is not what any one person gets.</li><li>Nominal dollars hide inflation: a dollar in FY2026 buys less than a dollar did ten years earlier, so compare years with care.</li><li>One year hides the trend, and a 10-year total hides which years the money moves.</li></ul></div>`+QUESTIONS;
@@ -226,6 +230,7 @@ function info(sim){const v=sim.p.view,A=lineA(sim);let h='';
 const SIM={
  id:'billions',hash:'billions',apUnit:4,order:8,tab:'Making sense of a billion',kind:'Simulation',
  prereq:['logscale'],
+ skills:{bio:'Powers of ten and per-person rates: divide a total by a count · Algebra 1 (Unit 2)',honors:'Scientific notation, ratios and differences · Algebra 1 (Units 2 and 8)',ap:'Logarithms as orders of magnitude, and choosing a denominator · AP Precalculus (Unit 2B)'},
  card:'Guess what one part of the federal budget costs per American per day, then use powers of ten, log scales and per-person rates to see billions and trillions.',
  title:'Making sense of a billion',
  lede:{bio:'Million, billion, trillion: each is 1,000 times the last, but they all just sound like “a lot.” Turn them into dollars per person, per day, and per household, and you can see how big each one really is.',
@@ -250,16 +255,16 @@ const SIM={
   {id:'cbodef',label:'CBO example: defense change, yearly average',run(sim){BioLab.setValues(sim,{view:'impact',prog:'f35',chg:15});}}],
  init(){return {};},step(){},
  metrics:[
-  {id:'peryr',label:'Chosen line per person, per year',unit:'$',d:2,min:0,max:null,get:sim=>perYr(lineA(sim).v)},
-  {id:'perday',label:'Chosen line per person, per day',unit:'$',d:2,min:0,max:null,get:sim=>perDay(lineA(sim).v)},
-  {id:'hhmo',label:'Chosen line per household, per month',unit:'$',d:2,min:0,max:null,get:sim=>hhMo(lineA(sim).v)},
+  {id:'peryr',label:'Chosen line per person, per year',unit:'$',d:2,min:0,max:null,get:sim=>pending(sim)?null:perYr(lineA(sim).v)},
+  {id:'perday',label:'Chosen line per person, per day',unit:'$',d:2,min:0,max:null,get:sim=>pending(sim)?null:perDay(lineA(sim).v)},
+  {id:'hhmo',label:'Chosen line per household, per month',unit:'$',d:2,min:0,max:null,get:sim=>pending(sim)?null:hhMo(lineA(sim).v)},
   {id:'share',label:'Chosen line, share of all spending',unit:'%',d:2,min:0,max:100,get:sim=>share(lineA(sim).v)},
   {id:'hhline',label:'Chosen line in the household model',unit:'$ a year',d:0,min:0,max:null,get:sim=>hhScale(sim,lineA(sim).v)},
   {id:'savshare',label:'Claimed saving, share of all spending',unit:'%',d:3,min:0,max:null,get:sim=>share(sim.p.save)},
   {id:'savpp',label:'Claimed saving per person, per year',unit:'$',d:2,min:0,max:null,get:sim=>perYr(sim.p.save)},
   {id:'units',label:'Policy change in program units',unit:'units',d:0,min:null,max:null,get:units},
   {id:'ratio',label:'Ratio: chosen line ÷ compared line',unit:'×',d:2,lvl:'honors',min:0,max:null,get:sim=>lineA(sim).v/lineB(sim).v},
-  {id:'diffpp',label:'Difference per person, per year',unit:'$',d:2,lvl:'honors',min:null,max:null,get:sim=>perYr(lineA(sim).v)-perYr(lineB(sim).v)},
+  {id:'diffpp',label:'Difference per person, per year',unit:'$',d:2,lvl:'honors',min:null,max:null,get:sim=>pending(sim)?null:perYr(lineA(sim).v)-perYr(lineB(sim).v)},
   {id:'logdiff',label:'Factors of 10 apart (log₁₀ of the ratio)',unit:'',d:3,lvl:'ap',min:null,max:null,get:sim=>Math.log10(lineA(sim).v/lineB(sim).v)},
   {id:'gdp',label:'Chosen line, percent of GDP',unit:'%',d:2,lvl:'ap',min:0,max:null,get:sim=>lineA(sim).v/GDP*100}
  ],
@@ -274,19 +279,32 @@ const SIM={
   if(v==='compare'){const r=A.v/lineB(sim).v;return `<b>Ratio ${r.toFixed(2)}</b>, difference ${M(perYr(A.v)-perYr(lineB(sim).v),2)} per person a year. The ratio says how many times; the difference says how much more.`;}
   return `${A.s} is ${sci(A.v*1e9,3)} dollars, so log₁₀ = ${Math.log10(A.v*1e9).toFixed(3)}. It is <b>${pct(share(A.v),2)} of the budget</b> but only ${pct(A.v/GDP*100,2)} of GDP.`;},
  gut:{better:'lower',controls:['guess'],
-  ask:{bio:'The highlighted line in the picture shows what one part of the federal budget cost in FY2026. About 341.8 million people live in the U.S. What did it cost <b>per person, per day</b>? Work it out on paper (divide by 341.8 million, then by 365) or go with your gut. Set <b>Your answer</b>, then lock it in.',
-   honors:'The highlighted line shows one part of the FY2026 federal budget. Write it in scientific notation, divide by 3.418 × 10⁸ people and by 365 days, and set <b>Your answer</b> in dollars per person per day. Then lock it in.'},
+  ask:{bio:'The highlighted line in the picture shows what one part of the federal budget cost in FY2026. About 341.8 million people live in the U.S. What do you think it cost <b>per person, per day</b>? Set <b>Your answer</b> by feel, then lock it in.',
+   honors:'The highlighted line shows one part of the FY2026 federal budget. Before any arithmetic, set <b>Your answer</b> to your gut for its cost in dollars per person per day. Then lock it in.'},
+  hint:{bio:'Lock in your gut answer. Then you will divide it out yourself.'},
+  calc:{unit:'$',d:2,tol:a=>Math.max(0.01,0.01*a),
+   prompt:{bio:sim=>{const A=lineA(sim);return `${A.l} cost <b>${B1(A.v)}</b> in FY2026: $${(A.v*1e9).toLocaleString('en-US')}. About <b>341,800,000</b> people live in the U.S. Divide by the number of people, then by 365 days. What did it cost per person, per day?`;},
+    honors:sim=>{const A=lineA(sim);return `${A.l} cost ${B1(A.v)} = ${sci(A.v*1e9,4)} dollars. The U.S. has 3.418 × 10⁸ people. Divide in scientific notation, then by 365 days. What is the cost per person, per day?`;}},
+   answer:sim=>perDay(lineA(sim).v),
+   hint:'First divide the dollars by 341,800,000 people to get dollars per person a year. Then divide by 365.',
+   steps(sim){const A=lineA(sim),yr=perYr(A.v),out=[];
+    if(atLeast('honors')){const a=A.v*1e9,e=Math.floor(Math.log10(a)),m=a/Math.pow(10,e);const q=m/3.418,nq=q<1?q*10:q,ne=q<1?e-9:e-8;out.push(`${sci(a,4)} ÷ (3.418 × 10⁸) = (${m.toFixed(4)} ÷ 3.418) × 10${sup(e-8)} = ${nq.toFixed(4)} × 10${sup(ne)} ≈ ${M(yr,2)} per person a year.`);}
+    else out.push(`Per person per year: $${(A.v*1e9).toLocaleString('en-US')} ÷ 341,800,000 ≈ ${M(yr,2)}.`);
+    out.push(`Per day: ${M(yr,2)} ÷ 365 ≈ <b>${M(yr/365,2)}</b> per person.`);
+    return out;}},
+  formula(sim){const A=lineA(sim);return atLeast('honors')?`${sci(A.v*1e9,4)} ÷ (3.418 × 10⁸ people) ÷ 365 days = ${M(perDay(A.v),2)} per person per day`:`${B1(A.v)} ÷ 341.8 million people ÷ 365 days = ${M(perDay(A.v),2)} per person per day`;},
   lock(sim){const g=sim.p.guess,t=truth(sim);return {v:Math.abs(g-t),guess:g,line:sim.p.lineA,label:`${M(g,2)} per person per day for ${lineA(sim).s}`};},
   solve(sim){const t=truth(sim);sim.p.guess=+t.toFixed(6);sim.p.view='people';return {v:Math.abs(sim.p.guess-t),guess:t,line:sim.p.lineA,label:`${M(t,2)} per person per day (${B1(lineA(sim).v)} ÷ 341.8 million ÷ 365)`};},
   how:{bio:'The math divides twice: the line ÷ 341.8 million people gives dollars per person per year, and ÷ 365 gives dollars per day.',
    honors:'In scientific notation: (line × 10⁹) ÷ (3.418 × 10⁸) ÷ 365. Dividing powers of ten subtracts exponents: 10⁹ ÷ 10⁸ = 10¹, so $1 billion is about $2.93 per person.'},
-  compare(sim,g,m){const A=L(g.line),off=Math.abs(g.guess-m.guess),yr=off*DAYS,tot=off*DAYS*POP/1e9,ratio=g.guess/m.guess;
-   if(off<0.05)return `Your answer was right on: ${M(g.guess,2)} against the real ${M(m.guess,2)} per person per day for ${A.s}. That is ${M(perYr(A.v),2)} per person a year, or ${M(hhMo(A.v),2)} per household a month.`;
+  compare(sim,g,m){const A=L(g.line),off=Math.abs(g.guess-m.guess),yr=off*DAYS,tot=off*DAYS*POP/1e9,ratio=g.guess/m.guess,K=sim.ui&&sim.ui.calc,self=K&&K.done&&K.correct?' You also divided it out yourself, so you can size any budget line this way.':'';
+   if(off<0.05)return `Your answer was right on: ${M(g.guess,2)} against the real ${M(m.guess,2)} per person per day for ${A.s}. That is ${M(perYr(A.v),2)} per person a year, or ${M(hhMo(A.v),2)} per household a month.`+self;
    const near=LINES.filter(x=>x.v<=tot).sort((a,b)=>b.v-a.v)[0];
-   return `You answered ${M(g.guess,2)} a day; the real figure is <b>${M(m.guess,2)}</b>, so you were ${g.guess>m.guess?ratio.toFixed(1)+' times too high':g.guess>0?(1/ratio).toFixed(1)+' times too low':'too low'}. A gap of ${M(off,2)} a day per person is ${M(yr,2)} per person a year, and across 341.8 million people it is <b>${B1(tot)} a year</b>${near?`, bigger than the whole ${near.s} line (${B1(near.v)})`:''}. Small per-person numbers add up to big totals.`;},
+   return `You answered ${M(g.guess,2)} a day; the real figure is <b>${M(m.guess,2)}</b>, so you were ${g.guess>m.guess?ratio.toFixed(1)+' times too high':g.guess>0?(1/ratio).toFixed(1)+' times too low':'too low'}. A gap of ${M(off,2)} a day per person is ${M(yr,2)} per person a year, and across 341.8 million people it is <b>${B1(tot)} a year</b>${near?`, bigger than the whole ${near.s} line (${B1(near.v)})`:''}. Small per-person numbers add up to big totals.`+self;},
   again(sim){const o=PICK[Math.floor(Math.random()*PICK.length)];sim.p.lineA=o.id;sim.p.guess=1;sim.p.view='people';}
  },
  challenges:[
+  {lvl:'bio',kind:'num',q:'Veterans’ programs cost $416.2 billion in FY2026, and 341.8 million people live in the U.S. What is that per person, per day, to the nearest cent?',answer:416.2e9/341.8e6/365,tol:0.01,unit:'$',d:2,hint:'Divide $416,200,000,000 by 341,800,000 people, then divide by 365 days.',explain:'$416,200,000,000 ÷ 341,800,000 ≈ $1,217.67 per person a year, and $1,217.67 ÷ 365 ≈ $3.34 a day.'},
   {lvl:'bio',instant:true,q:'If you counted one number every second, day and night, how long would it take to count to one billion?',choices:['About 11.6 days','About 3.2 years','About 31.7 years','About 317 years'],correct:2,explain:'1,000,000,000 ÷ 86,400 seconds a day ÷ 365.25 days a year ≈ 31.7 years. A million seconds is only 11.6 days: a billion is 1,000 times bigger, not a little bigger.'},
   {lvl:'bio',instant:true,q:'You draw all FY2026 federal spending ($7,395.8B) as a bar 700 pixels long. How wide is $1 billion on that bar?',choices:['About 0.09 pixels','About 1 pixel','About 9 pixels','About 95 pixels'],correct:0,explain:'700 ÷ 7,395.8 ≈ 0.095 pixels per billion. A screen cannot draw it. That is why a linear scale hides small numbers next to big ones, and why log scales exist.'},
   {lvl:'bio',instant:true,q:'A news story reports a claimed saving of $50 billion a year. What share of FY2026 federal spending is that?',choices:['About 0.68%','About 6.8%','About 50%'],correct:0,explain:'$50B ÷ $7,395.8B ≈ 0.0068, or 0.68%. Per person, it is about $146 a year, or 40 cents a day.'},
@@ -300,8 +318,7 @@ const SIM={
   {title:'Where did $1 billion go?',text:'On this line, $1 billion is less than a tenth of a pixel wide, and $1 million is a thousand times smaller still. They both sit on top of $0. A linear scale can show $7.4 trillion or $1 billion, not both.',pause:true,focus:[[10,90,260,110]]},
   {title:'Switch to a log line',text:'Now each step to the right multiplies by 10. $1 million to $1 billion is three steps; $1 billion to $1 trillion is three more. Every budget line fits on one line you can read.',pause:true,setup:sim=>BioLab.setValues(sim,{axis:'log'})},
   {title:'Seconds make it real',text:'Count one second per dollar: $1 million takes 11.6 days, $1 billion takes 31.7 years, and $1 trillion takes about 31,700 years.',pause:true,focus:[[20,255,760,150]]},
-  {title:'Your turn: one billion per person',text:'Before the next step, work this out: $1,000,000,000 ÷ 341,800,000 people = ? Write your answer down. Then press next.',pause:true},
-  {title:'Per person, per day',text:'$1 billion ÷ 341.8 million ≈ $2.93 per person a year, less than one cent a day. Defense, $965.2B, is $2,823.87 per person a year, or $7.74 a day. The table does the same two divisions for every line.',pause:true,setup:sim=>BioLab.setValues(sim,{view:'people',lineA:'df'})},
+  {title:'Per person, per day',text:'$1,000,000,000 ÷ 341,800,000 ≈ $2.93 per person a year, less than one cent a day. Defense, $965.2B, is $2,823.87 per person a year, or $7.74 a day. The table does the same two divisions for every line.',pause:true,setup:sim=>BioLab.setValues(sim,{view:'people',lineA:'df'})},
   {title:'A claimed saving, sized',text:'A $50 billion saving is 0.68% of all spending: about 7 of these 1,000 squares, or $146 per person a year. To check it later, compare actual outlays in the Monthly Treasury Statement.',pause:true,setup:sim=>BioLab.setValues(sim,{view:'claim',save:50})},
   {title:'Dollars into people and things',text:'Divide a change by what one unit costs. CBO estimated that Public Law 119-21 lowers nutrition spending, mostly SNAP, by $186.65B over 10 years and raises defense by $149.5B. Per American per day, those are about 15¢ and 12¢.',pause:true,setup:sim=>BioLab.setValues(sim,{view:'impact',prog:'snap',chg:-19})}
  ],
@@ -327,6 +344,7 @@ const SIM={
   '<p><b>GDP.</b> $31,902B for FY2026, CBO’s projection in <i>The Budget and Economic Outlook: 2026 to 2036</i>, table 1-1, Feb 2026 (<a href="https://www.cbo.gov/publication/61882" target="_blank" rel="noopener">cbo.gov</a>). It is a projection, not a final count.</p>'+
   '<p><b>Unit costs.</b> SNAP: average benefit $189.36 per person per month, 42.14 million people in an average month, total costs $102.58B, FY2025 (USDA Food and Nutrition Service, SNAP data tables, data as of Oct 9, 2026: <a href="https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap" target="_blank" rel="noopener">fns.usda.gov</a>). Pell Grant: maximum award $7,395 for 2026–27 (Dept. of Education, GEN-26-01: <a href="https://fsapartners.ed.gov/knowledge-center/library/dear-colleague-letters/2026-01-30/2026-27-federal-pell-grant-maximum-and-minimum-award-amounts" target="_blank" rel="noopener">fsapartners.ed.gov</a>); about 7.26 million recipients with an average grant of $5,247 in 2024–25 (Dept. of Education, FY2026 budget justification, Student Financial Assistance: <a href="https://www.ed.gov/media/document/fy-2026-congressional-justification-student-financial-assistance-110145.pdf" target="_blank" rel="noopener">ed.gov</a>). F-35: about $6.6M per Air Force jet per year to operate (GAO-24-106703, the figure used in the CivicsLab budget tool). The tool has no per-service-member cost, because it found no single official figure to use. Units are for scale: real programs have overhead and rules.</p>'+
   '<p><b>CBO worked example.</b> CBO, <i>Estimated Budgetary Effects of Public Law 119-21</i>, July 21, 2025 (<a href="https://www.cbo.gov/publication/61570" target="_blank" rel="noopener">cbo.gov</a>), relative to CBO’s January 2025 baseline, 2025–2034: nutrition subtitle −$186.65B (as tabulated in CRS report R48552: <a href="https://www.everycrsreport.com/reports/R48552.html" target="_blank" rel="noopener">everycrsreport.com</a>); Title II defense provisions add about $149.5B to deficits (CRS Insight IN12580: <a href="https://www.congress.gov/crs_external_products/IN/PDF/IN12580/IN12580.4.pdf" target="_blank" rel="noopener">congress.gov</a>). Participation: roughly 2.4 million fewer SNAP participants in an average month from the work-requirement provisions; section 10105 shifts about $41B to states over 2028–2034; average benefit $213 instead of $227 in 2034 (CBO, Aug 11, 2025: <a href="https://www.cbo.gov/system/files/2025-08/61367-SNAP.pdf" target="_blank" rel="noopener">cbo.gov</a>). The yearly averages in this tool divide the 10-year totals by 10; CBO’s year-by-year amounts differ, and the CBO example buttons round them to whole billions.</p>'+
+  '<p><b>A CBO estimate is a model.</b> It assumes how people and states will respond, it covers a fixed 10-year window, each provision is estimated alone, and CBO uses a range of possible state responses. Real outlays will differ. Supporters of these changes pointed to lower federal spending, work expectations and military needs; opponents pointed to people losing food help and the larger deficit. Weighing that is a question of values, which this tool does not score. For the policy side, try the <a href="https://rjedtech.github.io/Raider-CivicsLab/#budget" target="_blank" rel="noopener">CivicsLab budget tool</a>.</p>'+
   '<p><b>What the model leaves out.</b> Nominal dollars, not adjusted for inflation. One year of spending, with no effects on the economy. Per-person figures are averages: most programs pay some people and not others. The household model is a scale model, not a claim that a government should budget like a family.</p>'
 };
 BioLab.register(SIM);

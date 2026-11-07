@@ -7,6 +7,6 @@ stickernet:{
   'Comparing aid offers this spring: line up each college’s net price, not its sticker price and not its total “aid package,” which can include loans you must repay. In Colorado, the Colorado Promise can refund out-of-pocket tuition and fees at public colleges for residents whose family adjusted gross income is $90,000 or less.',
   'Car loans and mortgages: the monthly payment on a fixed-rate car loan or home loan comes from the same amortization formula as your student loan. It is how a dealer turns a price into “just this much a month,” and why a longer loan costs more in all.'
  ],
- takeaway:'Compare colleges by net price (sticker minus grants), not sticker price. A loan does not lower the price: it moves part of it into the future, with interest.'
+ takeaway:'Net price = sticker minus grants, and a loan moves part of it into the future, with interest. Your roommate pays $160,000 more for the same room. What should a college’s aid decision weigh?'
 }
 });

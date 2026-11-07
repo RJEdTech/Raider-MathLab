@@ -52,8 +52,22 @@ const firsts=(S,res)=>S.filter((x,i)=>res.asg[i]===x.pref[0]).length;
 const top2=(S,res)=>S.filter((x,i)=>res.asg[i]<3&&x.pref.indexOf(res.asg[i])<2).length;
 const unlisted=res=>res.listed.filter(x=>!x).length;
 const ruleName=r=>r==='da'?'deferred acceptance':'the Boston rule';
-function R(sim){const m=M(sim),st=sim.st;if(st.key!==m.key){st.key=m.key;st.r=0;}st.r=clamp(st.r,0,m.R);return st.r;}
-const done=sim=>R(sim)>=M(sim).R;
+/* While the student traces the match by hand ("Your turn"), the picture stays on the lists (round 0). */
+const pend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+function R(sim){const m=M(sim),st=sim.st;if(st.key!==m.key){st.key=m.key;st.r=0;}st.r=clamp(st.r,0,m.R);return pend(sim)?0:st.r;}
+const done=sim=>R(sim)>=M(sim).R&&!pend(sim);
+/* the round-by-round trace, in words, for the worked steps */
+const who=(S,i,s)=>(i===0?'You':'Student '+i)+(S[i].zone===s?' (walk zone)':' (#'+S[i].lot+')');
+const whoL=(S,a,s)=>a.length===0?'nobody':a.length===1?who(S,a[0],s):a.slice(0,-1).map(i=>who(S,i,s)).join(', ')+' and '+who(S,a[a.length-1],s);
+function trace(m,rule){const S=m.S,out=[],da=rule==='da';let prev=[[],[],[]];
+ m.res.rounds.forEach((Rd,r)=>{const parts=[];for(let s=0;s<3;s++){const nw=Rd.props.filter(p=>p[1]===s).map(p=>p[0]);if(!nw.length)continue;
+   const kept=Rd.held[s].filter(i=>nw.includes(i)||(da&&prev[s].includes(i))),rej=Rd.rej.filter(x=>x[1]===s).map(x=>x[0]);
+   const pool=da?prev[s].concat(nw):nw;
+   const one=pool.length===1&&pool[0]!==0;
+   parts.push(da?`${SCH[s]}: ${whoL(S,pool,s)} ${pool.length>1?'compete':one?'applies':'apply'}; it holds ${whoL(S,kept,s)}${rej.length?' and turns down '+whoL(S,rej,s):''}`
+    :`${SCH[s]} (${SEATS[s]-prev[s].length} open): ${whoL(S,pool,s)} ${one?'applies':'apply'}; ${kept.length?(kept.length===1?'a seat goes to ':'seats go to ')+whoL(S,kept,s):'no seat is left'}${rej.length?'; '+whoL(S,rej,s)+' turned down':''}`);}
+  out.push(`Round ${r+1}. `+parts.join('. ')+'.');prev=Rd.held.map(h=>h.slice());});
+ return out;}
 /* best list for You under the current rule: try every list allowed; ties keep the honest list */
 function bestList(sim,rule){const cap=capOf(sim),opts=[];PERMS.forEach(p=>{const l=p.slice(0,cap);if(!opts.some(o=>o.join()===l.join()))opts.push(l);});
  let best=null;const S=makeSet(sim.p.seed|0);opts.forEach(l=>{const r=result(sim,l,rule),v=place(S,0,r.res.asg[0]);if(!best||v<best.v-1e-9)best={v,l,r};});
@@ -72,6 +86,7 @@ function stateAt(m,r){if(r<=0)return {held:[[],[],[]],rej:[],props:[]};const R=m
 
 const SIM={
  id:'schoolmatch',hash:'schoolmatch',apUnit:20,order:2,tab:'The school match',kind:'Simulation',
+ skills:{bio:'Tracing an algorithm round by round · Geometry (Unit 2, Logic and reasoning)',honors:'Tracing an algorithm; stable matching and blocking pairs · Geometry (Unit 2, Logic and reasoning)',ap:'Stable matching and strategy-proofness (Gale and Shapley) · Geometry (Unit 2, Logic and reasoning)'},
  card:'Rank three high schools, decide whether to list your true favorite first, then watch two matching rules play out round by round on the same lists.',
  title:'The school match: is it safe to tell the truth?',
  lede:{bio:'Many districts, including Denver, match students to schools with an algorithm. You rank schools; each school ranks applicants by its own priorities. The rule decides whether honesty is safe. Under the old Boston rule, listing a popular school first can cost you. Under deferred acceptance, it can’t.',
@@ -154,6 +169,7 @@ const SIM={
  infoPanel(sim){const m=M(sim),S=m.S;
   return `<p class="p-h"><b>Who applied, and how schools rank them</b></p><div style="overflow-x:auto"><table style="font-size:13px"><thead><tr><th>Student</th><th>List turned in</th><th>Lottery #</th><th>Walk zone</th></tr></thead><tbody>${S.map((x,i)=>`<tr${i===0?' style="font-weight:700"':''}><td>${i===0?'You':'Student '+i}</td><td>${listLabel(m.lists[i])}${i===0?` (true: ${listLabel([0,1,2])})`:''}</td><td>${x.lot}</td><td>${x.zone>=0?SCH[x.zone]:'none'}</td></tr>`).join('')}</tbody></table></div><p style="font-size:13px">Each school seats students in its walk zone first, then lower lottery numbers. Only you choose what to turn in; the other five turn in their true rankings.</p>`;},
  narrate(sim){const m=M(sim),S=m.S,r=R(sim),da=sim.p.rule==='da';
+  if(pend(sim))return `Everyone has turned in a ranked list. <b>Trace the rounds yourself first:</b> at each school, line up the applicants (walk zone, then lottery number) and keep the top 2. ${da?'Under deferred acceptance a school can swap out a student it was holding.':'Under the Boston rule, seats given out are final.'}`;
   if(r===0)return da?'Everyone has turned in a ranked list. <b>Under deferred acceptance</b>, each school will only <i>hold</i> its best applicants until the very end, so applying to a popular school first costs you nothing. Press <b>Next round</b>.':'Everyone has turned in a ranked list. <b>Under the Boston rule</b>, round 1 seats are final, so a school fills up with the students who ranked it first. Press <b>Next round</b>.';
   const R0=m.res.rounds[r-1],yp=R0.props.find(p=>p[0]===0),yr=R0.rej.find(p=>p[0]===0);
   let you='';if(yp)you=yr?` You applied to ${SCH[yp[1]]} and were turned down.`:` You applied to ${SCH[yp[1]]} and ${da?'are being held there for now':'got a seat'}.`;
@@ -163,6 +179,15 @@ const SIM={
   ask:{bio:'You like <b>Aspen</b> best, then <b>Birch</b>, then <b>Cedar</b>. Aspen is the most popular school. Pick your 1st and 2nd choice here: do you put Aspen first, or play it safe? The district’s rule is named at the top of the picture. Then lock in your list.'},
   lock(sim){const l=yourList(sim),{S,res}=result(sim,l);return {v:score(S,res),l,label:`${listLabel(l)}: you get ${youText(S,res)}`};},
   solve(sim){const b=bestList(sim,sim.p.rule);setList(sim,b.l);sim.st.key=null;R(sim);sim.st.r=M(sim).R;const {S,res}=result(sim,b.l);return {v:score(S,res),l:b.l,label:`${listLabel(b.l)}: you get ${youText(S,res)}`};},
+  hint:{bio:'Lock in your list. Then you will trace the match yourself, round by round.'},
+  calc:{unit:'',d:0,tol:0,
+   prompt:sim=>{const m=M(sim),da=sim.p.rule==='da';return `Trace the match by hand under <b>${da?'deferred acceptance':'the Boston rule'}</b>. Each school has 2 seats and seats its walk zone first, then the lowest lottery numbers. The lists, lottery numbers and walk zones are in the picture; you turned in <b>${listLabel(m.list)}</b>. ${da?'Each round, every student not being held applies to their next school, and each school keeps its best 2 so far.':'Each round, every student without a seat applies to their next choice, and seats given out are final.'} Which school on your <b>true</b> list (Aspen 1, Birch 2, Cedar 3) do you end up at? Enter 1, 2 or 3, or 4 if the district places you at Dogwood.`;},
+   answer:sim=>{const m=M(sim);return score(m.S,m.res);},
+   hint:'Go one round at a time. In each school, line up its applicants: walk zone first, then lottery number. Keep the top 2.',
+   steps(sim){const m=M(sim),y=youGet(m.S,m.res),out=trace(m,sim.p.rule);
+    out.push(`You end at ${y.s===3?'Dogwood, placed by the district':SCH[y.s]}: place <b>${y.n}</b> on your true list.`);return out;}},
+  formula(sim){const m=M(sim),S=m.S,n=6;
+   return `Priority at every school: walk zone first, then lowest lottery number. ${ruleName(sim.p.rule)[0].toUpperCase()+ruleName(sim.p.rule).slice(1)}, ${m.R} round${m.R===1?'':'s'}.<br>Lists tried: ${n}. Best for you: ${listLabel(m.list)} → ${youText(S,m.res)}.`;},
   how:{bio:'The math runs the match for every list you could turn in and keeps the one that gets you the school you like best. Under deferred acceptance it never has to search: your true ranking always does at least as well as any other list. Under the Boston rule, the best list depends on everyone else’s lists and lottery numbers. The math can see those. A real family can’t.',
    honors:'For each possible list, the math runs the rounds, finds your school, and checks for blocking pairs. Under deferred acceptance, your true list is always among the best, and the result is stable. Under the Boston rule, it often is neither.'},
   compare(sim,g,m){const rule=sim.p.rule,other=rule==='da'?'boston':'da',S=makeSet(sim.p.seed|0);
@@ -170,11 +195,12 @@ const SIM={
    let h=g.v<=m.v+1e-9?`Your gut was right on: under ${ruleName(rule)}, your list gets you <b>${youText(S,gR)}</b>, and no list does better.`:`Under ${ruleName(rule)}, your list gets you ${youText(S,gR)}. The best list, ${listLabel(m.l)}, gets you <b>${youText(S,result(sim,m.l,rule).res)}</b>.`;
    const gHon=g.l.join('')===hon.join('');h+=gHon?` Under ${ruleName(other)}, the same list would get you ${youText(S,gO)}.`:` Under ${ruleName(other)}, your list would get you ${youText(S,gO)}, and your true ranking would get you ${youText(S,hO)}.`;
    const hd=result(sim,hon,'da').res,bd=bestList(sim,'da');h+=score(S,hd)<=bd.v+1e-9?` <b>Under deferred acceptance, telling the truth is safe:</b> no list beats your true ranking.`:` With only ${capOf(sim)} schools allowed, even deferred acceptance can punish honesty: the best list here is ${listLabel(bd.l)}.`;
-   h+=` Across all 6 students, with your list: Boston puts ${firsts(S,result(sim,g.l,'boston').res)} at their 1st choice and ${top2(S,result(sim,g.l,'boston').res)} in their top 2; deferred acceptance puts ${firsts(S,result(sim,g.l,'da').res)} and ${top2(S,result(sim,g.l,'da').res)}.`;
    return h;},
   again(sim){sim.p.seed=1+Math.floor(Math.random()*99);sim.p.first='0';sim.p.second='1';sim.st.key=null;}
  },
  challenges:[
+  {lvl:'bio',kind:'num',q:'A new district, Boston rule. Maple, Oak and Pine have 1 seat each; no walk zones, so the lowest lottery number wins. Ana lists Maple › Oak › Pine (#2). Ben lists Maple › Pine › Oak (#1). Cy lists Oak › Maple › Pine (#3). Which choice on her list does Ana get: 1, 2 or 3?',answer:3,tol:0,unit:'',hint:'Round 1: everyone applies to their 1st choice, and seats are final. Who wins Maple?',explain:'Round 1: Maple goes to Ben (#1 beats Ana’s #2), and Oak goes to Cy. Round 2: Ana applies to Oak, but its seat is already final. Round 3: Ana gets Pine, her 3rd choice.'},
+  {lvl:'honors',kind:'num',q:'Same three students and schools, but deferred acceptance. Which choice on her list does Ana get now: 1, 2 or 3?',answer:2,tol:0,unit:'',hint:'Seats are only held. When Ana applies to Oak in round 2, compare her lottery number with the student Oak is holding.',explain:'Round 1: Maple holds Ben, Oak holds Cy, Ana is turned down. Round 2: Ana applies to Oak; her #2 beats Cy’s #3, so Oak holds Ana and turns Cy down. Round 3: Cy applies to Maple and loses to Ben. Round 4: Cy gets Pine. Ana ends at Oak, her 2nd choice.'},
   {lvl:'bio',instant:true,q:'District 0, Boston rule. You turn in your true ranking: Aspen, then Birch, then Cedar. Where do you end up?',choices:['Aspen','Birch','Cedar'],correct:2,explain:'Round 1: Aspen’s 2 seats go to Student 1 (walk zone) and Student 2 (lottery #3, ahead of your #4). Birch fills its 2 seats with students who ranked it first. In round 2 Birch is already full, so in round 3 you take a Cedar seat.'},
   {lvl:'bio',instant:true,q:'Same district, but now the rule is deferred acceptance. You turn in your true ranking. Where do you end up?',choices:['Aspen','Birch','Cedar'],correct:1,explain:'Aspen turns you down in round 1, just as before. But Birch’s seats were only held, not final. In round 2 you apply to Birch, and your lottery #4 beats Student 5’s #6, so Birch holds you and turns Student 5 down. You end at Birch, your 2nd choice.'},
   {lvl:'bio',instant:true,q:'Under deferred acceptance, could any list you turn in get you a better school than your true ranking?',choices:['Yes, if you guess right about the other students','No, your true ranking always does at least as well','Only if you rank Cedar first'],correct:1,explain:'This is strategy-proofness. A school only holds you until someone it ranks higher applies, and applying to a school you like more never uses up your chance at the next one. So putting a school first that you like less can only hurt.'},

@@ -41,11 +41,19 @@ const gapW=(sim,d)=>perDay(sim,d)*365*yrs(sim);
 const gapM=(sim,d)=>gapW(sim,d)/M;
 function marginM(sim,d){d=d||des(sim);if(d.A==null)return null;const n=sim.p.n,c=cv(sim);const se=Math.sqrt((c*d.A)**2/n+(c*d.B)**2/n);return 1.96*se*scale(sim,d)*365*yrs(sim)/M;}
 const GS=sim=>(sim.tour&&sim.tour.on)?null:sim.gutS;
+/* The gap stays hidden until the gut is locked and the student has worked it out ("Your turn"). */
+const pending=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const shown=sim=>!!(sim.p.reveal||(sim.tour&&sim.tour.on)||(sim.gutS&&sim.gutS.g&&!pending(sim)));
+const hid=(sim,v)=>shown(sim)?v:null;
+const hz=v=>{const r=Math.round(v*10)/10;return Number.isInteger(r)?String(r):r.toFixed(1);};
 const f1=v=>fmtNum(v,1),n0=v=>Math.round(v).toLocaleString('en-US');
 function clearGut(sim){if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
 const visible=()=>ORDER.filter(k=>!D[k].lvl||atLeast(D[k].lvl));
+function chainS(sim){const d=des(sim),y=yrs(sim),b=boost(sim);
+ if(d.rec==='hour')return `${n0(d.A-d.B)}/h × ${hz(wake(sim))}${b?' × '+(1-b).toFixed(2):''} × 365 × ${y}`;
+ return `${n0(d.A!=null?d.A-d.B:d.gd)}/day × 365 × ${y}`;}
 function chain(sim){const d=des(sim),y=yrs(sim);
- if(d.rec==='hour'){const b=boost(sim);return [`(${n0(d.A)} − ${n0(d.B)}) words an hour`,`× ${f1(wake(sim))} h a day`+(b?` × ${(1-b).toFixed(2)}`:''),`× 365 days × ${y} years`];}
+ if(d.rec==='hour'){const b=boost(sim);return [`(${n0(d.A)} − ${n0(d.B)}) words an hour`,`× ${hz(wake(sim))} h a day`+(b?` × ${(1-b).toFixed(2)}`:''),`× 365 days × ${y} years`];}
  if(d.gd===0)return ['Every caregiver and overheard talk count: the researchers report no gap'];
  return [d.A!=null?`(${n0(d.A)} − ${n0(d.B)}) words a day`:`${n0(d.gd)} words a day apart`,'(the recorder covers the day)',`× 365 days × ${y} years`];}
 function wrap(ctx,s,maxW,size,w){ctx.font=(w||400)+' '+size+'px '+FONT;const out=[];let line='';s.split(' ').forEach(word=>{const t=line?line+' '+word:word;if(ctx.measureText(t).width>maxW&&line){out.push(line);line=word;}else line=t;});if(line)out.push(line);return out;}
@@ -57,9 +65,10 @@ const HIDE={
  lena:['<b>Three groups become one.</b> 245 mothers without a degree are pooled, though their groups averaged 11,358, 12,239 and 11,969 words a day.','<b>Overlap.</b> The top half of the least-educated group averaged 451 conversational turns a day, more than the bottom half of the most-educated group (334). A group average hides those families.','<b>Who the words were for.</b> The recorder counts adult words near the child; it cannot tell talk to the child from talk between adults.'],
  lena2:['<b>The middle 96%.</b> Comparing the top 2% with the bottom 2% of 329 families uses about 13 homes and leaves the other 316 out entirely.'],
  wide:['<b>All words count the same.</b> A gap of 0 hides differences in who the talk was aimed at. Golinkoff and colleagues argue that directed talk matters most for learning, so this number and the 31.4 million each hide what the other one counts.']};
-const ALLHIDE='<b>What no word count measures.</b> Gestures, pointing, songs, stories in a home language, warmth, patience, and whether a child got an answer all fall outside a tally of words.';
+
 const SIM={
  id:'wordgap',hash:'wordgap',apUnit:21,order:2,tab:'The 30 million word gap',kind:'Simulation',
+ skills:{bio:'Multiplying rates: words an hour × hours × days × years · Statistics (Chapter 7)',honors:'How error in each factor carries into a product · Statistics (Chapter 7)',ap:'Bias vs. sampling error; margin of error ∝ 1/√n · Statistics (Chapter 7), AP Statistics (Unit 5)'},
  card:'Guess the famous gap in words heard by age 4, then redesign the study and watch the number grow, shrink or vanish.',
  title:'The 30 million word gap: measuring a childhood',
  lede:{bio:'In 1995, two researchers recorded one hour a month in 42 homes and turned it into a headline: by age 4, children in poorer families hear 30 million fewer words. How much of that number comes from the families, and how much from the way it was measured?',
@@ -75,18 +84,18 @@ const SIM={
   {id:'wake',label:'Waking hours a day that one observed hour stands for',type:'range',min:8,max:14,step:0.5,def:14,unit:' h',lvl:'honors',noGut:true,onChange:clearGut,help:'Hart & Risley assumed a 14-hour waking day. Naps, car rides and quiet time make a typical hour quieter than an observed one.'},
   {id:'years',label:'Years of childhood you add up',type:'seg',def:4,lvl:'honors',noGut:true,onChange:clearGut,options:[{v:3,l:'3 years (as far as they observed)'},{v:4,l:'4 years (the headline)'}]},
   {id:'boost',label:'Observer effect: families talk more while watched',type:'range',min:0,max:30,step:1,def:0,unit:'%',lvl:'ap',noGut:true,onChange:clearGut,help:'An assumption you set. One city program cut its first recordings by 15% for this reason.'},
+  {id:'reveal',label:'Show the numbers now',type:'toggle',def:false,noGut:true,help:'Normally the gaps appear once you lock in your gut answer and work it out.'},
   {id:'cv',label:'How much families differ inside a group (spread ÷ average)',type:'range',min:20,max:80,step:5,def:40,unit:'%',lvl:'ap',noGut:true,onChange:clearGut,help:'An assumption for illustration. Real studies report wide differences inside every income group.'}
  ],
  init(){return {};},step(){},
  metrics:[
-  {id:'gap',label:'Measured gap by age 4',unit:'million words',d:1,min:0,max:45,get:sim=>gapM(sim)},
-  {id:'perday',label:'Gap per day',unit:'words',d:0,min:0,max:25000,get:sim=>perDay(sim)},
-  {id:'moe',label:'Give or take (95%)',unit:'million words',d:1,min:0,max:30,get:sim=>marginM(sim)},
+  {id:'gap',label:'Measured gap by age 4',unit:'million words',d:1,min:0,max:45,get:sim=>hid(sim,gapM(sim))},
+  {id:'perday',label:'Gap per day',unit:'words',d:0,min:0,max:25000,get:sim=>hid(sim,perDay(sim))},
+  {id:'moe',label:'Give or take (95%)',unit:'million words',d:1,min:0,max:30,get:sim=>hid(sim,marginM(sim))},
   {id:'ratio',label:'Higher group hears this many times as many words',unit:'×',d:2,lvl:'honors',min:0,max:5,get:sim=>{const d=des(sim);return d.A!=null?d.A/d.B:null;}},
   {id:'hours',label:'Hours of talk the headline assumes per year',unit:'h',d:0,lvl:'ap',min:0,max:6000,get:sim=>des(sim).rec==='hour'?wake(sim)*365:null},
-  {id:'off',label:'Your gut is off by',unit:'million words',d:1,min:0,max:45,get:sim=>{const G=GS(sim);return G&&G.g?Math.abs(G.g.guess-gapM(sim)):null;}},
-  {id:'turns',label:'Conversational turns',text:true,lvl:'honors',get:()=>'All-day recordings: about 441 back-and-forth turns a day on average. Children of the most educated mothers had over 50% more turns than the least educated group, but the top half of that group (451 a day) out-talked the bottom half of the most educated group (334). Gilkerson et al. 2017.'},
-  {id:'formula',label:'The arithmetic',text:true,lvl:'ap',get:sim=>{const d=des(sim),m=marginM(sim);return chain(sim).join(' ')+` = ${f1(gapM(sim))} million words`+(m!=null?`. Margin = 1.96 × √((${cv(sim).toFixed(2)}·${n0(d.A)})²/${sim.p.n} + (${cv(sim).toFixed(2)}·${n0(d.B)})²/${sim.p.n})`+(d.rec==='hour'?' words an hour':' words a day')+`, scaled the same way = ±${f1(m)} million.`:'. No group averages are given, so no margin is computed.');}}
+  {id:'off',label:'Your gut is off by',unit:'million words',d:1,min:0,max:45,get:sim=>{const G=GS(sim);return G&&G.g&&shown(sim)?Math.abs(G.g.guess-gapM(sim)):null;}},
+  {id:'formula',label:'The arithmetic',text:true,lvl:'ap',get:sim=>{const d=des(sim),m=marginM(sim);if(!shown(sim))return 'Lock in your gut answer and work it out to see this.';return chain(sim).join(' ')+` = ${f1(gapM(sim))} million words`+(m!=null?`. Margin = 1.96 × √((${cv(sim).toFixed(2)}·${n0(d.A)})²/${sim.p.n} + (${cv(sim).toFixed(2)}·${n0(d.B)})²/${sim.p.n})`+(d.rec==='hour'?' words an hour':' words a day')+`, scaled the same way = ±${f1(m)} million.`:'. No group averages are given, so no margin is computed.');}}
  ],
  draw(sim,ctx,vdt,k){const d=des(sim),big=k>1.3,G=GS(sim);
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
@@ -106,10 +115,10 @@ const SIM={
     txt(ctx,n0(v),428+bw(v)+6,by+15,{s:13*k,w:700,c:PAL['cv-ink']});});}
   else{wrap(ctx,d.gd===0?'Once every caregiver and overheard talk count, the researchers report no gap at all in their communities. They give no per-hour totals to draw.':'The study reports only the difference between these two small groups: about 20,500 words a day.',350,12*k).slice(0,big?4:5).forEach((l,i)=>txt(ctx,l,422,70+i*17*k,{s:12*k,c:PAL['cv-soft']}));}
   /* the arithmetic */
-  const ch=chain(sim),cy=222;
-  if(big){txt(ctx,'= '+f1(gapM(sim))+' million words by age '+yrs(sim),20,cy,{s:15*k,w:700,c:PAL['rj']});}
+  const ch=chain(sim),cy=222,sh=shown(sim);
+  if(big){txt(ctx,(d.gd===0?'No gap reported':chainS(sim))+' = '+(sh?f1(gapM(sim)):'?')+' million',20,cy,{s:14*k,w:700,c:PAL['rj']});}
   else{ctx.font='600 '+(13*k)+'px '+FONT;let x=20;ch.forEach(s=>{txt(ctx,s,x,cy,{s:13*k,w:600,c:PAL['cv-ink']});x+=ctx.measureText(s).width+10;});
-   const res=`= ${f1(gapM(sim))} million words`;if(x+ctx.measureText(res).width+30<790)pill(ctx,res,x+ctx.measureText(res).width/2+18,cy-5,PAL['rj'],'#fff',13*k);else txt(ctx,res,20,cy+20*k,{s:13*k,w:700,c:PAL['rj']});}
+   const res=`= ${sh?f1(gapM(sim)):'?'} million words`;if(x+ctx.measureText(res).width+30<790)pill(ctx,res,x+ctx.measureText(res).width/2+18,cy-5,PAL['rj'],'#fff',13*k);else txt(ctx,res,20,cy+20*k,{s:13*k,w:700,c:PAL['rj']});}
   /* number line */
   const L=50,R=770,ly=big?372:362,X=v=>L+clamp(v,0,45)/45*(R-L);
   txt(ctx,big?'Same question, different designs':'Same question, different designs: the gap by age '+yrs(sim)+', in millions of words',20,big?262:268,{s:13*k,w:700,c:PAL['cv-ink']});
@@ -117,11 +126,12 @@ const SIM={
   for(let v=0;v<=45;v+=(big?15:5)){ctx.beginPath();ctx.moveTo(X(v),ly-4);ctx.lineTo(X(v),ly+4);ctx.stroke();txt(ctx,String(v),X(v),ly+18*k,{s:12*k,c:PAL['cv-soft'],a:'center'});}
   /* margin whisker for the current design */
   const m=marginM(sim),gv=gapM(sim);
-  if(m!=null){ctx.strokeStyle=PAL['rj'];ctx.globalAlpha=.35;ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(X(gv-m),ly);ctx.lineTo(X(gv+m),ly);ctx.stroke();ctx.globalAlpha=1;
+  if(!sh)txt(ctx,G&&G.g?(big?'Work it out first':'Work out the gap first, then compare designs'):(big?'Lock in your gut':'Lock in your gut answer to compare designs'),(L+R)/2,ly-24*k,{s:13*k,c:PAL['cv-soft'],a:'center'});
+  if(sh&&m!=null){ctx.strokeStyle=PAL['rj'];ctx.globalAlpha=.35;ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(X(gv-m),ly);ctx.lineTo(X(gv+m),ly);ctx.stroke();ctx.globalAlpha=1;
    ctx.lineWidth=2;[gv-m,gv+m].forEach(v=>{if(v>=0&&v<=45){ctx.beginPath();ctx.moveTo(X(v),ly-9);ctx.lineTo(X(v),ly+9);ctx.stroke();}});}
   /* markers with lane-packed labels above the line */
   const lanes=[],lh=17*k,labs=[];
-  const marks=visible().map(key=>({key,v:gapM(sim,D[key]),cur:key===sim.p.design}));
+  const marks=sh?visible().map(key=>({key,v:gapM(sim,D[key]),cur:key===sim.p.design})):[];
   marks.sort((a,b)=>(b.cur-a.cur)||a.v-b.v);
   marks.forEach(mk=>{const lab=mk.cur?(big?f1(mk.v):D[mk.key].s+': '+f1(mk.v)):(big?'':D[mk.key].s);
    ctx.fillStyle=mk.cur?PAL['rj']:PAL['cv-soft'];ctx.beginPath();ctx.arc(X(mk.v),ly,mk.cur?8:5,0,7);ctx.fill();
@@ -133,39 +143,57 @@ const SIM={
   /* gut marker below the line */
   if(G&&G.g){const gx=X(G.g.guess);ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.moveTo(gx,ly+6);ctx.lineTo(gx-8,ly+20);ctx.lineTo(gx+8,ly+20);ctx.closePath();ctx.fill();
    const gl=(big?'Gut ':'Your gut: ')+f1(G.g.guess);ctx.font='700 '+(12*k)+'px '+FONT;const w=ctx.measureText(gl).width;txt(ctx,gl,clamp(gx-w/2,4,796-w),ly+38*k,{s:12*k,w:700,c:PAL['s4']});}
-  if(m!=null&&!big)txt(ctx,`Shaded: give or take ${f1(m)} million with ${sim.p.n} families a group`,20,442,{s:12*k,c:PAL['cv-soft']});
+  if(!sh){}else if(m!=null&&!big)txt(ctx,`Shaded: give or take ${f1(m)} million with ${sim.p.n} families a group`,20,442,{s:12*k,c:PAL['cv-soft']});
   else if(m==null&&!big)txt(ctx,'No give-or-take shown: this study does not report both group averages.',20,442,{s:12*k,c:PAL['cv-soft']});},
- infoPanel(sim){const h=HIDE[sim.p.design]||HIDE.hr;return '<h3>What this number hides</h3><p>Math helps us see a pattern, and every number also leaves some families and experiences out of view. For <b>'+des(sim).s+'</b>:</p><ul>'+h.map(x=>'<li>'+x+'</li>').join('')+'<li>'+ALLHIDE+'</li></ul>';},
+ infoPanel(sim){const h=HIDE[sim.p.design]||HIDE.hr;return '<h3>What this number hides</h3><p>For <b>'+des(sim).s+'</b>:</p><ul>'+h.map(x=>'<li>'+x+'</li>').join('')+'</ul>';},
  narrate(sim){const d=des(sim),g=gapM(sim),m=marginM(sim),pd=perDay(sim);
+  if(!shown(sim))return d.rec==='hour'?`${d.s}: ${n0(d.A)} vs. ${n0(d.B)} words an hour. The headline treats one observed hour as ${hz(wake(sim)*(1-boost(sim)))} hours a day, every day, for ${yrs(sim)} years. <b>How big is the gap by age ${yrs(sim)}?</b>`:`${d.s}: ${d.A!=null?`${n0(d.A)} vs. ${n0(d.B)} adult words a day`:`${n0(d.gd)} words a day apart`}, for ${yrs(sim)} years. <b>How big is the gap by age ${yrs(sim)}?</b>`;
   if(d.gd===0)return `<b>Count every caregiver and the talk a child overhears, and the gap disappears</b> in Sperry, Sperry and Miller’s five communities. Other researchers answer that words spoken <i>to</i> a child matter most for learning, so the counting rule is the argument.`;
   if(sim.p.design==='lena2')return `All-day recordings put the 30 million gap back, but only between the top 2% and bottom 2% of 329 families: about 7 families each. <b>Pick the extremes and you can make almost any gap look big.</b>`;
   if(d.rec==='day')return `A recorder worn all day finds a gap of about ${n0(pd)} words a day, or ${f1(g)} million by age ${yrs(sim)}${m!=null?`, give or take ${f1(m)} million with ${sim.p.n} families a group`:''}. <b>No one has to guess how a single hour stands for a whole day.</b>`;
   if(sim.p.design==='bb')return `Same counting rule as Hart and Risley, but a different low-income community: ${n0(d.B)} words an hour instead of ${n0(616)}. <b>The gap shrinks to ${f1(g)} million</b>, so income alone does not predict how much families talk.`;
-  return `One observed hour becomes ${f1(wake(sim)*(1-boost(sim)))} hours a day, every day, for ${yrs(sim)} years: ${f1(g)} million words${m!=null?`, give or take ${f1(m)} million with ${sim.p.n} families a group`:''}. <b>Every factor in that product is a design choice.</b>`;},
+  return `One observed hour becomes ${hz(wake(sim)*(1-boost(sim)))} hours a day, every day, for ${yrs(sim)} years: ${f1(g)} million words${m!=null?`, give or take ${f1(m)} million with ${sim.p.n} families a group`:''}. <b>Every factor in that product is a design choice.</b>`;},
  gut:{better:'lower',controls:['guess'],lockLabel:'Lock in my guess',
   ask:{bio:'Look at the study design on the picture (Hart and Risley’s, to start). Drag the slider here to how many <b>more</b> words, in millions, you think a child in the higher-income group hears by age 4 under that design. Then lock it in.',
    honors:'Under the design shown, drag the slider here to your gut size of the gap by age 4, in millions of words. Then lock it in.'},
+  hint:{bio:'Lock in your gut answer. Then you will multiply it out yourself.'},
   lock(sim){return {v:Math.abs(sim.p.guess-gapM(sim)),guess:sim.p.guess,label:`${f1(sim.p.guess)} million words`};},
   solve(sim){const g=gapM(sim);sim.p.guess=g;return {v:0,guess:g,label:`${f1(g)} million words`};},
+  calc:{unit:'million words',d:1,tol:a=>Math.max(0.1,0.01*a),
+   prompt(sim){const d=des(sim),y=yrs(sim),b=boost(sim);
+    if(d.rec==='hour')return `${d.s}: the higher-income group heard <b>${n0(d.A)}</b> words an hour, the lower-income group <b>${n0(d.B)}</b>. The headline treats one observed hour as typical of a <b>${hz(wake(sim))}</b>-hour waking day${b?`, cut by <b>${Math.round(b*100)}%</b> for the observer effect`:''}, every day (365 days), for <b>${y}</b> years. How big is the gap by age ${y}, in millions of words?`;
+    if(d.gd===0)return `${d.s}: counting every caregiver and overheard talk, the researchers report a gap of <b>0</b> words a day. Over 365 days × ${y} years, how big is the gap, in millions of words?`;
+    return `${d.s}: ${d.A!=null?`<b>${n0(d.A)}</b> vs. <b>${n0(d.B)}</b> adult words a day`:`<b>${n0(d.gd)}</b> words a day apart`}. The recorder covers the whole day, so no hours to multiply. Over 365 days a year for <b>${y}</b> years, how big is the gap, in millions of words?`;},
+   answer:sim=>gapM(sim),
+   hint:'Find the difference first, then multiply by each factor in turn. Divide by 1,000,000 at the end.',
+   steps(sim){const d=des(sim),y=yrs(sim),b=boost(sim),out=[];let day;
+    if(d.rec==='hour'){const df=d.A-d.B,h=wake(sim)*(1-b);day=df*h;out.push(`Difference: ${n0(d.A)} − ${n0(d.B)} = ${n0(df)} words an hour.`);
+     out.push(`A day: ${n0(df)} × ${hz(wake(sim))}${b?` × ${(1-b).toFixed(2)}`:''} = ${n0(day)} words.`);}
+    else{day=perDay(sim);out.push(d.A!=null?`Difference: ${n0(d.A)} − ${n0(d.B)} = ${n0(day)} words a day.`:`Difference: ${n0(day)} words a day.`);}
+    out.push(`A year: ${n0(day)} × 365 = ${n0(day*365)} words.`);
+    out.push(`${y} years: ${n0(day*365)} × ${y} = ${n0(day*365*y)} ≈ <b>${f1(gapM(sim))} million</b> words.`);
+    return out;}},
+  formula(sim){const d=des(sim);return (d.gd===0?'0 words a day × 365 × '+yrs(sim):chain(sim).join(' '))+` = ${f1(gapM(sim))} million words`;},
   how:{bio:'Multiply it out: the difference in words per hour, times the waking hours that one hour stands for, times 365 days, times 4 years. Then ask how much each of those choices could be off.',
    honors:'The headline is a product of a measured rate and three extrapolation factors. Each factor scales the answer by the same percent it changes, and the measured rate depends on what you count and which families you compare.',
    ap:'Gap = (Ā − B̄)·h·365·y. Bias comes from the design (who counts, observer effect, extrapolation); sampling error is 1.96·√(s_A²/n + s_B²/n), scaled by h·365·y.'},
   compare(sim,g,m){const yr=yrs(sim),off=Math.abs(g.guess-m.guess),day=off*M/(365*yr),cur=sim.p.design;
    const others=visible().filter(k=>k!==cur).map(k=>`${D[k].s}: ${f1(gapM(sim,D[k]))} million`).join('; ');
-   const mm=marginM(sim),mtxt=mm!=null?` With ${sim.p.n} families in each group, the honest answer is ${f1(m.guess)} ± ${f1(mm)} million.`:'';
+   const mm=marginM(sim),mtxt=mm!=null?` With ${sim.p.n} families in each group, the give-or-take is ± ${f1(mm)} million.`:'';
    const head=off<1?`Your gut was right on: within ${f1(off)} million words of what this design measures (${f1(m.guess)} million).`:`Your gut was off by <b>${f1(off)} million words</b>, about <b>${n0(day)} words a day</b> for ${yr} years. This design measures ${f1(m.guess)} million.`;
-   return head+mtxt+` But look what the design does to the same question. ${others}. <b>The choices behind a number can matter more than a good guess.</b><br><b>What this number hides:</b> ${(HIDE[cur]||HIDE.hr)[0]}`;},
-  again(sim){const v=visible();sim.p.design=v[Math.floor(Math.random()*v.length)];sim.p.n=[6,13,50,150][Math.floor(Math.random()*4)];
+   return head+mtxt+` Same question, other designs: ${others}.`;},
+  again(sim){const v=visible().filter(k=>k!=='wide');sim.p.reveal=false;sim.p.design=v[Math.floor(Math.random()*v.length)];sim.p.n=[6,13,50,150][Math.floor(Math.random()*4)];
    if(atLeast('honors')){sim.p.wake=[10,12,14][Math.floor(Math.random()*3)];sim.p.years=Math.random()<0.5?3:4;}sim.p.guess=15;}
  },
  challenges:[
+  {lvl:'bio',kind:'num',q:'Suppose a new study finds one group of children hears 1,800 words an hour and the other 1,200. Using a 12-hour waking day, 365 days a year, for 3 years, how big is the gap in millions of words?',answer:7.88,tol:0.05,unit:'million words',d:2,hint:'Difference per hour × 12 × 365 × 3, then divide by 1,000,000.',explain:'1,800 − 1,200 = 600 words an hour. 600 × 12 = 7,200 a day, × 365 = 2,628,000 a year, × 3 = 7,884,000: about 7.88 million words.'},
   {lvl:'bio',instant:true,q:'Hart and Risley turned one observed hour into a 14-hour waking day. If a typical toddler day really has only 10 hours like the observed one, what happens to the 31.4 million headline?',choices:['It stays the same: the families did not change','It drops to about 22.4 million','It drops to about 3 million'],correct:1,explain:'The headline is a product, so it scales with each factor: 31.4 × 10/14 ≈ 22.4 million. A 29% smaller factor gives a 29% smaller headline.'},
   {lvl:'bio',instant:true,q:'Your study has only 6 families in a group, like Hart and Risley’s smallest group. Why is the give-or-take so wide?',choices:['Small groups always give the wrong answer','With so few families, one or two unusually chatty or quiet homes can swing the group average a lot','Families talk less when there are fewer of them'],correct:1,explain:'Sampling error shrinks like 1/√n. Going from 6 to 150 families a group cuts the margin by a factor of √25 = 5, from about ±14.7 million to about ±2.9 million here.'},
   {lvl:'bio',instant:true,q:'A recorder worn all day found that children of college-educated mothers heard about 2,873 more adult words a day. About how big is that gap by age 4?',choices:['About 30 million','About 4.2 million','About 1 million'],correct:1,explain:'2,873 × 365 × 4 ≈ 4.2 million. The all-day study found a real gap, but about one seventh the size of the famous headline.'},
   {lvl:'bio',instant:true,q:'The 31.4 million headline treats Hart and Risley’s 6 welfare families as the low-income group. What does that one number hide?',choices:['Nothing: an average covers everyone in the group','How much low-income families differ from one another, and every family who was not among the six','The arithmetic used to build it'],correct:1,explain:'An average of 6 families stands in for millions of families. Within-group differences, and families who were never recorded, disappear from view. Sperry and colleagues later found a low-income community that averaged 1,838 words an hour, three times the 616 in the headline.'},
-  {lvl:'honors',instant:true,q:'Sperry, Sperry and Miller counted the Hart and Risley way in a low-income Black Belt community and found 1,838 words an hour, not 616. What does that show?',choices:['Hart and Risley made an arithmetic mistake','Income alone does not predict how much families talk: communities with similar incomes can differ a lot','Low-income families always talk more'],correct:1,explain:'With the same counting rule, the gap against Hart and Risley’s professional families shrinks from 31.4 to about 6.4 million. Six welfare families could not stand for every low-income family.'},
+  {lvl:'honors',kind:'num',q:'Sperry, Sperry and Miller counted the Hart and Risley way in a low-income Black Belt community and found 1,838 words an hour, not 616. Against Hart and Risley’s 2,153 for professional families, with 14 hours × 365 days × 4 years, what is the gap in millions of words?',answer:6.44,tol:0.05,unit:'million words',d:2,hint:'Subtract the hourly rates first.',explain:'2,153 − 1,838 = 315 words an hour, and 315 × 14 × 365 × 4 = 6,438,600: about 6.4 million, not 31.4. Six welfare families could not stand for every low-income family.'},
+  {lvl:'honors',kind:'num',q:'Start from Hart and Risley’s 31.4 million. Suppose a typical toddler day has 12 waking hours like the observed one, not 14, and families talked 20% more while observed, so a typical hour is 0.8 of an observed hour. What is the new gap, in millions of words?',answer:21.5,tol:0.1,unit:'million words',d:1,hint:'Each factor scales the whole product: multiply by 12/14 and by 0.8.',explain:'31.4 × 12/14 × 0.8 ≈ 21.5 million (1,537 × 12 × 0.8 × 365 × 4 = 21,542,592). Two modest corrections cut the headline by about a third, because errors in a product multiply.'},
   {lvl:'honors',instant:true,q:'All-day recordings found the 30 million gap only between the top 2% and bottom 2% of 329 families. Why is that a weak basis for a national headline?',choices:['2% of 329 is about 7 families per group, and choosing the extremes makes any gap look biggest','The recorder breaks for the top families','It is a strong basis, since it matches Hart and Risley'],correct:0,explain:'0.02 × 329 ≈ 6.6 families. Comparing the most extreme families answers a different question from comparing typical families in two income groups.'},
-  {lvl:'honors',instant:true,q:'Romeo and colleagues recorded 36 children aged 4 to 6 and scanned their brains while they listened to a story. What predicted activity in Broca’s area, a language region, best?',choices:['The total number of adult words the child heard','Conversational turns: back-and-forth exchanges between the child and an adult','Family income alone'],correct:1,explain:'Turns tracked brain activity even after accounting for family income and education, and far better than the raw word count. What matters most is talking with a child, not just near one.'},
   {lvl:'ap',instant:true,q:'Three factors in the headline (waking hours, days counted, and how typical the observed hour is) are each 10% too high. By how much is the headline too high?',choices:['10%','30%','About 33%'],correct:2,explain:'Errors multiply in a product: 1.1 × 1.1 × 1.1 = 1.331, so the headline is about 33% too high. Small errors in several factors compound.'},
   {lvl:'ap',instant:true,q:'Keep the Hart and Risley design but assume families talked 15% more while observed, as one city program assumed for its first recordings. What is the new 4-year gap?',choices:['About 26.7 million','About 31.4 million','About 4.7 million'],correct:0,explain:'Multiply by (1 − 0.15): 31.4 × 0.85 ≈ 26.7 million. A bias moves the whole answer; a bigger sample would not fix it.'},
   {lvl:'ap',instant:true,q:'To halve the sampling margin of a study with 13 families a group, how many families a group do you need?',choices:['26','52','169'],correct:1,explain:'The margin is proportional to 1/√n, so halving it needs 4 times as many families: 4 × 13 = 52.'}
@@ -175,9 +203,9 @@ const SIM={
   {title:'From one hour to a childhood',text:'To get a headline, they multiplied: the 1,537-word hourly difference, times 14 waking hours, times 365 days, times 4 years. That is about 31.4 million words. Hart and Risley rounded to a 100-hour week and got about 32 million.',pause:true,focus:[0,196,800,44]},
   {title:'Small groups wobble',text:'Their welfare group had only 6 families. If families inside a group differ by about 40% (an assumption), the honest answer is 31.4 million give or take about 14.7 million. With 150 families a group, the margin drops to about 2.9 million.',pause:true,setup:sim=>BioLab.setValues(sim,{n:6}),focus:[0,250,800,200]},
   {title:'Record the whole day',text:'In 2017 a team put small recorders on 329 children for 12-hour days. Children of college-educated mothers heard about 2,873 more adult words a day: about 4.2 million by age 4. A real gap, but far smaller.',pause:true,setup:sim=>BioLab.setValues(sim,{design:'lena',n:150})},
-  {lvl:'honors',title:'Who counts as a speaker?',text:'Sperry, Sperry and Miller counted every caregiver and the talk children overhear, in five communities. They report that the gap disappears. Their critics answer that words spoken directly to a child matter most. Both sides agree talk matters; they disagree about what to count.',pause:true,setup:sim=>BioLab.setValues(sim,{design:'wide'})},
+  {lvl:'honors',title:'Errors multiply',text:'The headline is a product, so an error in any factor scales the whole answer. If waking hours, days and how typical the observed hour is were each 10% too high, the headline would be 1.1 × 1.1 × 1.1 = 1.331 times too big: about 33%.',pause:true,setup:sim=>BioLab.setValues(sim,{design:'hr',n:6}),focus:[0,196,800,44]},
   {lvl:'honors',title:'Which families you compare',text:'The same all-day data give about 29.9 million, but only between the top 2% and bottom 2% of families, about 7 homes each. Choosing extreme groups makes a gap look biggest.',pause:true,setup:sim=>BioLab.setValues(sim,{design:'lena2'})},
-  {title:'Talk with, not just near',text:'A 2018 brain-imaging study of 36 children found that back-and-forth conversational turns tracked language skills and brain activity better than word counts. The lesson for any family, rich or poor: talk with children, and let them answer.',pause:true,setup:sim=>BioLab.setValues(sim,{design:'hr',n:6})}
+  {title:'One factor, one percent',text:'Each factor scales the headline by the same percent it changes. If a typical toddler day has only 10 hours like the observed one, the headline becomes 31.4 × 10/14 ≈ 22.4 million. Change one assumption, and you change the number.',pause:true,setup:sim=>BioLab.setValues(sim,{design:'hr',n:6,wake:14}),focus:[0,196,800,44]}
  ],
  lab:{bio:'<p><b>Question:</b> Which design choice moves the headline most?</p><ol><li>Start at Hart and Risley with 6 families. Record a trial.</li><li>Change only the families per group to 13, 50 and 150. Record each.</li><li>Switch to the all-day recorder and repeat.</li></ol><p>Write one sentence: which changes the gap itself, and which only changes the give-or-take?</p>',
   honors:'<p><b>Question:</b> How sensitive is the headline to each assumption?</p><ol><li>At Hart and Risley, record the gap at 14, 12 and 10 waking hours.</li><li>Return to 14 hours and switch years from 4 to 3.</li><li>Try every design at 4 years.</li></ol><p>Rank the choices by how much they move the gap, and explain why the hours and years each change it by the same percent.</p>',
@@ -200,7 +228,9 @@ const SIM={
   '<li><b>Romeo et al. (2018),</b> “Beyond the 30-Million-Word Gap,” <i>Psychological Science</i> 29(5), 700 to 710 (<a href="https://doi.org/10.1177/0956797617742725" target="_blank" rel="noopener">doi.org/10.1177/0956797617742725</a>). 36 children aged 4 to 6; conversational turns, not word counts, were linked to Broca’s-area activity, independent of SES.</li></ul>'+
   '<p><b>The model.</b> Gap = (words-per-hour difference) × waking hours × 365 × years for the one-hour designs, and (words-per-day difference) × 365 × years for the all-day designs. Using 365 days gives 31.4 million for Hart and Risley; their 5,200-hour year gives 32.0 million. Comparing Hart and Risley’s professional families with Sperry’s Black Belt families mixes two studies, as Sperry and colleagues did in their reply. The Sperry design is shown as a gap of 0 because the authors report that it disappears; they do not give per-hour totals here.</p>'+
   '<p><b>Assumptions for illustration (not measured):</b> the give-or-take uses a spread between families of 40% of each group’s average (you can change it at Deep dive), so it shows how sample size works, not any study’s real margin. The observer effect is a knob you set. The 15% figure comes from the Providence Talks evaluation, which cut its first recordings by 15% for a possible Hawthorne effect (Wong, Thomas &amp; Boben, <i>Studies in Educational Evaluation</i> 64, 2020).</p>'+
-  '<p><b>Why it matters for policy.</b> Providence, Rhode Island, won the $5 million grand prize in the 2013 Mayors Challenge from Bloomberg Philanthropies and built Providence Talks: coaches and word-counting recorders for families (<a href="https://bloombergcities.jhu.edu/news/new-evidence-helps-more-cities-adopt-providence-talks-model" target="_blank" rel="noopener">Bloomberg Cities, 2018</a>). Its evaluation used a comparison group from nearby cities, not a randomized one. Children who started below the 50th percentile in adult words rose from the 11th to the 42nd percentile with home visits, but the comparison group’s low starters also rose, from the 11th to the 35th: a pattern regression to the mean can produce (<a href="https://education.brown.edu/sites/g/files/dprerj366/files/2020-08/Wong_Thomas_Boben_Prov%20Talks_Ed%20Eval.pdf" target="_blank" rel="noopener">Wong et al. 2020</a>). The “Talking is Teaching: Talk, Read, Sing” campaign from Too Small to Fail works with pediatricians and has been adopted in more than a dozen U.S. communities (<a href="https://www.clintonfoundation.org/?p=4120" target="_blank" rel="noopener">program announcement</a>). Replication matters before a city scales a program, because a headline that shrinks more than sevenfold under a better design changes what a program should promise.</p>'+
+  '<p><b>Why it matters for policy.</b> Providence, Rhode Island, won the $5 million grand prize in the 2013 Mayors Challenge from Bloomberg Philanthropies and built Providence Talks: coaches and word-counting recorders for families (<a href="https://bloombergcities.jhu.edu/news/new-evidence-helps-more-cities-adopt-providence-talks-model" target="_blank" rel="noopener">Bloomberg Cities, 2018</a>). Its evaluation used a comparison group from nearby cities, not a randomized one. Children who started below the 50th percentile in adult words rose from the 11th to the 42nd percentile with home visits, but the comparison group’s low starters also rose, from the 11th to the 35th: a pattern regression to the mean can produce (<a href="https://education.brown.edu/sites/g/files/dprerj366/files/2020-08/Wong_Thomas_Boben_Prov%20Talks_Ed%20Eval.pdf" target="_blank" rel="noopener">Wong et al. 2020</a>). The “Talking is Teaching: Talk, Read, Sing” campaign from Too Small to Fail works with pediatricians and has been adopted in more than a dozen U.S. communities (<a href="https://www.clintonfoundation.org/?p=4120" target="_blank" rel="noopener">program announcement</a>). If a headline shrinks more than sevenfold under a better design, what should a program built on it promise?</p>'+
+  '<p><b>The debate over what to count.</b> Sperry, Sperry and Miller counted every caregiver and the talk children overhear, and report that the gap disappears. Golinkoff and colleagues answer that words spoken directly to a child matter most. Both sides agree talk matters; they disagree about what to count. Romeo and colleagues’ 2018 brain-imaging study of 36 children found that back-and-forth conversational turns tracked language skills and brain activity better than word counts. All-day recordings averaged about 441 turns a day (Gilkerson et al. 2017).</p>'+
+  '<p><b>What no word count measures.</b> Gestures, pointing, songs, stories in a home language, warmth, patience, and whether a child got an answer all fall outside a tally of words.</p>'+
   '<p><b>A note on respect.</b> The research is about the value of talking with young children, which any family can do. It is not a verdict on any family’s love or worth, and every income group in these studies includes families who talk a great deal.</p>'
 };
 BioLab.register(SIM);

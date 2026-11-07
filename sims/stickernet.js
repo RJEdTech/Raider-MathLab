@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const {clamp,txt,pill,rr,PAL,axes,legend,atLeast,fmtNum}=BioLab.h;
+const {clamp,txt,pill,rr,PAL,FONT,axes,legend,atLeast,fmtNum}=BioLab.h;
 /* One student, one college. Per year: net price = sticker − grants. The student borrows L a year (capped at the net price);
    the family pays the rest now. Loans: borrowed at the start of each year; simple interest builds until the student finishes
    (unsubsidized style, toggle at Deep dive) and is added to the balance; then a fixed monthly payment over the repayment term:
@@ -13,7 +13,12 @@ const $=v=>'$'+Math.round(v).toLocaleString('en-US');
 const $2=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct=v=>fmtNum(100*v,1)+'%';
 const GS=sim=>(sim.tour&&sim.tour.on)?null:sim.gutS;
-const shown=sim=>!!(sim.p.show||(sim.gutS&&(sim.gutS.g||sim.gutS.m)));
+const pend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const shown=sim=>!pend(sim)&&!!(sim.p.show||(sim.gutS&&(sim.gutS.g||sim.gutS.m)));
+/* "Your turn": net price for all the years (Big picture, Closer look) or the real cost with interest (Deep dive). */
+const c2=v=>Math.round(v*100)/100;
+const calcAns=sim=>{const m=model(sim.p);return atLeast('ap')?Math.round(m.netT+c2(m.M)*m.n-m.borrowed):m.netT;};
+const fLine=(m,term)=>`(${$(m.S)} − ${$(m.A)}) × ${m.N}`+(m.L>0?` + ${$(m.interest)} interest = ${$(m.real)}`:` = ${$(m.netT)}`);
 const yrs=n=>n+' year'+(n===1?'':'s');
 function clearGut(sim){if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
 /* spread label y positions so none are closer than gap, inside [lo,hi] */
@@ -26,6 +31,7 @@ const pick=(sim,guess)=>{const m=model(sim.p);return {v:Math.abs(guess-m.real),g
 
 const SIM={
  id:'stickernet',hash:'stickernet',apUnit:19,order:1,tab:'Sticker vs. net price',kind:'Simulation',
+ skills:{bio:'Net price = sticker − grants, then multiply by the years · Algebra 1 (Unit 2)',honors:'A proportion (discount rate) and the loan payment formula · Algebra 1 (Unit 2), Algebra 2 (Unit 5)',ap:'The loan payment formula and exponential growth · Algebra 2 (Unit 5)'},
  card:'Guess what college really costs by feel, then let the math subtract the aid and add up the loan, month by month.',
  title:'Sticker price vs. what you really pay',
  lede:{bio:'Two students live in the same dorm and take the same classes. One pays the full sticker price; the other pays less than half of it. What you pay is the sticker price minus grants, plus whatever interest your loans add.',
@@ -47,13 +53,13 @@ const SIM={
  ],
  init(){return {};},step(){},
  metrics:[
-  {id:'net',label:'Net price per year',unit:'dollars',d:0,min:0,max:null,get:sim=>model(sim.p).net},
+  {id:'net',label:'Net price per year',unit:'dollars',d:0,min:0,max:null,get:sim=>pend(sim)?null:model(sim.p).net},
   {id:'disc',label:'Discount rate (grants ÷ sticker)',unit:'%',d:1,min:0,max:100,get:sim=>100*model(sim.p).disc},
-  {id:'stickerT',label:'Sticker price, all years',unit:'dollars',d:0,min:0,max:null,get:sim=>model(sim.p).stickerT},
+  {id:'stickerT',label:'Sticker price, all years',unit:'dollars',d:0,lvl:'honors',min:0,max:null,get:sim=>model(sim.p).stickerT},
   {id:'netT',label:'Net price, all years',unit:'dollars',d:0,min:0,max:null,get:sim=>shown(sim)?model(sim.p).netT:null},
   {id:'borrowed',label:'Total you borrow',unit:'dollars',d:0,min:0,max:null,get:sim=>model(sim.p).borrowed},
   {id:'pay',label:'Monthly loan payment',unit:'dollars',d:2,min:0,max:null,get:sim=>shown(sim)?model(sim.p).M:null},
-  {id:'repaid',label:'Total repaid on the loan',unit:'dollars',d:0,min:0,max:null,get:sim=>shown(sim)?model(sim.p).rep:null},
+  {id:'repaid',label:'Total repaid on the loan',unit:'dollars',d:0,lvl:'honors',min:0,max:null,get:sim=>shown(sim)?model(sim.p).rep:null},
   {id:'interest',label:'Interest you pay',unit:'dollars',d:0,min:0,max:null,get:sim=>shown(sim)?model(sim.p).interest:null},
   {id:'real',label:'What it really costs: net price plus interest',unit:'dollars',d:0,min:0,max:null,get:sim=>shown(sim)?model(sim.p).real:null},
   {id:'bal',label:'Loan balance when repayment starts',unit:'dollars',d:0,lvl:'honors',min:0,max:null,get:sim=>shown(sim)?model(sim.p).B:null},
@@ -81,8 +87,10 @@ const SIM={
   /* layout from the bottom up: totals row, captions, bars */
   const boxH=14+fs+6+vs+8+fs+6,by=446-boxH,base=by-12-2.1*fs,maxH=base-62;
   /* ---- left: one year, two students ---- */
-  txt(ctx,big?'One year':'One year, same dorm',24,26,{s:14*k,w:700});
-  if(atLeast('honors')&&!big)txt(ctx,'Discount rate '+pct(m.disc),380,26,{s:fs,w:700,c:PAL['s3'],a:'right'});
+  const GM=G&&G.m&&sh;
+  if(GM){const t=big?`${$(m.net)} × ${m.N}`+(m.L>0?` + ${$(m.interest)}`:'')+` = ${$(m.real)}`:fLine(m);let z=14*k;ctx.font='700 '+z+'px '+FONT;const w=ctx.measureText(t).width;if(w>365)z=Math.max(12,z*365/w);txt(ctx,t,24,26,{s:z,w:700,c:PAL['rj']});}
+  else txt(ctx,big?'One year':'One year, same dorm',24,26,{s:14*k,w:700});
+  if(atLeast('honors')&&!big&&!GM)txt(ctx,'Discount rate '+pct(m.disc),380,26,{s:fs,w:700,c:PAL['s3'],a:'right'});
   const sc=maxH/Math.max(m.S,20000),bw=72,b1=28,b2=186;
   ctx.fillStyle=PAL['s1'];rr(ctx,b1,base-m.S*sc,bw,m.S*sc,4);ctx.fill();
   txt(ctx,$(m.S),b1+bw/2,base-m.S*sc-8,{s:fs,w:700,a:'center'});
@@ -98,7 +106,7 @@ const SIM={
   spread(labs,2.5*fs,44+fs,base-fs).forEach(l=>{ctx.strokeStyle=l.c;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(b2+bw+2,l.sy);ctx.lineTo(lx-4,l.y);ctx.stroke();
    txt(ctx,l.t,lx,l.y,{s:fs,w:700,c:l.c,b:'bottom'});txt(ctx,l.v,lx,l.y+1,{s:fs,w:700,c:l.c,b:'top'});});
   txt(ctx,'Next door',b1+bw/2,base+4+fs,{s:fs,w:700,a:'center'});txt(ctx,'no aid',b1+bw/2,base+6+2*fs,{s:fs,c:PAL['cv-soft'],a:'center'});
-  txt(ctx,'You',b2+bw/2,base+4+fs,{s:fs,w:700,a:'center'});txt(ctx,'net '+$(m.net),b2+bw/2,base+6+2*fs,{s:fs,c:PAL['cv-soft'],a:'center'});
+  txt(ctx,'You',b2+bw/2,base+4+fs,{s:fs,w:700,a:'center'});txt(ctx,pend(sim)?'net ?':'net '+$(m.net),b2+bw/2,base+6+2*fs,{s:fs,c:PAL['cv-soft'],a:'center'});
   /* ---- right: the loan over time ---- */
   const X0=436,X1=772,T0=44+1.2*fs,Y1=base,tmax=m.N+Math.max(1,sim.p.term),school=!!sim.p.school;
   txt(ctx,big?'Your loan balance':'Your loan balance, year by year',418,26,{s:14*k,w:700});
@@ -128,6 +136,7 @@ const SIM={
   if(m.A<=0)return `With no grants, you pay the full sticker price: <b>${$(m.S)} a year</b>, ${$(m.stickerT)} for ${yrs(m.N)}.`;
   let s=`The student next door pays ${$(m.S)} a year. Your grants cut that by ${pct(m.disc)}, so <b>your net price is ${$(m.net)} a year</b>.`;
   if(m.L<=0)return s+' You borrow nothing, so there is no interest to add.';
+  if(pend(sim))return `Sticker ${$(m.S)} a year, grants ${$(m.A)} a year, ${yrs(m.N)}. <b>Work out the net price for all ${yrs(m.N)}.</b>`;
   if(!sh)return s+` You borrow ${$(m.L)} of it each year. <b>A loan does not lower the price:</b> you pay it later, with interest.`;
   return s+` Borrowing ${$(m.L)} a year means ${$(m.M)} a month for ${yrs(sim.p.term)} after you finish, and <b>${$(m.interest)} in interest</b> on top of the net price.`;},
  gut:{better:'lower',controls:['guess'],
@@ -135,21 +144,34 @@ const SIM={
    honors:'Before any math: drag <b>Your guess</b> here to the total cost of all the years, net price plus every dollar of loan interest. Lock it in.'},
   lock(sim){return pick(sim,sim.p.guess);},
   solve(sim){const m=model(sim.p);sim.p.guess=m.real;sim.p.show=true;return {v:0,guess:m.real,real:m.real,label:`${$(m.real)}: ${$(m.netT)} in net price plus ${$(m.interest)} in loan interest`};},
+  hint:'Lock in your guess. Then you will work out the net price yourself.',
+  calc:{unit:'$',d:0,tol:a=>atLeast('ap')?Math.max(20,0.002*a):Math.max(1,0.002*a),
+   prompt:{bio:sim=>{const m=model(sim.p);return `Sticker price: <b>${$(m.S)}</b> a year. Your grants: <b>${$(m.A)}</b> a year. You stay <b>${yrs(m.N)}</b>. What is your net price for all ${yrs(m.N)}? (Net price = sticker − grants.)`;},
+    ap:sim=>{const m=model(sim.p);return m.L>0?`Sticker ${$(m.S)} a year, grants ${$(m.A)} a year, ${yrs(m.N)}. You borrow ${$(m.L)} a year (${$(m.borrowed)} in all), and repay ${$2(c2(m.M))} a month for ${m.n} months. What does college really cost: the net price for all the years plus the loan interest?`:`Sticker ${$(m.S)} a year, grants ${$(m.A)} a year, ${yrs(m.N)}, and no loan. What does college really cost in all?`;}},
+   answer:calcAns,
+   hint:{bio:'Subtract the grants from the sticker price first. Then multiply by the number of years.',ap:'Interest = (monthly payment × number of payments) − amount borrowed.'},
+   steps(sim){const m=model(sim.p),out=[`Net price per year: ${$(m.S)} − ${$(m.A)} = ${$(m.net)}.`,`All ${yrs(m.N)}: ${$(m.net)} × ${m.N} = <b>${$(m.netT)}</b>.`];
+    if(atLeast('ap')&&m.L>0){const rep=c2(m.M)*m.n;out.push(`Repaid: ${$2(c2(m.M))} × ${m.n} = ${$(rep)}. Interest: ${$(rep)} − ${$(m.borrowed)} = ${$(rep-m.borrowed)}.`);out.push(`Real cost: ${$(m.netT)} + ${$(rep-m.borrowed)} = <b>${$(m.netT+rep-m.borrowed)}</b>.`);}
+    else out.push(`The student next door pays ${$(m.stickerT)}: ${$(m.stickerT-m.netT)} more.`);
+    return out;}},
+  formula(sim){const m=model(sim.p);return `Net price × years + interest: ${fLine(m)}`+(m.L>0?`<br>Interest = ${$2(m.M)} × ${m.n} months − ${$(m.borrowed)} borrowed`:'');},
   how:{bio:'Subtract the grants from the sticker price to get the net price, and multiply by the number of years. Then add the loan’s interest: the monthly payment times the number of months, minus what you borrowed.',
    honors:'Net price = sticker − grants. Total = net price × years + interest. The interest comes from the loan payment formula, because each month the balance grows by the monthly rate before your payment comes off.',
    ap:'Net price × N, plus interest = 12·T·M − (amount borrowed), where M = B·i / (1 − (1 + i)⁻¹²ᵀ) for a balance B, monthly rate i and T years to repay.'},
   compare(sim,g,m){const md=model(sim.p),err=g.guess-md.real,ab=Math.abs(err),tol=Math.max(2000,0.05*md.real);
    const loan=md.L>0?` The loan adds <b>${$(md.interest)} in interest</b>: ${$(md.M)} a month for ${yrs(sim.p.term)} after you finish.`:'';
-   if(ab<=tol)return `Your gut was right on: within ${$(ab)} of the real cost, ${$(md.real)}. You already think in net price, not sticker price.${loan}`;
+   const K=sim.ui.calc,self=K&&K.done&&K.correct?' You worked out the net price yourself.':'';
+   if(ab<=tol)return `Your gut was right on: within ${$(ab)} of the real cost, ${$(md.real)}. You already think in net price, not sticker price.${loan}${self}`;
    const nearSticker=md.A>0&&Math.abs(g.guess-md.stickerT)<0.12*md.stickerT;
    let s=err>0?`Your guess was <b>${$(ab)} too high</b>. Plan with it, and you might cross off a college that costs ${$(ab)} less than you thought.`
     :`Your guess was <b>${$(ab)} too low</b>. Plan with it, and your family comes up ${$(ab)} short.`;
    if(nearSticker)s+=` You were close to the sticker total (${$(md.stickerT)}), but grants cut the price by ${pct(md.disc)}.`;
-   return s+loan;},
+   return s+loan+self;},
   again(sim){const S=500*Math.round((30000+Math.random()*60000)/500),A=500*Math.round(Math.random()*0.7*S/500),net=S-A;
    sim.p.sticker=S;sim.p.aid=A;sim.p.borrow=500*Math.round(Math.min(net,3000+Math.random()*9000)/500);sim.p.years=Math.random()<0.8?4:5;sim.p.guess=100000;sim.p.show=false;}
  },
  challenges:[
+  {lvl:'bio',kind:'num',q:'A different college: the sticker price is $58,000 a year and your grants are $35,500 a year. What is your net price for all 4 years?',answer:90000,tol:1,unit:'$',d:0,hint:'Net price per year = sticker − grants. Then multiply by 4.',explain:'$58,000 − $35,500 = $22,500 a year, and $22,500 × 4 = $90,000. The sticker total would be $232,000.'},
   {lvl:'bio',instant:true,q:'Same dorm, same sticker price: $70,000 a year. You get $40,000 a year in grants; your roommate gets none. Over 4 years, how much more does your roommate pay?',choices:['$40,000','$120,000','$160,000','$280,000'],correct:2,explain:'The grants are the whole difference: $40,000 a year × 4 years = $160,000. Your roommate pays $280,000; you pay $120,000.'},
   {lvl:'bio',instant:true,q:'College A has a $82,000 sticker price and offers you $52,000 in grants. College B has a $46,000 sticker price and offers $6,000. Which costs you less each year?',choices:['College A, by $10,000 a year','College B, by $36,000 a year','They cost the same'],correct:0,explain:'Net price = sticker − grants. A: $82,000 − $52,000 = $30,000. B: $46,000 − $6,000 = $40,000. The college with the scarier sticker price is $10,000 a year cheaper for you.'},
   {lvl:'honors',instant:true,q:'A college lists $70,000 and gives you $40,000 in grants. What is your discount rate?',choices:['40.0%','42.9%','57.1%','75.0%'],correct:2,explain:'Discount rate = grants ÷ sticker = 40,000 ÷ 70,000 ≈ 57.1%. (42.9% is the share you still pay.) NACUBO’s study projected 57.1% as the average for first-time, full-time students at private nonprofit colleges in 2025-26.'},

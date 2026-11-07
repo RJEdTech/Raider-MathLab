@@ -7,6 +7,6 @@ rankcolleges:{
   'Rankings that change their minds: U.S. News has dropped acceptance rate from its college formula and now gives more weight to how well students with Pell Grants graduate. Its 2026 edition uses 17 measures. Each change reshuffles colleges whose students did not change.',
   'Your GPA: it is a weighted average too. Each grade is weighted by the course’s credits, and many schools add extra weight for honors and AP courses. Change those weights and class rank changes, even though no one’s grades did.'
  ],
- takeaway:'A ranking is a weighted average, and the weights are someone’s opinion. Change what counts and a different college is “best,” so choose the numbers that matter to you.'
+ takeaway:'A ranking is a weighted average, and the weights are someone’s opinion. Change what counts and a different college is “best.” If you built the formula for your own list, which numbers would you weight, and how much?'
 }
 });

@@ -7,6 +7,6 @@ povertypremium:{
   'Your first paycheck: with no bank account, a check casher takes a percentage of every check (New York caps it at 2.2%). The FDIC found that 4.2% of U.S. households had no bank account in 2023.',
   'Buying a home: with less than 20% down, a loan comes with mortgage insurance. FHA charges 1.75% up front plus 0.55% a year on most loans, and federal law ends private mortgage insurance once the loan is scheduled to reach 78% of the home’s original value.'
  ],
- takeaway:'Having less costs more because small shocks turn into lost pay, fees and interest, and each one makes the next shock land harder. In this model, steady income and low-cost credit change the total the most.'
+ takeaway:'Having less costs more because small shocks turn into lost pay, fees and interest, and each one makes the next shock land harder. In this model, steady income and low-cost credit change the total the most. Which protection would you test first for a worker in your own city, and who could provide it?'
 }
 });

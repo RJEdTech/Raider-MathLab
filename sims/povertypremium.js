@@ -30,12 +30,12 @@ function inputs(sim,o){const c=C(sim);const x={city:sim.p.city in CITY?sim.p.cit
  CATS.forEach(([k])=>{x.on[k]=hon()?!!sim.p['c_'+k]:true;});
  return Object.assign(x,o||{});}
 function run(x){const c=CITY[x.city],N=x.N,Pay=c.basket/(1-x.margin),wage=Pay/HRS,S=shocks(x.seed,N);
- const work=(fl,formal)=>{let B=fl.fund?c.emerg:0,D=0,U=0,esc=false,behind=0,indebt=0;const cat={lost:0,health:0,bank:0,borrow:0,time:0},hist=[],cum=[];let tot=0;
+ const work=(fl,formal)=>{let B=fl.fund?c.emerg:0,D=0,U=0,esc=false,behind=0,indebt=0,nd=0,ner=0,ncop=0,paid=0;const cat={lost:0,health:0,bank:0,borrow:0,time:0},hist=[],cum=[];let tot=0;
   const r=x.on.borrow?(formal?c.fr:(fl.credit?c.lowr:x.lr))/100:0,lim=formal?Pay:c.lim;
   for(let m=0;m<N;m++){const s=S[m];let days=0;const sick=s.sick&&x.on.health;
    if(x.on.lost){if(sick&&!fl.sick)days+=2;if(esc&&!fl.insured&&!fl.sick)days+=2;if(s.slow&&!fl.steady)days+=6;}
-   const inc=Pay*Math.max(0,1-days/DAYS);cat.lost+=Pay-inc;
-   let h=0;if(x.on.health){if(sick&&fl.insured)h+=c.copay;if(esc&&!fl.insured)h+=x.er;}cat.health+=h;
+   const inc=Pay*Math.max(0,1-days/DAYS);cat.lost+=Pay-inc;nd+=days;paid+=inc;
+   let h=0;if(x.on.health){if(sick&&fl.insured){h+=c.copay;ncop++;}if(esc&&!fl.insured){h+=x.er;ner++;}}cat.health+=h;
    esc=sick&&!fl.insured&&s.escU<x.pesc;
    const fee=(x.on.bank&&!fl.bank&&c.check)?x.cfee/100*inc:0;cat.bank+=fee;
    if(x.on.time&&!fl.bank)cat.time+=x.hrs*wage;
@@ -46,7 +46,7 @@ function run(x){const c=CITY[x.city],N=x.N,Pay=c.basket/(1-x.margin),wage=Pay/HR
    else{let need=-net;const a=Math.min(B,need);B-=a;need-=a;const b=Math.min(Math.max(0,lim-D),need);D+=b;need-=b;U+=need;}
    if(U>0.005)behind++;if(D>0.005)indebt++;
    tot=cat.lost+cat.health+cat.bank+cat.borrow+cat.time;hist.push({B,D,U,net:B-D-U});cum.push(tot);}
-  return {cat,B,D,U,behind,indebt,hist,cum,r,lim};};
+  return {cat,B,D,U,behind,indebt,hist,cum,r,lim,nd,ner,ncop,paid};};
  const F=work({sick:1,steady:1,insured:1,bank:1,credit:0,fund:1},true);
  const fl={sick:0,steady:0,insured:0,bank:0,credit:0,fund:0};if(x.protect!=='none'&&x.protect in fl)fl[x.protect]=1;
  const I=work(fl,false);const g={};let tot=0;for(const k in I.cat){g[k]=I.cat[k]-F.cat[k];tot+=g[k];}
@@ -60,6 +60,28 @@ function rangeOf(sim){const c=C(sim),q=c.check;
  return [Math.min(lo.tot,hi.tot),Math.max(lo.tot,hi.tot)];}
 /* money left over in a normal month, after the check casher's cut if unbanked */
 function slack(sim){const R=model(sim),x=R.x,fee=(x.on.bank&&R.c.check&&x.protect!=='bank')?x.cfee/100*R.Pay:0;return R.Pay*R.margin-fee;}
+/* The extra cost in pieces a student can compute by hand: used by "Your turn", the reveal formula and the canvas.
+   Each piece's hand value (h) uses the rounded numbers shown in the prompt. */
+const $c=v=>(v<0?'−':'')+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const r2=v=>Math.round(v*100)/100;
+function pieces(sim){const R=model(sim),x=R.x,I=R.I,F=R.F,c=R.c,N=R.N,day=r2(R.Pay/DAYS),wg=r2(R.wage),pay=r2(R.Pay),on=x.on,deep=ap(),out=[],n=I.nd-F.nd,paid=Math.round(I.paid);
+ if(on.lost&&Math.abs(R.g.lost)>0.5){const h=r2(n*day);out.push({k:'lost',l:'Lost pay',h,
+  t:deep?`Lost pay: ${n} unpaid days. Daily pay = ${$c(pay)} a month ÷ 21.67 workdays.`:`Lost pay: ${n} unpaid days × ${$c(day)} a day`,
+  f:`${n} × ${$c(day)}`,s:`Lost pay: ${deep?`${$c(pay)} ÷ 21.67 ≈ ${$c(day)} a day, and `:''}${n} × ${$c(day)} = ${$c(h)}`});}
+ if(on.bank&&Math.abs(R.g.bank)>0.5){const h=r2(x.cfee/100*paid);out.push({k:'bank',l:'Check cashing',h,
+  t:`Check cashing: ${pc(x.cfee)} of the ${$(paid)} they were paid`,f:`${pc(x.cfee)} × ${$(paid)}`,s:`Check cashing: ${+(x.cfee/100).toFixed(4)} × ${$(paid)} = ${$c(h)}`});}
+ if(on.health&&Math.abs(R.g.health)>0.5){const a=[],fz=[];
+  if(I.ner){a.push(`${I.ner} emergency visit${I.ner===1?'':'s'} × ${$(x.er)}`);fz.push(`${I.ner} × ${$(x.er)}`);}
+  if(I.ncop&&c.copay){a.push(`${I.ncop} copay${I.ncop===1?'':'s'} × ${$(c.copay)}`);fz.push(`${I.ncop} × ${$(c.copay)}`);}
+  let t='Health: '+(a.length?a.join(' + '):'the informal worker paid $0'),f=fz.join(' + ')||'$0';
+  if(F.ncop&&c.copay){t+=`, minus the formal worker’s ${F.ncop} copay${F.ncop===1?'':'s'} × ${$(c.copay)}`;f+=` − ${F.ncop} × ${$(c.copay)}`;}
+  const h=r2(R.g.health);out.push({k:'health',l:'Health',h,t,f,s:`Health: ${f} = ${$c(h)}`});}
+ if(on.borrow&&Math.abs(R.g.borrow)>0.5){const h=Math.round(R.g.borrow);out.push({k:'borrow',l:'Loan fees',h,
+  t:`Extra loan fees (the model works these out month by month): ${$(h)}`,f:$(h),s:`Loan fees: ${$(h)}`});}
+ if(on.time&&Math.abs(R.g.time)>0.5){const hrs=x.hrs*N,h=r2(hrs*wg);out.push({k:'time',l:'Time',h,
+  t:deep?`Time on cash errands: ${x.hrs} hours a month for ${N} months. Hourly pay = ${$c(pay)} ÷ 173.33 hours.`:`Time on cash errands: ${x.hrs} hours × ${N} months × ${$c(wg)} an hour`,
+  f:`${hrs} h × ${$c(wg)}`,s:`Time: ${deep?`${$c(pay)} ÷ 173.33 ≈ ${$c(wg)} an hour, and `:''}${x.hrs} × ${N} = ${hrs} hours, × ${$c(wg)} = ${$c(h)}`});}
+ return out;}
 function ranking(sim){return PROT.filter(p=>p[0]!=='none').map(([id,l])=>{const R=model(sim,{protect:id}),base=model(sim,{protect:'none'});return {id,l,cut:base.tot-R.tot,tot:R.tot};}).sort((a,b)=>b.cut-a.cut);}
 
 /* ---------- Boots: cost per year of use (the "boots theory" from Pratchett's Men at Arms, 1993) ---------- */
@@ -85,7 +107,9 @@ const $=v=>(v<0?'−$':'$')+Math.round(Math.abs(v)).toLocaleString('en-US');
 const $2=v=>'$'+(Math.round(v*100)/100).toFixed(2);
 const f0=v=>Math.round(v).toLocaleString('en-US'),f1=v=>(Math.round(v*10)/10).toFixed(1);
 const pc=v=>(Math.round(v*100)/100)+'%';
-const shown=sim=>!!(sim.peek||(sim.tour&&sim.tour.on)||(sim.gutS&&(sim.gutS.g||sim.gutS.m)));
+/* Totals stay hidden while the student works out the extra cost ("Your turn"). */
+const pending=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const shown=sim=>!!(sim.peek||(sim.tour&&sim.tour.on)||(sim.gutS&&(sim.gutS.m||(sim.gutS.g&&!pending(sim)))));
 const yrsTxt=N=>N===12?'the year':(N/12)+' years';
 function clearGut(sim){sim.peek=false;if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}sim.infoDirty=true;}
 function setCity(sim){clearGut(sim);const c=C(sim);sim.p.lrate=c.lr;if(BioLab.setValues)BioLab.setValues(sim,{lrate:c.lr});}
@@ -159,9 +183,10 @@ function hidesHTML(sim){const R=model(sim),c=R.c,Fm=R.F.hist,Im=R.I.hist;const l
 
 const SIM={
  id:'povertypremium',hash:'povertypremium',apUnit:20,order:6,tab:'The cost of being poor',kind:'Simulation',next:['costofliving','livingwage'],
+ skills:{bio:'Unit rates, percents and adding up a total · Algebra 1 (Unit 2), Algebra 2 (Unit 5)',honors:'A month-by-month recurrence and a reinforcing feedback loop · Algebra 2 (Unit 5)',ap:'Exponential growth, expected value and the debt-trap line D* = m ÷ r · Algebra 2 (Unit 5), Statistics (Chapter 6)'},
  card:'Run two workers through the same year of shocks, one formal and banked, one informal and unbanked, and guess how much more the year costs the one with less.',
  title:'Why it costs more to have less',
- lede:{bio:'It is expensive to be poor. Start with boots: a cheap pair that wears out every year can cost more over ten years than a good pair that lasts. Then the real test: two workers earn the same pay per day and get hit by the same bad luck: a sick day, a slow week, a family emergency, a broken phone. One has a steady job, sick pay, a bank account and health coverage. The other works informally: no work that day, no pay. Watch what the same shocks cost each one.',
+ lede:{bio:'Two workers earn the same pay per day and get the same bad luck: a sick day, a slow week, a family emergency, a broken phone. One has a steady job, sick pay, a bank account and health coverage. The other is paid only for the days worked. Use rates and percents to add up what the same shocks cost each one.',
   honors:'The extra costs feed each other. A missed week becomes a loan, the loan’s fee eats next month’s cushion, and the next shock lands harder. That is a reinforcing feedback loop. Switch cost categories on and off, and give the informal worker one protection at a time to see which one breaks the loop.',
   ap:'With monthly slack m and monthly rate r, a debt D can only shrink while rD < m. Above D* = m/r it is an absorbing state: a debt trap. Compare APR with fee per $100, compounding with rollovers, and the expected cost of a risk (probability × cost), then run the model with its uncertain inputs at their low and high ends.'},
  scale:'One adult, month by month, for one year (up to five at Deep dive). Dollars are U.S. dollars in all three cities; Ecuador uses the dollar.',
@@ -229,7 +254,7 @@ const SIM={
    legend(ctx,box.L+box.W*0.35,box.T+12,[{label:'Texas OCCC, 2022 lender reports',color:PAL['s1']},{label:'Geometric model: 71.4% renew again',color:PAL['s5'],dash:true}]);return;}
   const N=R.N,top=Math.max(10,...R.I.cum,...R.F.cum,(sim.gutS&&sim.gutS.g)?sim.gutS.g.guess:0)*1.1;
   const ax=axes(ctx,box,{xmin:0,xmax:N,ymin:0,ymax:top,xl:'Month',yl:'Running total of extra costs ($)'});
-  if(!shown(sim)){txt(ctx,'Lock in your gut to see the running totals.',box.L+box.W/2,box.T+box.H/2,{s:13,c:PAL['muted'],a:'center'});return;}
+  if(!shown(sim)){txt(ctx,pending(sim)?'Work out the total to see the running totals.':'Lock in your gut to see the running totals.',box.L+box.W/2,box.T+box.H/2,{s:13,c:PAL['muted'],a:'center'});return;}
   const line=(arr,col)=>{ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(ax.X(0),ax.Y(0));arr.forEach((v,i)=>ctx.lineTo(ax.X(i+1),ax.Y(v)));ctx.stroke();};
   ctx.fillStyle=PAL['s1'];ctx.globalAlpha=.15;ctx.beginPath();ctx.moveTo(ax.X(0),ax.Y(0));R.I.cum.forEach((v,i)=>ctx.lineTo(ax.X(i+1),ax.Y(v)));for(let i=N-1;i>=0;i--)ctx.lineTo(ax.X(i+1),ax.Y(R.F.cum[i]));ctx.closePath();ctx.fill();ctx.globalAlpha=1;
   line(R.F.cum,PAL['s2']);line(R.I.cum,PAL['s1']);
@@ -266,7 +291,7 @@ const SIM={
   const ev=N<=12?1:N<=24?3:12;for(let m=0;m<N;m+=ev){txt(ctx,String(m+1),X0+(m+0.5)*cw,cB+16*k,{s:12*k,c:soft,a:'center'});}
   txt(ctx,'Month',X0-8,cB+16*k,{s:12*k,c:soft,a:'right'});
   /* right panel: the extra cost */
-  const PX=548,PW=232;let py=titY;const head=sh?'Extra cost for the informal worker':'Extra cost: lock in your gut first';txt(ctx,head,PX,py,{s:fit(ctx,head,PW,13*k),w:700});py+=10+14*k;
+  const PX=548,PW=232;let py=titY;const head=sh?'Extra cost for the informal worker':(pending(sim)?'Extra cost: work it out first':'Extra cost: lock in your gut first');txt(ctx,head,PX,py,{s:fit(ctx,head,PW,13*k),w:700});py+=10+14*k;
   const cats=CATS.filter(([kk,,,l])=>atLeast(l)),maxv=Math.max(1,...cats.map(([kk])=>Math.abs(R.g[kk])));
   const rowH=Math.min(46,(cB-py-70*k)/cats.length);
   cats.forEach(([kk,l,col])=>{const on=inputs(sim).on[kk];txt(ctx,l,PX,py+12*k,{s:fit(ctx,l,PW*0.62,12*k,700),c:on?ink:PAL['muted']});
@@ -278,7 +303,9 @@ const SIM={
   if(sh){const s1=`Total ${$(R.tot)}`;txt(ctx,s1,PX,py,{s:fit(ctx,s1,PW,15*k),w:700,c:PAL['s1']});py+=8+13*k;
    const s2=`= ${f0(R.tot/R.wage)} hours of work (${f1(R.tot/R.wage/HRS)} months)`;txt(ctx,s2,PX,py,{s:fit(ctx,s2,PW,12*k,400),c:ink});py+=8+13*k;}
   else{const s1='Total ?';txt(ctx,s1,PX,py,{s:15*k,w:700,c:soft});py+=8+13*k;}
-  if(G.g){const s3=`Your gut: ${$(G.g.guess)}`;txt(ctx,s3,PX,py,{s:fit(ctx,s3,PW,12*k),w:700,c:PAL['s4']});}
+  if(G.g){const s3=`Your gut: ${$(G.g.guess)}`;txt(ctx,s3,PX,py,{s:fit(ctx,s3,PW,12*k),w:700,c:PAL['s4']});py+=8+13*k;}
+  /* at the reveal: each piece as a count × rate */
+  if(G.m&&sh){const lh=6+12*k,lim=450-8-6*k-16*k;pieces(sim).filter(q=>q.k!=='borrow').forEach(q=>{if(py>lim)return;const s4=`${q.l} = ${q.f}`;txt(ctx,s4,PX,py,{s:fit(ctx,s4,PW,12*k,400),c:soft});py+=lh;});}
   /* icon legend */
   const legY=450-8-6*k;let lz=12*k;const items=[['sick','Sick'],['esc','Untreated, comes back'],['slow','Slow week'],['emerg','Emergency'],['phone','Broken phone']];
   ctx.font='400 '+lz+'px '+FONT;let tw=items.reduce((a,[,l])=>a+ctx.measureText(l).width+lz+20,0);if(tw>770){lz=Math.max(12,lz*770/tw);ctx.font='400 '+lz+'px '+FONT;tw=items.reduce((a,[,l])=>a+ctx.measureText(l).width+lz+20,0);}
@@ -296,32 +323,44 @@ const SIM={
   else if(I.behind>0)s+=`<b>The informal worker ends ${I.behind} month${I.behind===1?'':'s'} behind on bills</b>, while the formal worker ends with ${$(F.B)} saved. `;
   else s+=`<b>Both workers get through without falling behind.</b> `;
   if(sh)s+=`In all, the informal worker pays ${$(R.tot)} more over ${yrsTxt(R.N)}: ${f0(R.tot/R.wage)} hours of their work.`;
-  else s+='Lock in your gut to see what it all adds up to.';
+  else s+=pending(sim)?'Add up the pieces in <b>Your turn</b> to see the total.':'Lock in your gut to see what it all adds up to.';
   if(sim.p.protect&&sim.p.protect!=='none'){const b=model(sim,{protect:'none'});{const dlt=b.tot-R.tot;s+=` Giving them ${PROTNAME[sim.p.protect]} ${dlt>=0?'cuts':'raises'} the extra cost by ${$(Math.abs(dlt))}.`;}}
   return s;},
  gut:{better:'lower',controls:['guess'],
   ask:{bio:'Look at the year above: the same shocks hit both workers. Drag the slider here to how many more dollars you think the year costs the informal worker in all (lost pay, health, fees and borrowing). Then lock it in.',
    honors:'Drag the slider here to your gut for the informal worker’s extra cost, with the categories and protection you have set. Then lock it in.'},
+  hint:{bio:'Lock in your gut answer. Then you will add up the real number yourself from its pieces.'},
   lock(sim){const R=model(sim);return {v:Math.abs(sim.p.guess-R.tot),guess:sim.p.guess,label:$(sim.p.guess)};},
+  calc:{unit:'$',d:0,tol:a=>Math.max(10,0.005*Math.abs(a)),
+   prompt:sim=>{const R=model(sim),L=pieces(sim);if(!L.length)return 'Every cost category is switched off, so there is nothing to add. What is the extra cost?';
+    return `Work out the informal worker’s extra cost for ${yrsTxt(R.N)} from its pieces:<br>`+L.map(q=>'• '+q.t).join('<br>')+'<br><b>What is the total, in dollars?</b>';},
+   answer:sim=>model(sim).tot,
+   hint:'Work out each piece (a count times a rate, or a percent of an amount), then add them all.',
+   steps(sim){const R=model(sim),L=pieces(sim),out=L.map(q=>q.s);
+    const sum=L.reduce((t,q)=>t+q.h,0);out.push(`Total: ${L.length?L.map(q=>$c(q.h)).join(' + ').replace(/\+ −/g,'− '):'$0'} = <b>${$c(sum)}</b>, about ${$(R.tot)}.`);
+    if(R.tot>0)out.push(`In hours of their work: ${$(R.tot)} ÷ ${$c(R.wage)} an hour ≈ ${f0(R.tot/R.wage)} hours, about ${f1(R.tot/R.wage/HRS)} months of full-time pay.`);
+    return out;}},
+  formula(sim){const R=model(sim),L=pieces(sim),line=`Extra cost = ${L.length?L.map(q=>`${q.f} (${q.l.toLowerCase()})`).join(' + '):'$0'} = ${$(R.tot)}`;
+   if(!ap())return line;const m=slack(sim),r=R.I.r;return r>0?line+`<br>Trap line: D* = m ÷ r = ${$c(Math.max(0,m))} ÷ ${(+r.toFixed(4))} = ${$(Math.max(0,m)/r)}`:line;},
   solve(sim){const R=model(sim);sim.peek=true;sim.infoDirty=true;return {v:0,guess:R.tot,label:`${$(R.tot)}, or ${f0(R.tot/R.wage)} hours of their work`};},
   how:{bio:'The math runs both workers month by month. Each month: pay earned (no work, no pay for the informal worker), minus spending and fees. A shortfall comes out of savings first, then a loan. Every extra dollar the informal worker loses or pays gets added up.',
    honors:'Each month the model updates savings S, debt D and unpaid bills U. Interest on D is charged first, so a shortfall this month raises next month’s costs: a reinforcing loop. The total is the sum over months of (lost pay + health + fees + interest + time) for the informal worker, minus the same for the formal worker.',
    ap:'The run is a recurrence: Dₙ₊₁ = Dₙ(1 + r) − paymentₙ + new borrowingₙ. When rDₙ is at least the monthly slack m, payments can never reduce Dₙ, so the state is absorbing. The total gap is Σ over months of each cost category’s difference.'},
-  compare(sim,g,m){const R=model(sim),d=Math.abs(g.guess-R.tot),hrs=R.tot/R.wage;
-   if(d<=Math.max(100,0.1*R.tot))return `Your gut was close: ${$(g.guess)} against ${$(R.tot)}. That is ${f0(hrs)} hours of the informal worker’s pay, about ${f1(hrs/HRS)} months of full-time work, spent on having less.`;
-   return `You guessed ${$(g.guess)}. The model adds up <b>${$(R.tot)}</b>, ${g.guess<R.tot?'more':'less'} than your gut by ${$(d)}. For this worker that extra cost is <b>${f0(hrs)} hours of work</b>, about ${f1(hrs/HRS)} months of full-time pay. ${(()=>{const top=CATS.filter(([kk])=>inputs(sim).on[kk]).reduce((a,c2)=>R.g[c2[0]]>R.g[a[0]]?c2:a);return `The biggest piece here is <b>${top[1].toLowerCase()}</b>: ${$(R.g[top[0]])}.`;})()}`;},
+  compare(sim,g,m){const R=model(sim),d=Math.abs(g.guess-R.tot),hrs=R.tot/R.wage,K=sim.ui&&sim.ui.calc,self=K&&K.done&&K.correct?' You also added it up yourself from the pieces.':'';
+   if(d<=Math.max(100,0.1*R.tot))return `Your gut was close: ${$(g.guess)} against ${$(R.tot)}. That is ${f0(hrs)} hours of the informal worker’s pay, about ${f1(hrs/HRS)} months of full-time work.`+self;
+   return `You guessed ${$(g.guess)}. The model adds up <b>${$(R.tot)}</b>, ${g.guess<R.tot?'more':'less'} than your gut by ${$(d)}. For this worker that extra cost is <b>${f0(hrs)} hours of work</b>, about ${f1(hrs/HRS)} months of full-time pay. ${(()=>{const top=CATS.filter(([kk])=>inputs(sim).on[kk]).reduce((a,c2)=>R.g[c2[0]]>R.g[a[0]]?c2:a);return `The biggest piece here is <b>${top[1].toLowerCase()}</b>: ${$(R.g[top[0]])}.`;})()}`+self;},
   again(sim){sim.st.seed=1+Math.floor(Math.random()*100000);sim.peek=false;sim.p.guess=1000;}
  },
  infoPanel(sim){if(sim.p.quality)return qualHTML();
-  let h='';if(shown(sim)){const rk=ranking(sim);h+=`<p><b>What breaks the loop?</b> Each protection alone, given to the informal worker in ${C(sim).name} for this run:</p><ol>`+rk.map(r=>`<li>${r.l}: cuts the extra cost by <b>${$(r.cut)}</b></li>`).join('')+'</ol><p>Who can provide each one differs: employers (steady hours, sick pay), laws and programs (sick-leave laws, rate caps, public health care, social insurance), banks, credit unions and cooperatives (accounts, small loans), and families and friends (a cushion). Which to choose is a values question; the math only says how much each one changes.</p>';}
+  let h='';if(shown(sim)){const rk=ranking(sim);h+=`<p><b>What breaks the loop?</b> Each protection alone, given to the informal worker in ${C(sim).name} for this run:</p><ol>`+rk.map(r=>`<li>${r.l}: cuts the extra cost by <b>${$(r.cut)}</b></li>`).join('')+'</ol><p>Who could provide each one, and whether they should, is a values question; the math only says how much each one changes.</p>';}
   else h+='<p><b>What breaks the loop?</b> Lock in your gut, then this panel ranks the protections.</p>';
   return h+hidesHTML(sim)+'<p>Turn on <b>How good is this number?</b> to see how each input was measured.</p>';},
  challenges:[
+  {lvl:'bio',kind:'num',q:'A different worker, a different year: 14 unpaid days at $120 a day, a check casher taking 2.2% of the $30,000 they were paid, and $450 in loan fees. What do these three pieces add up to?',answer:2790,tol:5,unit:'$',d:0,hint:'Multiply the days by the daily pay, take 2.2% of $30,000, then add the fees.',explain:'Lost pay: 14 × $120 = $1,680. Check cashing: 0.022 × $30,000 = $660. Total: $1,680 + $660 + $450 = $2,790.'},
   {lvl:'bio',instant:true,q:'Cheap boots cost $10 and last a year. Good boots cost $50 and last ten years. Over ten years, how do the cheap boots compare?',choices:['They save you $40','They cost the same','They cost $50 more','They cost $90 more'],correct:2,explain:'Ten cheap pairs cost 10 × $10 = $100. One good pair costs $50. That is $10 a year of use against $5. The catch is the up-front price: the good pair needs $50 at once.'},
   {lvl:'bio',instant:true,q:'A payday loan charges $15 for every $100 you borrow for two weeks. What yearly rate (APR) is that?',choices:['15% a year','About 30% a year','About 390% a year','About 1,500% a year'],correct:2,explain:'There are 26 two-week periods in a year, so the rate is 15% × 26 = 390% a year (the CFPB says “almost 400 percent”). A fee that sounds small is huge once you count how often it repeats.'},
   {lvl:'bio',instant:true,q:'In the first Dallas run, which extra cost is biggest for the informal worker?',choices:['Check-cashing fees','Payday-loan fees','Pay lost on days without work','Health costs'],correct:2,explain:'Lost pay is $3,658 of the $7,202: three slow weeks, three sick spells and two more days when an untreated illness came back, all with no pay. Fees on the payday loan come second at $1,768. “No work that day, no pay” is the biggest premium, and it is what pushes the worker into borrowing.'},
   {lvl:'bio',instant:true,q:'The headline says the informal worker’s year costs $7,202 more. What does that one number hide?',choices:['Nothing: it includes every cost','The months the worker was far behind on bills, and people whose pay is never recorded','Only the formal worker’s savings'],correct:1,explain:'A yearly total averages away the hard months: in this run the informal worker ends 9 of 12 months with unpaid bills. And income that is paid in cash never shows up in payroll records, so the people living this year are the hardest to count.'},
-  {lvl:'honors',instant:true,q:'Ecuador’s INEC says 52.8% of workers are in the informal sector (May 2026). ILO-based figures put Ecuador’s informal employment near 70%. Why do they differ?',choices:['One of them made a mistake','They count different things: INEC counts people in businesses without a tax registration (RUC); the ILO also counts informal jobs inside registered businesses, such as a worker with no social security','The ILO counts children'],correct:1,explain:'Informal sector is about the business (registered or not). Informal employment is about the job (protected or not). A cashier at a registered shop with no IESS coverage is formal sector but informal employment. Definitions drive the numbers.'},
   {lvl:'honors',instant:true,q:'Give the Dallas informal worker one protection in the first run. Which cuts their extra cost the most?',choices:['A bank account','Health coverage','Steady hours','A $400 savings cushion'],correct:2,explain:'Steady hours cut the extra cost by $2,477, from $7,202 to $4,725. Low-cost credit cuts $1,678, sick pay $1,461, a bank account $1,309, health coverage $849 and a $400 cushion $383. The loop starts with lost income, so protecting income breaks it best here. In Quito the answer changes: low-cost credit cuts the most ($2,341), because the chulco’s rate dominates.'},
   {lvl:'honors',instant:true,q:'The FDIC (2023) estimates 6.5% of Texas households and 1.1% of Colorado households are unbanked. The 90% ranges are 5.5% to 7.7% for Texas and 0.2% to 6.5% for Colorado. What can you conclude?',choices:['Colorado is exactly six times better','Texas is probably higher, but Colorado’s survey sample is so small that its range overlaps Texas’s','The two are the same'],correct:1,explain:'A survey estimate comes with a margin. Colorado’s range runs up to 6.5%, which overlaps the bottom of Texas’s 5.5% to 7.7%. Smaller samples give wider ranges, and the households hardest to reach are often the unbanked ones.'},
   {lvl:'honors',instant:true,q:'A $450,000 Aurora home at 7.18%. Over 10 years, about how much mortgage insurance does the buyer with 3.5% down (FHA) pay, counting the 1.75% upfront premium?',choices:['About $7,600','About $15,000','About $30,400','About $60,000'],correct:2,explain:'Upfront: 1.75% × $434,250 = $7,599, added to the loan. Annual premium: 0.55% a year of the balance, about $203 a month at first, for the life of the loan: $22,834 in 10 years. Total about $30,434. The buyer with 20% down pays none. Insurance lets the lender accept a small down payment; without it, many of these buyers could not borrow at all.'},
@@ -330,7 +369,7 @@ const SIM={
   {lvl:'ap',instant:true,q:'The uninsured worker has a 20% chance each month of getting sick, and half of those illnesses come back as a $750 emergency visit. What is the expected cost of that risk per year?',choices:['$150','$900','$1,800','$9,000'],correct:1,explain:'Expected cost = number of chances × probability × cost = 12 × 0.2 × 0.5 × $750 = $900 a year. Insurance turns that uncertain risk into a known price; without it the cost arrives in lumps, often in a month already short.'}
  ],
  tour:[
-  {title:'Boots theory',text:'A cheap pair of boots costs $10 and lasts about a year. A good pair costs $50 and lasts ten. Over ten years the cheap boots cost $100 and the good ones $50. Buying cheap is not a mistake: it is all you can pay for this month. That is the poverty premium in one picture.',pause:true,setup:sim=>BioLab.setValues(sim,{view:'boots',b_cheap:10,b_clife:1,b_good:50,b_glife:10})},
+  {title:'Boots theory',text:'A cheap pair of boots costs $10 and lasts about a year. A good pair costs $50 and lasts ten. Over ten years the cheap boots cost 10 × $10 = $100 and the good ones $50. The good pair needs $50 at once; with $10 to spare, the cheap pair is the one you can buy. That gap is the poverty premium in one picture.',pause:true,setup:sim=>BioLab.setValues(sim,{view:'boots',b_cheap:10,b_clife:1,b_good:50,b_glife:10})},
   {title:'Two workers, one set of shocks',text:'Both workers earn the same pay per day in Dallas. The blue line is the formal worker: steady job, sick pay, a bank account, health coverage and a $400 cushion. The red line is the informal worker: paid only for days worked, no bank account, no coverage, no cushion. Across the top, dots are sick spells, squares slow weeks, triangles family emergencies, the tall bar a broken phone: the same for both.',pause:true,setup:sim=>{BioLab.setValues(sim,{view:'year',city:'dallas',protect:'none'});sim.st.seed=SEED0;},focus:[[0,0,530,450]]},
   {title:'No work, no pay',text:'Month 1: a sick spell (2 unpaid days) and a broken phone. The formal worker is paid and covers the phone from savings. The informal worker loses $281 of pay, has no savings, and takes a $340 payday loan. Month 4: sick again plus a slow week, 8 days and $1,126 of pay gone.',pause:true,setup:sim=>BioLab.setValues(sim,{view:'year',city:'dallas',protect:'none'})},
   {title:'The loan feeds itself',text:'The loan costs $34.14 per $100 a month: $116 on $340. After the check casher takes 2.2% of each paycheck, only $85 is left over in a normal month, less than the fee. So the debt grows even in quiet months: $412 by month 3, then the $507 limit in month 4. Every shock after that becomes unpaid bills.',pause:true},
@@ -369,6 +408,7 @@ SIM.about='<p><b>This is a simplified model for learning, not financial, medical
  '<p><b>How hard it is to count.</b> Ecuador’s INEC counts 52.8% of workers in the informal sector, businesses of under 100 workers without a tax registration (RUC), May 2026; rural 76%, urban 40%. ILO-based estimates of informal employment, which also count unprotected jobs in registered firms, are near 70%. Mean labor income was $471 a month (May 2026), below the $482 minimum; a mean can be pulled by a few high earners, which is why a median is often better for income. The U.S. has no official informality rate: 13% of adults sold things and 9% did short-term tasks for pay in the gig or resale sectors (SHED 2024); 4.3% of workers were contingent and 7.4% independent contractors (BLS, July 2023); the IRS estimates $117 billion in unreported sole-proprietor income (2022). Unbanked households (<a href="https://fdic.gov/household-survey/2023-fdic-national-survey-unbanked-and-underbanked-households-appendix-tables" target="_blank" rel="noopener">FDIC, 2023</a>): 4.2% nationally, Texas 6.5% (90% range 5.5% to 7.7%), Dallas-Fort Worth 4.7% (2.9% to 7.5%), Colorado 1.1% (0.2% to 6.5%). Ecuador: 65% of adults have an account (Global Findex, 2024 survey, as reported by El Universo). Ecuador’s income poverty was 21.4% and multidimensional poverty 41.7% (December 2025): the answer depends on what you measure. Diaries, bank records and surveys each see a different slice, and the people this tool is about are the ones most often missed.</p>'+
  '<p><b>Buying a home: mortgage insurance.</b> The same $450,000 Aurora house (an example price, not a measured median; the city reports a median home value of $350,200 from the 2017 to 2021 ACS) at 7.18%, the 30-year average for the week of Nov 5, 2026 (<a href="https://fred.stlouisfed.org/series/MORTGAGE30US" target="_blank" rel="noopener">Freddie Mac PMMS via FRED</a>), on a 30-year fixed loan. FHA (<a href="https://archives.hud.gov/news/2024/2023-05hsgml.pdf" target="_blank" rel="noopener">HUD Mortgagee Letter 2023-05</a>): an upfront premium of 1.75% of the base loan, added to the loan here so interest accrues on it, and an annual premium of 0.55% for loans over 95% of the value (0.50% at 90% to 95%), for the life of the loan when the down payment is under 10% (11 years otherwise). The tool approximates the annual premium as 0.55% of each month’s balance ÷ 12. Conventional with 5% down: private mortgage insurance, which Freddie Mac says costs about $30 to $70 a month per $100,000 borrowed; its example uses 0.51% a year (<a href="https://myhome.freddiemac.com/buying/breaking-down-pmi" target="_blank" rel="noopener">Freddie Mac</a>). Under the Homeowners Protection Act of 1998 it ends automatically when the loan is scheduled to reach 78% of the original value, and a borrower may ask to cancel at 80% (<a href="https://files-prod.consumerfinance.gov/f/documents/201508_cfpb_compliance-bulletin_private-mortgage-insurance-cancellation-and-te_jpbfQUl.pdf" target="_blank" rel="noopener">CFPB</a>). Real PMI prices also depend on credit score. Is it a tax on having less? Not technically: FHA premiums go to the FHA’s insurance fund and PMI to private insurers, and they price the higher chance that a small-down-payment loan is not repaid. Without that insurance many of these buyers could not get a loan at all. The family-gift case shows the other side: a gift of the down payment removes the insurance cost entirely, so family wealth carries an advantage forward. Taxes, homeowners insurance and closing costs are left out.</p>'+
  '<p><b>Not modeled yet.</b> Education costs (Ecuador caps private-school supply and uniform costs at $482 a year from 2026–27; see <a href="#stickernet">sticker vs. net price</a> for college), deposits for renting without a credit history, car insurance priced by credit (<a href="#carquote">car quotes</a>), prepaid phone plans, distance to full grocery stores, ID fees (Texas $16, Colorado $14, Ecuador $16 to renew a cédula), and sending money home (<a href="https://rjedtech.github.io/Raider-CivicsLab/#remittances" target="_blank" rel="noopener">remittances in CivicsLab</a>).</p>'+
+ '<p><b>Who provides a protection.</b> It differs: employers (steady hours, sick pay), laws and programs (sick-leave laws, rate caps, public health care, social insurance), banks, credit unions and cooperatives (accounts, small loans), and families and friends (a cushion).</p>'+
  '<p><b>Why this matters.</b> Financial-diary studies find that households with low, irregular income run many tools at once: side work, family loans, savings clubs and lenders (<a href="https://www.microsave.net/wp-content/uploads/2023/08/PoP_BN_9_Three_Country_Analysis.pdf" target="_blank" rel="noopener"><i>Portfolios of the Poor</i>, Brief 9</a>; Edin and Lein, <i>Making Ends Meet</i>, 1997). Managing that takes skill. Catholic teaching has long addressed lending at high rates to people in need. The Catechism (§2269) names “usurious and avaricious dealings” that lead to the hunger of others (<a href="https://www.vatican.va/archive/ENG0015/__P7Z.HTM" target="_blank" rel="noopener">Vatican</a>), and Pope Leo XIV said in 2025 that “usurious financial systems can bring entire peoples to their knees” (<a href="https://www.vatican.va/content/leo-xiv/en/speeches/2025/october/documents/20251018-consulta-antiusura.html" target="_blank" rel="noopener">Vatican</a>). A question to reflect on: when does a price for risk become something else, and who should decide? The tool does not answer that; it measures what each protection changes. If money stress at home weighs on you, RJ counseling is there to talk, or you can use Safe2Tell.</p>';
 BioLab.register(SIM);
 })();

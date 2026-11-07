@@ -116,7 +116,9 @@ function usd(sim,pid){const c=cost(sim,pid);return c===null?null:c/FX[P[PI[pid]]
 function all(sim){return P.map(p=>({p,m:mins(sim,p.id),c:cost(sim,p.id)}));}
 function most(sim){let b=null;all(sim).forEach(r=>{if(r.m!==null&&(b===null||r.m>b.m))b=r;});return b;}
 function fewest(sim){let b=null;all(sim).forEach(r=>{if(r.m!==null&&r.m>0&&(b===null||r.m<b.m))b=r;});return b;}
-const shown=sim=>!!sim.p.show||!!(sim.gutS&&sim.gutS.m);
+/* While the student works out minutes for their pick ("Your turn"), the bars stay hidden. */
+const pending=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const shown=sim=>(!!sim.p.show&&!pending(sim))||!!(sim.gutS&&sim.gutS.m);
 const val=(sim,pid)=>{const m=mins(sim,pid);return m===null?0:m;};   /* gut score: minutes at a place, 0 if no data */
 
 /* ---------- formatting ---------- */
@@ -131,6 +133,24 @@ const WNAME={min:'minimum-wage worker',typ:'typical worker'};
 function title(sim){const b=hon()?sim.p.basket:'none';return b==='none'?IT[sim.p.item].l:BNAME[b].replace(/^./,c=>c.toUpperCase());}
 function missWhy(sim,pid,nowage){if(!nowage&&wage(sim,pid)===null)return sim.p.worker==='min'?'no legal minimum wage':'no typical wage found';
  const L=basketList(sim);if(!L.length)return 'your basket is empty';for(const [iid] of L){const c=IT[iid].q[pid];if(!c||c.v===null)return L.length>1?'basket incomplete: no price for '+IT[iid].l.toLowerCase():'no reliable price found';}return '';}
+
+/* "Your turn": minutes of work at the student's pick (or, if the pick has no figure, the first place in this list that has one). */
+const CALC_ORDER=['aur','dal','mem','muc','tyo','nbo','mex','uio','ker','dha','eky','ehi','cph'];
+function calcPid(sim){const G=sim.gutS,pid=(G&&G.m&&G.g)?G.g.pid:sim.p.pick;if(mins(sim,pid)!==null)return pid;return CALC_ORDER.find(id=>mins(sim,id)!==null)||null;}
+/* the hand version: price and wage rounded as shown */
+const rnd=v=>v<100?Math.round(v*100)/100:Math.round(v);
+function handLines(sim,pid){const p=P[PI[pid]],L=basketList(sim);return L.map(([iid,q])=>({iid,q,u:rnd(IT[iid].q[pid].v),l:IT[iid].l}));}
+function handMin(sim,pid){const p=P[PI[pid]],c=handLines(sim,pid).reduce((t,x)=>t+x.u*x.q,0),h=rnd(wage(sim,pid));return {c,h,m:c/h*60,p};}
+function calcText(sim){const pid=calcPid(sim);if(!pid)return 'No place has both a price and a wage for this, so there is nothing to divide. Enter 0.';
+ const p=P[PI[pid]],H=handMin(sim,pid),L=handLines(sim,pid),mine=pid===sim.p.pick,w=WNAME[sim.p.worker];
+ const lead=mine?`Your pick, <b>${p.n}</b>:`:`Your pick has no figure, so use <b>${p.n}</b>:`;
+ const lc=t=>t.replace(/^./,c=>c.toLowerCase()),one=L.length===1&&L[0].q===1;
+ const what=one?`${lc(L[0].l)} costs ${money(p.cur,L[0].u)}.`:'the basket is '+L.map(x=>`${x.q>1?x.q+' × ':''}${lc(x.l)}: ${money(p.cur,x.u)}${x.q>1?' each':''}`).join('; ')+'.';
+ return `${lead} ${what} A ${w} earns ${money(p.cur,H.h)} an hour there. How many minutes of work does ${one?'it':'the whole basket'} take?`;}
+function calcSteps(sim){const pid=calcPid(sim);if(!pid)return ['No place has both numbers, so the answer is <b>0</b>.'];const H=handMin(sim,pid),p=H.p,L=handLines(sim,pid),out=[];
+ if(L.length>1||L[0].q>1)out.push(`Cost of the basket: ${L.map(x=>(x.q>1?x.q+' × ':'')+money(p.cur,x.u)).join(' + ')} = ${money(p.cur,H.c)}.`);
+ out.push(`Hours of work: ${money(p.cur,H.c)} ÷ ${money(p.cur,H.h)} an hour = ${(H.c/H.h).toFixed(4)} hours. The ${p.cur==='USD'?'dollars':'currency units'} cancel.`);
+ const c1=v=>v.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1});out.push(`Minutes: ${(H.c/H.h).toFixed(4)} × 60 = <b>${c1(H.m)} minutes</b>${H.m>=120?`, about ${c1(H.m/60)} hours`:''}.`);return out;}
 
 /* What the headline number hides, for the place you picked. */
 function hides(sim,pid){const p=P[PI[pid]],w=sim.p.worker,o=[];
@@ -153,6 +173,7 @@ function hides(sim,pid){const p=P[PI[pid]],w=sim.p.worker,o=[];
 
 const SIM={
  id:'minutesofwork',hash:'minutesofwork',apUnit:20,order:7,tab:'Minutes of work',kind:'Simulation',
+ skills:{bio:'Unit rates: minutes of work = price ÷ pay per hour × 60 · Algebra 1 (Unit 2)',honors:'Unit rates, baskets and index numbers · Algebra 1 (Unit 2)',ap:'Ratios that compare currencies: purchasing power parity and price levels · Algebra 1 (Unit 2)'},
  card:'Guess where a bus ride, a liter of gas or a month of rent takes the most work, then divide price by pay to see life from 13 places.',
  title:'What life costs, in minutes of work',
  lede:{bio:'A bus ride costs ¥210 in Tokyo, KSh 100 in Nairobi and $3.00 in Dallas. Those numbers cannot be compared: they are in different currencies. Divide each price by what an hour of work pays there, and you get minutes of work, a unit that means the same thing everywhere.',
@@ -203,8 +224,10 @@ const SIM={
   /* header */
   const t1=title(sim)+(usdv?': price in U.S. dollars':': '+WNAME[sim.p.worker]);
   txt(ctx,t1,14,8+15*k,{s:fit(ctx,t1,772,15*k),w:700});
-  const key=compact?(usdv?'Bars: price ÷ exchange rate':(sh?'Bars: price ÷ pay per hour × 60':'Sticker prices. Lock in your gut.')):(usdv?'Bars: price ÷ exchange rate. One yardstick for money, but wages are left out.':(sh?'Bars: minutes of work = price ÷ pay per hour × 60. No exchange rate needed.':'Sticker prices in each place’s currency. Which takes the most work? Lock in your gut.'));
-  txt(ctx,key,14,8+15*k+8+12*k,{s:fit(ctx,key,772,12*k,400),c:PAL['cv-soft']});
+  const key=compact?(usdv?'Bars: price ÷ exchange rate':(sh?'Bars: price ÷ pay per hour × 60':(pending(sim)?'Sticker prices. Work out your pick.':'Sticker prices. Lock in your gut.'))):(usdv?'Bars: price ÷ exchange rate. One yardstick for money, but wages are left out.':(sh?'Bars: minutes of work = price ÷ pay per hour × 60. No exchange rate needed.':(pending(sim)?'Sticker prices. Work out the minutes for your pick in Your turn.':'Sticker prices in each place’s currency. Which takes the most work? Lock in your gut.')));
+  let key2=key,kc=PAL['cv-soft'];const mx0=G.m&&!usdv?most(sim):null;
+  if(mx0){const H=handMin(sim,mx0.p.id),cu=mx0.p.cur;key2=`Most work, ${mx0.p.s}: ${money(cu,H.c)} ÷ ${money(cu,H.h)} an hour × 60 = ${workLong(mx0.m)}`;kc=PAL['cv-ink'];}
+  txt(ctx,key2,14,8+15*k+8+12*k,{s:fit(ctx,key2,772,12*k,mx0?700:400),c:kc});
   const top=8+15*k+8+12*k+12,rowH=(H-top-6)/P.length,R=all(sim),mx=most(sim);sim._rows={top,rowH};
   const vals=R.map(r=>usdv?usd(sim,r.p.id):r.m),vmax=Math.max(1e-9,...vals.filter(v=>v!==null))*1.02;
   const nameW=compact?205:172,priceX=compact?0:268,barL=compact?nameW+8:282;
@@ -245,25 +268,34 @@ const SIM={
  narrate(sim){const sh=shown(sim),it=title(sim).toLowerCase(),w=WNAME[sim.p.worker];
   if(!sh){const qs=P.filter(p=>cost(sim,p.id)!==null),q=qs.length,nc=new Set(qs.map(p=>p.cur)).size;return `You can see ${q} sticker price${q===1?'':'s'} for ${it}, in ${nc} currenc${nc===1?'y':'ies'}. <b>A price alone cannot tell you how hard something is to afford.</b> You also need what an hour of work pays: divide, and the currency cancels.`;}
   const a=most(sim),b=fewest(sim);if(!a)return `<b>No place has both a price and a wage here.</b> That is a finding too: what is not measured cannot be compared.`;
-  if(ap()&&sim.p.view==='usd')return `In dollars at exchange rates, prices look one way; in minutes of work, another. <b>Exchange rates convert money, not lives:</b> they leave out what people earn.`;
+  if(ap()&&sim.p.view==='usd')return `In dollars at exchange rates, prices look one way; in minutes of work, another. <b>Exchange rates convert money between currencies;</b> they leave out what people earn.`;
   return `For a ${w}, ${it} takes <b>${workLong(a.m)} in ${a.p.n}</b>${b&&b.p.id!==a.p.id?`, against ${workLong(b.m)} in ${b.p.n}: about ${f1(a.m/b.m)} times as long`:''}. The price is only half the ratio; the wage is the other half.`;},
  gut:{better:'higher',controls:['pick'],
   ask:{bio:'Look at the sticker prices. Pick the place here (or click its row) where you think this takes the <b>most minutes of work</b> for the worker named at the top of the picture. Then lock it in.',honors:'Before you show minutes: pick the place here (or click its row) where you think this item or basket takes the most minutes of work for the worker named at the top of the picture. Then lock it in.'},
+  hint:{bio:'Lock in your gut answer. Then you will work out the minutes for your pick yourself.'},
+  calc:{unit:'minutes',d:1,tol:a=>Math.max(0.2,0.01*Math.abs(a)),prompt:calcText,
+   answer:sim=>{const pid=calcPid(sim);return pid?handMin(sim,pid).m:0;},
+   hint:'Minutes of work = price ÷ pay per hour × 60. Price and pay are in the same currency, so it cancels.',
+   steps:calcSteps},
+  formula(sim){const b=most(sim);if(!b)return 'No place has both a price and a wage for this.';const H=handMin(sim,b.p.id),cu=b.p.cur;
+   let out=`Minutes = price ÷ pay per hour × 60. Most work, ${b.p.n}: ${money(cu,H.c)} ÷ ${money(cu,H.h)} × 60 = ${f1(H.m)} minutes`;
+   const g=sim.gutS&&sim.gutS.g;if(g&&g.pid!==b.p.id&&mins(sim,g.pid)!==null){const G2=handMin(sim,g.pid),c2=G2.p.cur;out+=`<br>Your pick, ${G2.p.n}: ${money(c2,G2.c)} ÷ ${money(c2,G2.h)} × 60 = ${f1(G2.m)} minutes`;}
+   return out;},
   lock(sim){const pid=sim.p.pick,m=mins(sim,pid);return {v:val(sim,pid),pid,label:`${P[PI[pid]].n}: ${m===null?'no figure':workLong(m)}`};},
   solve(sim){const b=most(sim);if(b)sim.p.pick=b.p.id;sim.p.show=true;if(sim.ui&&sim.ui.ctl){sim.ui.ctl.pick.set(sim.p.pick);sim.ui.ctl.show.set(true);}const pid=sim.p.pick,m=mins(sim,pid);return {v:val(sim,pid),pid,label:b?`${b.p.n}: ${workLong(m)}`:'no place has data'};},
   how:{bio:'For each place, the math divides the price by what one hour of work pays there and multiplies by 60. Price and pay are in the same currency, so the currency cancels: the answer is in minutes, which mean the same thing in Tokyo and in Memphis.',
    ap:'minutes = (price in local currency ÷ wage in local currency per hour) × 60. The units of currency cancel, so no exchange rate enters. For a basket, add the costs first, then divide.'},
-  compare(sim,g,m){const gp=P[PI[g.pid]],mp=P[PI[m.pid]];
+  compare(sim,g,m){const gp=P[PI[g.pid]],mp=P[PI[m.pid]],K=sim.ui&&sim.ui.calc,self=K&&K.done&&K.correct?' You also did the division yourself.':'';
    if(m.v===0)return 'No place has both a price and a wage for this, so there is nothing to rank. That is a finding: what is not measured cannot be compared.';
-   if(g.pid===m.pid)return `Your gut was right on: <b>${mp.n}</b> takes the most work, ${workLong(m.v)}. You read past the currencies to the wages behind them.`;
+   if(g.pid===m.pid)return `Your gut was right on: <b>${mp.n}</b> takes the most work, ${workLong(m.v)}. You read past the currencies to the wages behind them.`+self;
    if(g.v===0)return `${gp.n} has no ${missWhy(sim,gp.id)}, so the math cannot score it. The most work is in <b>${mp.n}: ${workLong(m.v)}</b>.`;
-   return `The most work is in <b>${mp.n}: ${workLong(m.v)}</b>. Your pick, ${gp.n}, takes ${workLong(g.v)}, so a worker in ${mp.n} works <b>${workLong(m.v-g.v)} longer</b> (${f1(m.v/g.v)} times as long) for the same thing.`;},
+   return `The most work is in <b>${mp.n}: ${workLong(m.v)}</b>. Your pick, ${gp.n}, takes ${workLong(g.v)}, so a worker in ${mp.n} works <b>${workLong(m.v-g.v)} longer</b> (${f1(m.v/g.v)} times as long) for the same thing.`+self;},
   again(sim){sim.p.item=WELL[Math.floor(Math.random()*WELL.length)];sim.p.worker=Math.random()<0.7?'min':'typ';sim.p.show=false;sim.p.basket='none';sim.p.pick=P[Math.floor(Math.random()*P.length)].id;}
  },
  challenges:[
+  {lvl:'bio',kind:'num',q:'Your lunch costs $9.00, and your job pays Colorado’s minimum wage, $15.16 an hour. How many minutes of work pay for the lunch?',answer:9/15.16*60,tol:0.2,unit:'minutes',d:1,hint:'Divide the price by the pay per hour, then multiply by 60.',explain:'9.00 ÷ 15.16 ≈ 0.5937 hours, and 0.5937 × 60 ≈ 35.6 minutes. The dollars cancel, so the answer is in time.'},
   {lvl:'bio',instant:true,q:'A Mexico City metro ride costs 5 pesos. A Munich single ticket costs €4.20. Which takes more minutes of work for a minimum-wage worker?',choices:['Mexico City: 5 is a bigger number','Munich','You cannot tell without each place’s wage'],correct:2,explain:'Prices in different currencies cannot be compared directly. With the wages: Mexico City 5 ÷ 45.94 pesos an hour × 60 ≈ 6.5 minutes; Munich 4.20 ÷ 13.90 € an hour × 60 ≈ 18.1 minutes. Once you have the wages, you can tell: Munich.'},
   {lvl:'bio',instant:true,q:'A bus ride costs $3.00 in Dallas and $2.75 in Aurora. Which takes more minutes of minimum-wage work?',choices:['Aurora, because more things cost more there','Dallas, about twice as long','About the same: the prices are close'],correct:1,explain:'Dallas: 3.00 ÷ 7.25 × 60 ≈ 24.8 minutes. Aurora: 2.75 ÷ 15.16 × 60 ≈ 10.9 minutes. The prices are close, but Colorado’s minimum wage is more than twice Texas’s.'},
-  {lvl:'bio',instant:true,q:'What this number hides: rural Ecuador’s typical (mean) wage works out to $2.11 an hour, but the legal minimum is $2.78. How can the typical worker earn less than the minimum?',choices:['It is a typing error','The minimum wage applies to formal jobs, and most rural workers work informally','Rural workers work more hours, so they are paid less per hour'],correct:1,explain:'In December 2023, 79% of rural workers in Ecuador were informal: farming their own land, selling, day labor. The minimum wage binds employers in formal jobs. A table that shows only the minimum wage would hide most rural workers.'},
   {lvl:'honors',instant:true,q:'In Aurora, rent + 200 kWh of power costs $1,677.27 a month; in Tokyo, ¥82,511. Without an exchange rate, can you say which takes more minimum-wage work?',choices:['No: you must convert yen to dollars first','Yes: divide each by its own wage per hour','Yes: the bigger number takes more work'],correct:1,explain:'Minutes = cost ÷ wage × 60, both in the same currency. Aurora: 1,677.27 ÷ 15.16 ≈ 110.6 hours. Tokyo: 82,511 ÷ 1,280 ≈ 64.5 hours. No exchange rate needed.'},
   {lvl:'honors',instant:true,q:'Mexico City’s typical wage here is the mean pay of IMSS-insured (formal) workers. If you used the median of all workers, formal and informal, what would most likely happen to minutes of work?',choices:['They would go up','They would go down','They would not change'],correct:0,explain:'A mean is pulled up by high earners, and the formal-worker figure leaves out informal workers, 45.3% of the city’s workers. In Apr–Jun 2026, 41.2% of Mexico City’s workers earned up to one minimum wage. A median of everyone would sit lower, so the same price would take more minutes.'},
   {lvl:'honors',instant:true,q:'The breakfast basket (1 kg staple + 12 eggs) takes 27.4 minutes of minimum-wage work in Aurora and 51.5 in Dallas. With Aurora as the base (= 100), what is Dallas’s index?',choices:['About 53','About 100','About 188'],correct:2,explain:'Index = 100 × 51.5 ÷ 27.4 ≈ 188. The same basket takes almost twice as long to earn in Dallas, even though its dollar price is lower there ($6.22 against $6.93).'},
@@ -314,7 +346,7 @@ const SIM={
  +'<p><b>Not included.</b> A month of mobile data, a basic smartphone, a doctor visit without insurance, a year of school uniforms or supplies, and a pair of basic shoes: I found no comparable, sourced price for most of these places. That gap is itself a result.</p>'
  +'<p><b>How professionals do this.</b> The Economist’s Big Mac Index prices one identical item everywhere; the World Bank’s International Comparison Program prices hundreds of goods and services to compute PPPs. Other sources you will meet: crowd-sourced sites such as Numbeo, which none of these prices uses. Statistics Denmark, for example, reports that Danish bread and cereal prices were 136% of the EU average in 2024 (<a href="https://www.dst.dk/nyt/32756" target="_blank" rel="noopener">Statistics Denmark</a>), an index rather than a shop price.</p>'
  +'<p><b>Exchange rates</b> (local currency per $): euro 0.8958, yen 157.47, krone 6.6946, peso 18.7942, rupee 94.94 (<a href="https://www.federalreserve.gov/releases/h10/current/" target="_blank" rel="noopener">Federal Reserve H.10</a>, Oct 30, 2026); Kenya shilling 129.91 (<a href="https://www.centralbank.go.ke/" target="_blank" rel="noopener">Central Bank of Kenya</a>, Nov 6, 2026); taka 122.75 (Bangladesh Bank purchase rate, Jun 2, 2026, <a href="https://today.thefinancialexpress.com.bd/print/bb-buys-54m-more-to-stabilise-taka-1780337629" target="_blank" rel="noopener">Financial Express</a>).</p>'
- +'<p>This is a simplified math model, not financial advice. Places have different dates, sources and coverage, so treat small differences with caution. The tool compares numbers, not countries or the people in them: in every one of these places, people manage these costs with skill every day. A question to consider: <i>Rerum Novarum</i> (1891, §45) holds that “wages ought not to be insufficient to support a frugal and well-behaved wage-earner” (<a href="https://www.vatican.va/content/leo-xiii/en/encyclicals/documents/hf_l-xiii_enc_15051891_rerum-novarum.html" target="_blank" rel="noopener">Vatican</a>). Which of these numbers would help you test a wage against that standard, and which would hide the answer?</p>'
+ +'<p>This is a simplified math model, not financial advice. Places have different dates, sources and coverage, so treat small differences with caution. The tool compares numbers, not countries or the people in them. A question to consider: <i>Rerum Novarum</i> (1891, §45) holds that “wages ought not to be insufficient to support a frugal and well-behaved wage-earner” (<a href="https://www.vatican.va/content/leo-xiii/en/encyclicals/documents/hf_l-xiii_enc_15051891_rerum-novarum.html" target="_blank" rel="noopener">Vatican</a>). Which of these numbers would help you test a wage against that standard, and which would hide the answer?</p>'
 };
 BioLab.register(SIM);
 })();

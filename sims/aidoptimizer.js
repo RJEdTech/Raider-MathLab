@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const {clamp,txt,pill,rr,PAL,axes,legend,atLeast,fmtNum}=BioLab.h;
+const {clamp,txt,pill,rr,PAL,FONT,axes,legend,atLeast,fmtNum}=BioLab.h;
 /* A fictional private college. Three groups of admitted students. For a scholarship a (dollars a year), a student pays S − a,
    and the chance a student in the group enrolls is logistic in that price: P(a) = 1 / (1 + e^((S − a − W)/s)),
    where W is the price at which half the group would enroll and s sets how quickly the chance changes.
@@ -20,7 +20,12 @@ function best(sim,i){const S=Sv(sim),s=sv(sim),d=a=>(1-P(sim,i,a))/s-1/(S-a);if(
 const anyway=(sim,i,a)=>GR[i].N*P(sim,i,0)*a;          /* aid dollars to students who would enroll with no scholarship */
 const moved=(sim,i,a)=>GR[i].N*(P(sim,i,a)-P(sim,i,0));  /* extra students the scholarship brings in */
 const GS=sim=>(sim.tour&&sim.tour.on)?null:sim.gutS;
-const shown=sim=>!!(sim.p.show||(sim.gutS&&(sim.gutS.g||sim.gutS.m)));
+const pend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const shown=sim=>!pend(sim)&&!!(sim.p.show||(sim.gutS&&(sim.gutS.g||sim.gutS.m)));
+/* "Your turn": revenue at the award on screen, in $ millions, from the chance rounded to 0.1% as the table shows it. */
+const p1=v=>Math.round(1000*v)/1000;
+const calcAns=sim=>{const i=gi(sim),a=aidOf(sim,i);return atLeast('ap')?Math.round(R(sim,i,a)/1e4)/100:Math.round(GR[i].N*p1(P(sim,i,a))*(Sv(sim)-a)/1e4)/100;};
+const rLine=(sim,i,a)=>`R = ${GR[i].N} × ${pc(P(sim,i,a))} × ${$(Sv(sim)-a)} = ${$m(R(sim,i,a))}`;
 const $=v=>'$'+Math.round(v).toLocaleString('en-US');
 const $h=v=>'$'+(Math.round(v/100)*100).toLocaleString('en-US');
 const $m=v=>'$'+(v/1e6).toFixed(2)+' million';
@@ -31,6 +36,7 @@ function setAll(sim,aids){sim.st.aids=aids.slice();BioLab.setValues(sim,{aid:aid
 
 const SIM={
  id:'aidoptimizer',hash:'aidoptimizer',apUnit:19,order:2,tab:'The Aid Optimizer',kind:'Simulation',
+ skills:{bio:'Revenue = students × price, R = N × P × (S − a), maximized by checking values · Algebra 1 (Unit 2)',honors:'Revenue from a logistic curve, and marginal revenue · Algebra 1 (Unit 2), Algebra 2',ap:'Optimization with the derivative, R′(a) = 0 · AP Calculus AB (Unit 5)'},
  card:'Run enrollment at a fictional college: guess the scholarship that brings in the most tuition, then see who the money really goes to.',
  title:'The Aid Optimizer: you set the price',
  lede:{bio:'Switch chairs. You run enrollment at a private college, and your job is to bring in tuition money. A bigger scholarship gets more students to say yes, but each one pays less. Somewhere in between is the award that brings in the most.',
@@ -88,8 +94,10 @@ const SIM={
    y+=fs*1.25;txt(ctx,sh?(big?'$'+(R(sim,j,aj)/1e6).toFixed(2)+'M':$m(R(sim,j,aj))):'Revenue ?',x+10,y,{s:fs,w:700,c:sh?PAL['s3']:PAL['cv-soft'],b:'top'});});
   /* ---- left: the table for this group ---- */
   const top=10;txt(ctx,big?g.short:g.name+` (${g.N} admitted)`,16,top,{s:14*k,w:700,c:cols[i],b:'top'});
-  if(!big)txt(ctx,`Half would enroll at a price of ${$(g.W)}. Revenue is in $ millions.`,16,top+14*k+4,{s:fs,c:PAL['cv-soft'],b:'top'});
-  const hy=top+14*k+(big?8:8+fs+8);
+  if(G&&G.m&&sh){const t=big?`R = ${g.N} × ${pc(P(sim,i,a))} × ${$(S-a)}`:rLine(sim,i,a);let z=fs;ctx.font='700 '+z+'px '+FONT;const w=ctx.measureText(t).width;if(w>412)z=Math.max(12,z*412/w);
+   txt(ctx,t,16,top+14*k+4,{s:z,w:700,c:PAL['rj'],b:'top'});}
+  else if(!big)txt(ctx,`Half would enroll at a price of ${$(g.W)}. Revenue is in $ millions.`,16,top+14*k+4,{s:fs,c:PAL['cv-soft'],b:'top'});
+  const hy=top+14*k+(big?(G&&G.m&&sh?8+fs+8:8):8+fs+8);
   /* columns: [x, align, header, cell(r)] ; the phone drops "Each pays" */
   const C=big?[[16,'left','Award'],[262,'right','Enroll'],[404,'right','Rev. $M']]:[[16,'left','Scholarship'],[236,'right','Chance'],[326,'right','Each pays'],[416,'right','Revenue $M']];
   C.forEach(c=>txt(ctx,c[2],c[0],hy,{s:fs,w:700,c:PAL['cv-soft'],a:c[1],b:'top'}));
@@ -120,6 +128,7 @@ const SIM={
   pill(ctx,big?pc(P(sim,i,a)):pc(P(sim,i,a))+' enroll',clamp(ux,X0+52*k,X1-52*k),Y1-fs*1.1,PAL['rj'],'#fff',fs);},
  narrate(sim){const i=gi(sim),g=GR[i],a=aidOf(sim,i),p=P(sim,i,a),S=Sv(sim);
   let s=`With a ${$h(a)} scholarship, each of the ${g.name.toLowerCase()} pays ${$(S-a)}, and about <b>${Math.round(g.N*p)} of ${g.N} enroll</b> (${pc(p)}).`;
+  if(pend(sim))return s+` <b>Work out the revenue: students admitted × chance × what each pays.</b>`;
   if(!shown(sim))return s+' More aid means more students, but each pays less. Which effect wins?';
   const d=R(sim,i,Math.min(S,a+1000))-R(sim,i,a),w=anyway(sim,i,a),top=Math.abs(a-best(sim,i))<750;
   s+=top?' <b>You are at the top:</b> the next $1,000 of aid barely changes revenue, and more would start to lower it.':d>0?` The next $1,000 of aid would <b>raise</b> revenue by ${$(d)}: it still brings in enough new students to pay for itself.`:` The next $1,000 of aid would <b>lower</b> revenue by ${$(-d)}: it mostly discounts students who were coming anyway.`;
@@ -128,19 +137,34 @@ const SIM={
  gut:{better:'higher',controls:['group','aid'],
   ask:{bio:'Pick a group here. Then drag <b>Scholarship</b> to the award you think brings in the most tuition money from that group. Too small and few enroll; too big and each pays too little. Lock it in.',
    honors:'Pick a group, then set the scholarship you think maximizes this group’s net tuition revenue. Lock it in before you show the revenue.'},
-  lock(sim){return score(sim);},
+  lock(sim){const o=score(sim);o.label=`a ${$h(o.aid)} scholarship for ${GR[o.i].name.toLowerCase()}`;return o;},
   solve(sim){const i=gi(sim),b=best(sim,i);sim.p.aid=b;if(sim.st&&sim.st.aids)sim.st.aids[i]=b;sim.p.show=true;return score(sim);},
+  hint:'Lock in your award. Then you will work out the revenue it brings in.',
+  calc:{unit:'million dollars',d:2,tol:a=>Math.max(0.02,0.01*a),
+   prompt:{bio:sim=>{const i=gi(sim),g=GR[i],a=aidOf(sim,i);return `At your award of <b>${$h(a)}</b>, each of the ${g.name.toLowerCase()} pays <b>${$(Sv(sim)-a)}</b>, and <b>${pc(P(sim,i,a))}</b> of the <b>${g.N}</b> admitted enroll. How much tuition does this group bring in, in millions of dollars? (Revenue = students admitted × chance × what each pays.)`;},
+    ap:sim=>{const i=gi(sim),g=GR[i],a=aidOf(sim,i);return `Your award a = ${$(a)}. With S = ${$(Sv(sim))}, W = ${$(g.W)} and s = ${$(sv(sim))}, find P(a) = 1 / (1 + e^((S − a − W)/s)), then R = N·P·(S − a) for N = ${g.N}. Give R in millions of dollars.`;}},
+   answer:calcAns,
+   hint:{bio:'Turn the percent into a decimal. Multiply students × decimal × dollars, then divide by 1,000,000.',ap:'First find the exponent (S − a − W)/s. Then P = 1/(1 + e^that).'},
+   steps(sim){const i=gi(sim),g=GR[i],a=aidOf(sim,i),S=Sv(sim),out=[];
+    if(atLeast('ap')){const x=(S-a-g.W)/sv(sim);out.push(`Exponent: (${$(S)} − ${$(a)} − ${$(g.W)}) ÷ ${$(sv(sim))} = ${x.toFixed(3)}, so P = 1 / (1 + e^${x.toFixed(3)}) = ${P(sim,i,a).toFixed(4)}.`);
+     out.push(`R = ${g.N} × ${P(sim,i,a).toFixed(4)} × ${$(S-a)} = <b>${$m(R(sim,i,a))}</b>.`);}
+    else{const pp=p1(P(sim,i,a));out.push(`Students who enroll: ${g.N} × ${pp.toFixed(3)} ≈ ${(g.N*pp).toFixed(1)}.`);
+     out.push(`Revenue: ${(g.N*pp).toFixed(1)} × ${$(S-a)} = ${$(g.N*pp*(S-a))}, or <b>${$m(g.N*pp*(S-a))}</b>.`);}
+    out.push(`The math’s best award for this group is about ${$h(best(sim,i))}. The reveal shows how its revenue compares.`);
+    return out;}},
+  formula(sim){const i=gi(sim),a=aidOf(sim,i);return `Revenue = students admitted × chance × what each pays<br>${rLine(sim,i,a)}`+(atLeast('ap')?'<br>Best award where S − a = s / (1 − P(a))':'');},
   how:{bio:'For each scholarship, the math multiplies three things: the number admitted, the chance each one enrolls, and what each one pays. Then it finds the award where that product is biggest. The table shows a few awards; the math checks every one.',
    honors:'Revenue R(a) = N·P(a)·(S − a). The math moves the award until the next dollar of aid adds nothing: the extra students it brings in just balance the discount given to everyone already coming.',
    ap:'With P logistic, P′(a) = P(1 − P)/s, so R′(a) = N[P′(a)(S − a) − P(a)] = 0 gives S − a = s / (1 − P(a)). The math solves this by bisection; ln R is concave, so the solution is the global maximum.'},
   compare(sim,g,m){const i=m.i,gg=GR[i],gain=m.v-g.v,dn=gg.N*(m.p-g.p),w=anyway(sim,i,m.aid),stay=Math.round(gg.N*P(sim,i,0)),tot=Math.round(gg.N*m.p);
    const twist=` Of the ${tot} who enroll at that award, <b>${stay} would have come with no scholarship at all</b>: ${$m(w)} of the aid goes to them.`;
-   const flip=' Now flip chairs: this is why two students can get very different offers. Compare offers, run each college’s net price calculator, and ask about an appeal.';
+   const K=sim.ui.calc,flip=' Now flip chairs: this is one reason two students can get very different offers.'+(K&&K.done&&K.correct?' You worked out your award’s revenue yourself.':'');
    if(gain<Math.max(20000,0.005*m.v))return `Your gut was right on: within ${$(gain)} of the most this group can bring in. You sensed the trade-off between more students and lower prices.${twist}${flip}`;
    return `The math’s award (${$h(m.aid)}) brings in <b>${$(gain)} more</b> than yours (${$h(g.aid)}), with ${Math.abs(Math.round(dn))} ${dn>=0?'more':'fewer'} students enrolling. ${g.aid>m.aid?'Your award gave away more than the extra students paid back.':'Your award was too small to change many decisions.'}${twist}${flip}`;},
   again(sim){const j=Math.floor(Math.random()*3);sim.p.group=GR[j].v;sim.p.aid=DEF_AID;if(sim.st&&sim.st.aids)sim.st.aids=GR.map(()=>DEF_AID);sim.p.show=false;}
  },
  challenges:[
+  {lvl:'bio',kind:'num',q:'A different college admits 400 students and charges $60,000. With a $25,000 scholarship, 60% enroll. How much tuition do they bring in, in millions of dollars?',answer:8.4,tol:0.02,unit:'million dollars',d:2,hint:'Each pays $60,000 − $25,000. Multiply students × 0.60 × that.',explain:'400 × 0.60 = 240 students, each paying $35,000: 240 × $35,000 = $8,400,000, or $8.40 million.'},
   {lvl:'bio',instant:true,q:'Comparison shoppers, $60,000 tuition, 500 admitted. Which brings in more tuition money: no scholarship, or a $30,000 scholarship for every one of them?',choices:['No scholarship: every student pays full price','The $30,000 scholarship, by about $10 million','They bring in the same'],correct:1,explain:'With no scholarship, only 5.4% enroll: about 27 students × $60,000 ≈ $1.63 million. With $30,000 off, 80.7% enroll: about 403 students × $30,000 ≈ $12.10 million. A discount that changes decisions can raise revenue.'},
   {lvl:'bio',instant:true,q:'First-choice fans: 70% enroll even with no scholarship. The math says to give each of them about $7,200. Of the students who enroll at that award, who gets most of the aid money?',choices:['Students who only came because of the scholarship','Students who would have come anyway','It is split evenly'],correct:1,explain:'At $7,155, 86.8% enroll: about 260 of 300. But 211 of them (70.2%) would have enrolled with nothing. The award changes only about 50 decisions, yet everyone gets it. That is how a “merit scholarship” can go mostly to students who were coming anyway.'},
   {lvl:'honors',instant:true,q:'For comparison shoppers, the revenue-maximizing award is about $28,700. What happens to revenue if you add $1,000 more?',choices:['It rises by about $1,000 per student','It barely changes, then starts to fall','It drops by $500,000'],correct:1,explain:'At the maximum, marginal revenue is 0. The extra students that $1,000 brings in just pay for the $1,000 discount to everyone already enrolling. Past that point, the discount costs more than the new students bring.'},

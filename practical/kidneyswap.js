@@ -7,6 +7,6 @@ kidneyswap:{
   'Blood transfusions run on the same ABO rules: a patient with type AB blood can receive red cells of any ABO type, while a patient with type O can receive only type O.',
   'Real exchanges have hundreds of pairs, far too many plans to list one by one, so they solve this same “most transplants” problem with integer programming, the optimization method airlines also use to build crew schedules.'
  ],
- takeaway:'The first swap that works is not always part of the best plan. Checking every plan finds the best one, and a good matching system aims at the real goal, runs on rules anyone can check, and leaves no pair worse off.'
+ takeaway:'The first swap that works is not always part of the best plan: here, swapping Pair 1 with Pair 2 first caps the plan at 4, and checking every plan finds 6. Real exchanges also weigh tissue type, distance and time waited. Which of those would you add to the search, and how would you weigh them against the count?'
 }
 });

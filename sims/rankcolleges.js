@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const {clamp,txt,pill,rr,PAL,axes,legend,atLeast,fmtNum}=BioLab.h;
+const {clamp,txt,pill,rr,PAL,FONT,axes,legend,atLeast,fmtNum}=BioLab.h;
 /* Eight fictional colleges. Each metric is put on one scale (points: best college 100, worst 0; or z-scores),
    flipped where lower counts as better, then combined as a weighted average: score = Σ wⱼ·pⱼ / Σ wⱼ. */
 const M=[
@@ -42,7 +42,9 @@ function flips(sim,only){const r=scores(sim);if(r.Wt<=0)return [];const t=r.top,
    if(nw<-1e-9||nw>10+1e-9)return;out.push({j,i,d,from:w,to:nw});});});
  return out.sort((a,b)=>Math.abs(a.d)-Math.abs(b.d));}
 const GS=sim=>(sim.tour&&sim.tour.on)?null:sim.gutS;
-const shown=sim=>!!(sim.p.show||(sim.gutS&&(sim.gutS.g||sim.gutS.m)));
+/* While the student works out their pick's score ("Your turn"), the ranking stays hidden. */
+const pend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const shown=sim=>!!(sim.p.show||(sim.gutS&&(sim.gutS.g||sim.gutS.m)))&&!pend(sim);
 const ci=sim=>Math.max(0,COL.findIndex(c=>c[0]===sim.p.pick));
 const nm=i=>COL[i][0];
 const fmtV=(m,v)=>m.u==='k'?'$'+v+'k':m.u==='%'?v+'%':String(v);
@@ -51,9 +53,19 @@ function clearGut(sim){if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;si
 function preset(sim,key){const v={};M.forEach(m=>v['w_'+m.k]=PRE[key][m.k]);BioLab.setValues(sim,v);}
 const isZ=sim=>sim.p.norm==='z';
 const scoreTxt=(sim,v)=>isZ(sim)?f2(v):f1(v);
+/* "Your turn": the weighted average for one college, from its points rounded as the prompt shows them */
+const mn=t=>String(t).replace('-','−');
+const ptTxt=(sim,v)=>mn(isZ(sim)?f2(v):f1(v));
+const ptP=(sim,v)=>v<0&&ptTxt(sim,v)!=='−0.00'?'('+ptTxt(sim,v)+')':ptTxt(sim,v);
+const ptR=(sim,v)=>isZ(sim)?Math.round(v*100)/100:Math.round(v*10)/10;
+function wavg(sim,i){const r=scores(sim),js=M.map((m,j)=>j).filter(j=>W(sim,j)>0),num=js.reduce((a,j)=>a+W(sim,j)*ptR(sim,r.P[i][j]),0);return {js,num,den:r.Wt,v:r.Wt>0?num/r.Wt:0,r};}
+const wN=v=>fmtNum(v,v%1?1:0);
+function wExpr(sim,i){const w=wavg(sim,i);return `(${w.js.map(j=>wN(W(sim,j))+' × '+ptP(sim,w.r.P[i][j])).join(' + ')}) ÷ ${wN(w.den)}`;}
+const calcAns=sim=>{const v=wavg(sim,ci(sim)).v;return isZ(sim)?Math.round(v*100)/100:Math.round(v*10)/10;};
 
 const SIM={
  id:'rankcolleges',hash:'rankcolleges',apUnit:19,order:3,tab:'Rank the colleges',kind:'Simulation',
+ skills:{bio:'Weighted average: score = Σ w·p ÷ Σ w · Algebra 1 (Unit 2)',honors:'Weighted averages, min-max scaling and z-scores · Algebra 1 (Unit 2), Statistics (Ch. 2)',ap:'Weighted averages and linear break points (sensitivity) · Algebra 1 (Unit 2), Statistics (Ch. 2)'},
  card:'Guess which college a ranking formula puts at #1, then change the weights and watch the order, and the “best” college, change.',
  title:'Rank the colleges: who decides what “best” means?',
  lede:{bio:'A college ranking turns many numbers into one score. Someone has to decide which numbers count and how much. Change those choices and a different college comes out on top, even though nothing about the colleges changed.',
@@ -103,7 +115,7 @@ const SIM={
  draw(sim,ctx,vdt,k0){const k=Math.min(k0,1.8),big=k>1.3,fs=12*k,r=scores(sim),sh=shown(sim),G=GS(sim),pick=G&&G.g?G.g.pick:-1,st=sim.st||(sim.st={ry:COL.map((c,i)=>i)});
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   const tgt=COL.map((c,i)=>sh?r.rank[i]-1:i),a=vdt>0?1-Math.exp(-10*vdt):1;st.ry=st.ry.map((y,i)=>Math.abs(y-tgt[i])<0.01?tgt[i]:y+(tgt[i]-y)*a);
-  const X=raw(sim);let T=big?48:52,rh=(446-T)/8;
+  const X=raw(sim),rev=!!(G&&G.m&&r.Wt>0);let T=big?48:52,rh=(446-T-(rev?24*k:0))/8;
   if(!sh){T=8+1.3*(big?fs:13*k)+8+2.15*fs+4;rh=(446-T)/8;
    /* data view: the raw numbers, alphabetical. Weighted columns are bold. */
    let cols=M.map((m,j)=>j);if(big){const wj=cols.filter(j=>W(sim,j)>0);cols=(wj.length?wj:cols).slice(0,6);}
@@ -133,10 +145,14 @@ const SIM={
    txt(ctx,row[0]+(sim.p.game&&i===GAMER?'*':''),nx,yc,{s:fs,w:700,c:sim.p.game&&i===GAMER?PAL['s1']:PAL['cv-ink'],b:'middle'});
    if(r.Wt>0){if(!z){let x=bx0;used.forEach(j=>{const w=(bx1-bx0)*W(sim,j)*r.P[i][j]/r.Wt/100;if(w>0.3){ctx.fillStyle=PAL[M[j].c];ctx.fillRect(x,yc-bh/2,w,bh);}x+=w;});}
     else{const x0=BX(0),x1=BX(r.S[i]);ctx.fillStyle=r.S[i]>=0?PAL['s2']:PAL['s1'];ctx.fillRect(Math.min(x0,x1),yc-bh/2,Math.abs(x1-x0),bh);}}
-   txt(ctx,scoreTxt(sim,r.S[i]),scx,yc,{s:fs,w:700,a:'right',b:'middle'});});},
+   txt(ctx,scoreTxt(sim,r.S[i]),scx,yc,{s:fs,w:700,a:'right',b:'middle'});});
+  if(rev){const t=r.top;let line=`#1 ${nm(t)}: ${wExpr(sim,t)} = ${scoreTxt(sim,r.S[t])}`;ctx.font='700 '+fs+'px '+FONT;
+   if(ctx.measureText(line).width>770)line=`#1 ${nm(t)}: Σ w·p ÷ Σ w = ${fmtNum(r.N[t],isZ(sim)?2:1)} ÷ ${wN(r.Wt)} = ${scoreTxt(sim,r.S[t])}`;
+   txt(ctx,line,12,446-6*k,{s:fs,w:700,c:PAL['rj']});}},
  narrate(sim){const r=scores(sim);
   if(r.Wt<=0)return 'Every weight is 0, so every college scores the same. <b>A ranking needs someone to decide what counts.</b>';
   const used=M.filter((m,j)=>W(sim,j)>0).map(m=>m.s.toLowerCase());
+  if(pend(sim))return `Your pick is locked. <b>Work out its score:</b> multiply each of its points by the weight, add, and divide by the total weight.`;
   if(!shown(sim))return `This formula counts ${used.length} of 8 numbers${W(sim,6)>0?'':', and <b>not the net price</b>'}. Read the bold columns and guess which college comes out on top.`;
   const t=r.top,n2=r.order[1],f=flips(sim)[0];
   let s=`Under these weights, <b>${nm(t)} is #1</b>, ${scoreTxt(sim,r.S[t]-r.S[n2])} ahead of ${nm(n2)}.`;
@@ -149,6 +165,20 @@ const SIM={
    honors:'Using only the bold columns and their weights, pick the college you think scores highest. Lock it in before you see the ranking.'},
   lock(sim){const i=ci(sim),r=scores(sim);return {v:r.rank[i],pick:i,label:nm(i)};},
   solve(sim){const r=scores(sim),t=r.top;sim.p.pick=nm(t);sim.p.show=true;return {v:1,pick:t,label:`${nm(t)}, with a score of ${scoreTxt(sim,r.S[t])}`};},
+  hint:{bio:'Lock in your pick. Then you will work out its score yourself.'},
+  calc:{d:2,tol:0.06,
+   prompt(sim){const i=ci(sim),w=wavg(sim,i);if(!w.js.length)return `Every weight is 0. What score does ${nm(i)} get?`;
+    const z=isZ(sim),list=w.js.map(j=>`${M[j].s} <b>${ptTxt(sim,w.r.P[i][j])}</b> (weight ${wN(W(sim,j))})`).join(', ');
+    return `Your pick, ${nm(i)}, earns these ${z?'z-scores':'points (best college 100, worst 0)'}: ${list}. Its score is the weighted average: (sum of weight × ${z?'z-score':'points'}) ÷ (sum of weights). What is ${nm(i)}’s score?`;},
+   answer:calcAns,
+   hint:'Multiply each number by its weight and add. Then divide by the sum of the weights, not by how many numbers there are.',
+   steps(sim){const i=ci(sim),w=wavg(sim,i);if(!w.js.length)return ['With every weight 0, nothing counts: the score is <b>0</b>.'];
+    const prods=w.js.map(j=>W(sim,j)*ptR(sim,w.r.P[i][j]));
+    return [`Weight × ${isZ(sim)?'z-score':'points'}: ${w.js.map((j,n)=>wN(W(sim,j))+' × '+ptP(sim,w.r.P[i][j])+' = '+mn(fmtNum(prods[n],isZ(sim)?2:1))).join('; ')}.`,
+     `Add them: ${mn(fmtNum(w.num,isZ(sim)?2:1))}. Add the weights: ${w.js.map(j=>wN(W(sim,j))).join(' + ')} = ${wN(w.den)}.`,
+     `Score = ${mn(fmtNum(w.num,isZ(sim)?2:1))} ÷ ${wN(w.den)} ≈ <b>${mn(isZ(sim)?f2(calcAns(sim)):f1(calcAns(sim)))}</b>.`];}},
+  formula(sim){const r=scores(sim);if(r.Wt<=0)return 'Every weight is 0, so every score is 0.';const t=r.top,n2=r.order[1];
+   return `Score = Σ w·p ÷ Σ w.<br>#1 ${nm(t)}: ${wExpr(sim,t)} = ${scoreTxt(sim,r.S[t])}.<br>#2 ${nm(n2)}: ${wExpr(sim,n2)} = ${scoreTxt(sim,r.S[n2])}.`;},
   how:{bio:'The math turns every number into points (the best college gets 100, the worst 0), multiplies each by its weight, adds them up and divides by the total weight. That is a weighted average. The highest average is #1.',
    honors:'Each metric is rescaled to points or z-scores, flipped where lower counts as better, and combined as Σ w·p / Σ w. Sorting those scores gives the ranking.',
    ap:'Score = Σ w·p / Σ w. Since Σ w is shared, the order depends only on Σ w·p, which is linear in each weight, so the break point for each weight is a single division.'},
@@ -160,6 +190,7 @@ const SIM={
   again(sim){const ks=Object.keys(PRE),key=ks[Math.floor(Math.random()*ks.length)];M.forEach(m=>sim.p['w_'+m.k]=PRE[key][m.k]);sim.p.show=false;sim.p.game=false;sim.p.pick='Cindervale';}
  },
  challenges:[
+  {lvl:'bio',kind:'num',q:'A new formula: count only graduation rate and net price, weighted equally (1 and 1). Cindervale earns 71.9 points for graduation rate and 85.7 for net price. What is its score?',answer:78.8,tol:0.1,d:1,unit:'',hint:'Weight × points for each, add, then divide by the sum of the weights.',explain:'(1 × 71.9 + 1 × 85.7) ÷ (1 + 1) = 157.6 ÷ 2 = 78.8. Under this formula Cindervale is #1.'},
   {lvl:'bio',instant:true,q:'Under the old-style formula (no cost), Ashgrove has the highest SAT median and the lowest acceptance rate. Which college is #1?',choices:['Ashgrove','Bellwick','Fernhollow','Cindervale'],correct:1,explain:'Bellwick scores 95.4 to Ashgrove’s 92.0. Bellwick spends $128k per student and has the most alumni donors, and this formula rewards both. Leading on the two numbers people talk about most is not enough.'},
   {lvl:'bio',instant:true,q:'Start from the old-style formula and give net price a weight of 6. What happens?',choices:['Nothing: the best colleges stay the best','Ashgrove passes Bellwick, and Bellwick falls to #2','Cindervale, the cheapest good college, jumps to #1'],correct:1,explain:'Bellwick has the highest net price ($47k a year), so it gets 0 net price points; Ashgrove ($29k) gets 51.4. Ashgrove becomes #1 with 83.0 to Bellwick’s 74.2. Fernhollow passes Glasswater for #3. Cindervale, the cheapest good college ($17k), stays #5: its score rises from 45.0 to 54.1, but the other weights still favor rich, selective colleges.'},
   {lvl:'bio',instant:true,q:'Old-style formula. Dunmere chases the formula: more rejected applicants, a higher reported SAT median, more alumni donors, new buildings. Its graduation rates, earnings and net price do not change. What happens to its rank?',choices:['It stays #6','It rises from #6 to #4','It rises to #1'],correct:1,explain:'Dunmere’s score rises from 38.6 to 64.7, passing Cindervale and Fernhollow. Nothing about what students learn, earn or pay changed. That is what gaming a proxy looks like.'},

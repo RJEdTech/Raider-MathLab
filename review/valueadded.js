@@ -26,10 +26,15 @@ valueadded:{
    steps:['Expected correlation = 4 ÷ (4 + 100/n).','Set 4 ÷ (4 + 100/n) = 0.8: 4 + 100/n = 5, so 100/n = 1.','n = 100 students, about 4 classes of 25.'],
    lab:{set:{n:100,healthy:false},look:'Read <b>Expected correlation</b>.'},verify:[['rth',0.8,0.0001]]},
   {id:'healthy',kind:'real',lvl:'honors',
-   q:'The healthy model averages 3 years of 25-student classes. What is the expected year-to-year correlation now?',
+   q:'The 3-year model averages 3 years of 25-student classes. What is the expected year-to-year correlation now?',
    choices:['0.50','0.75','0.90'],correct:1,
-   steps:['Three years of 25 students is 75 students, so the standard error is 10 ÷ √75 ≈ 1.15 points and its square is 100 ÷ 75 ≈ 1.33.','Expected correlation = 4 ÷ (4 + 1.33) = 0.75.','Better, but still far from certain, which is why the healthy model flags teachers for a closer look instead of firing them.'],
-   lab:{set:{n:25,healthy:true},look:'Read <b>Expected correlation</b>.'},verify:[['rth',0.75,0.0001]]}
+   steps:['Three years of 25 students is 75 students, so the standard error is 10 ÷ √75 ≈ 1.15 points and its square is 100 ÷ 75 ≈ 1.33.','Expected correlation = 4 ÷ (4 + 1.33) = 0.75.','Better, but still far from certain, which is why the 3-year model flags teachers for a closer look instead of firing them.'],
+   lab:{set:{n:25,healthy:true},look:'Read <b>Expected correlation</b>.'},verify:[['rth',0.75,0.0001]]},
+  {id:'clifford',kind:'real',lvl:'ap',
+   q:'Cathy O’Neil reports that New York City teacher Tim Clifford scored 6 one year and 96 the next. With scores built on one class, what does a jump like that show?',
+   choices:['The teacher must have changed how they teach','Not much: with r near 0.5, huge swings in rank happen from class luck alone','The test was wrong both years'],correct:1,
+   steps:['With 25 students per score, the expected year-to-year correlation is 4 ÷ (4 + 4) = 0.5.','In this model, district 11’s biggest one-year rise is about 67 percentile points, and no teacher changed at all.','So a 6-then-96 jump fits class luck. It does not by itself show a change in teaching.'],
+   lab:{set:{seed:11,n:25,erase:false,healthy:false},look:'Read <b>Biggest rise in percentile</b>.'}}
  ]
 }
 });

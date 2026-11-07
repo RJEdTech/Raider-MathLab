@@ -7,6 +7,6 @@ hotspot:{
   'Student lists: in December 2024, Florida’s Pasco County sheriff settled a lawsuit by admitting that a program built on lists of “prolific offenders,” many of them minors, and a school list of about 420 students violated the Constitution, and ended the program.',
   '“Most popular” lists: when a site ranks items by clicks and shows the top ones first, the top items get more clicks partly because they are on top. Statisticians model this rich-get-richer effect with Pólya urns, the same math as this tool.'
  ],
- takeaway:'When the data depend on where you look, a rule that follows the data can manufacture its own proof. Count what gets recorded no matter who is watching, or keep some of the looking spread evenly.'
+ takeaway:'When the data depend on where you look, a rule that follows the data can manufacture its own proof. Here, counting only serious incidents kept the split at 50/50, and spreading 30% of the shifts evenly held A to 63%. If you were on the council, which rule would you propose, and what would it miss?'
 }
 });

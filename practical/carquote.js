@@ -7,6 +7,6 @@ carquote:{
   'Credit-based insurance scores: many auto insurers use the policyholder’s credit in pricing. The Consumer Federation of America (2023) found poor credit raised a clean driver’s state-minimum premium by about 115%, while California, Hawaii and Massachusetts ban the practice.',
   'Driving apps (telematics): some insurers offer an app or plug-in device that records driving, such as hard braking, and can change your price. In 2025 Colorado extended its SB21-169 rules, which require insurers to test models and data for unfair discrimination, to auto insurance, including telematics data.'
  ],
- takeaway:'When a price is a stack of multipliers, compare changes by their ratio, new ÷ old, not by how big they sound. Then ask which factors are about you at all.'
+ takeaway:'When a price is a stack of multipliers, compare changes by their ratio, new ÷ old, not by how big they sound. In this quote, which multipliers are about how you drive, and which are not?'
 }
 });
