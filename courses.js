@@ -109,9 +109,10 @@ BioLab.COURSES = [
  9:['daylight','noisecancel'],11:['fontcurves','matrices','windvectors','orbits'],
  13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
  16:['runpace','battery','camerapan','shortcut','viewcurve'],17:['speedlog','concession','cooling','bottle'],18:['leadpass','sprinkler','caffeinedaily','sincode'],
- 19:['stickernet','aidoptimizer','rankcolleges','carquote','valueadded','hotspot','beatbot','schedule','fairscore','onepercent']};
-BioLab.setSections({units:{},extra:{1:'Expressions, equations and proportions',2:'Linear functions and systems',3:'Quadratics and polynomials',4:'Exponents, radicals and logarithms',5:'Rational functions',6:'Functions, inverses and transformations',7:'Logic and reasoning',8:'Distance, angles and triangles',12:'Shapes, solids and motion',10:'Circles',9:'Trigonometry and waves',13:'Describing data',14:'Collecting data and probability',15:'Statistical inference',16:'Derivatives: rates of change',17:'Integrals: accumulation',18:'Calculus BC: motion, polar and series',19:'Who’s scoring you? The math deciding your life',11:'Go further'},
- order:[1,2,3,4,5,6,7,8,12,10,9,13,14,15,16,17,18,19,11],further:11,unitPrefix:''});
+ 19:['stickernet','aidoptimizer','rankcolleges','carquote','valueadded','hotspot','beatbot','schedule','fairscore','onepercent'],
+ 20:['kidneyswap','schoolmatch']};
+BioLab.setSections({units:{},extra:{1:'Expressions, equations and proportions',2:'Linear functions and systems',3:'Quadratics and polynomials',4:'Exponents, radicals and logarithms',5:'Rational functions',6:'Functions, inverses and transformations',7:'Logic and reasoning',8:'Distance, angles and triangles',12:'Shapes, solids and motion',10:'Circles',9:'Trigonometry and waves',13:'Describing data',14:'Collecting data and probability',15:'Statistical inference',16:'Derivatives: rates of change',17:'Integrals: accumulation',18:'Calculus BC: motion, polar and series',19:'Who’s scoring you? The math deciding your life',20:'Math that works for people',11:'Go further'},
+ order:[1,2,3,4,5,6,7,8,12,10,9,13,14,15,16,17,18,19,20,11],further:11,unitPrefix:''});
 (function(){const P={};Object.keys(BioLab.TOPIC_ORDER).forEach(k=>BioLab.TOPIC_ORDER[k].forEach(id=>P[id]=+k));
  BioLab.defs.forEach(d=>{if(P[d.id]!==undefined)d.apUnit=P[d.id];});
  const keep=new Set(BioLab.defs.map(d=>d.id));BioLab.defs.forEach(d=>{['prereq','next'].forEach(k=>{if(d[k])d[k]=d[k].filter(i=>keep.has(i));});});})();

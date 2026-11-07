@@ -1,0 +1,40 @@
+BioLab.addReview({
+schoolmatch:{
+ questions:[
+  {id:'bostonhonest',kind:'real',lvl:'bio',
+   q:'District 0, Boston rule. You turn in your true ranking: Aspen, Birch, Cedar. Which school do you get?',
+   choices:['Aspen','Birch','Cedar'],correct:2,
+   steps:['Round 1: Aspen has 2 seats and 3 applicants (Student 1, Student 2 and you). Student 1 is in Aspen’s walk zone; Student 2 has #3, ahead of your #4. You are turned down.','Also in round 1, Students 4 and 5 rank Birch first and take both Birch seats. Those seats are final.','Round 2: you apply to Birch, but it is full. Round 3: you get Cedar, your 3rd choice.'],
+   lab:{set:{seed:0,rule:'boston',first:'0',second:'1',cap:'3',block:false},act:'run',look:'Read <b>Your school</b>, then step through with <b>Back a round</b>.'},verify:[['place',3,0]]},
+  {id:'bostonsafe',kind:'real',lvl:'bio',
+   q:'Same district and rule, but you put Birch first. Which school do you get, and where is it on your true ranking?',
+   choices:['Birch, your 2nd choice','Aspen, your 1st choice','Cedar, your 3rd choice'],correct:0,
+   steps:['Round 1: Birch now has 3 applicants: you (#4), Student 4 (#5) and Student 5 (#6).','Birch seats the two best lottery numbers, you and Student 4, and those seats are final.','You get Birch, your 2nd choice. Playing it safe beat honesty under this rule.'],
+   lab:{set:{seed:0,rule:'boston',first:'1',second:'0',cap:'3',block:false},act:'run',look:'Read <b>Your school’s place on your true list</b>.'},verify:[['place',2,0]]},
+  {id:'handda',kind:'test',lvl:'bio',
+   q:'Students 1, 2 and 3; schools P, Q and R with 1 seat each. Lists: Student 1: P, Q, R. Student 2: P, R, Q. Student 3: Q, P, R. School P ranks 3 > 2 > 1, school Q ranks 1 > 3 > 2, and R takes anyone. Run student-proposing deferred acceptance. Where does Student 2 end up?',
+   choices:['P','Q','R'],correct:2,
+   steps:['Round 1: 1 and 2 apply to P, 3 applies to Q. P holds 2 (it ranks 2 above 1) and turns down 1. Q holds 3.','Round 2: 1 applies to Q. Q ranks 1 above 3, so it holds 1 and turns down 3. Round 3: 3 applies to P. P ranks 3 above 2, so it holds 3 and turns down 2.','Round 4: 2 applies to R and is held. No one is turned down, so it ends: 1 at Q, 2 at R, 3 at P. Student 2 was held at P for two rounds, then lost it: nothing is final until the end.']},
+  {id:'blockpair',kind:'test',lvl:'honors',
+   q:'District 0, Boston rule, true ranking (you end at Cedar). How many blocking pairs are there?',
+   num:{ans:1,tol:0,unit:'pairs'},
+   steps:['Check each student who did not get their 1st choice. You prefer Birch to Cedar, and Birch seated Students 4 (#5) and 5 (#6), both behind your #4. So (You, Birch) is a blocking pair. You would rather have Aspen too, but Aspen seated Student 1 (walk zone) and Student 2 (#3), both ahead of you, so (You, Aspen) is not.','Students 1, 2, 3, 4 and 5 all got their 1st choice, so they block nothing.','There is exactly 1 blocking pair. Under deferred acceptance there would be 0.'],
+   lab:{set:{seed:0,rule:'boston',first:'0',second:'1',cap:'3',block:true},act:'run',look:'Read <b>Blocking pairs</b> and find the red dashed line.'},verify:[['bp',1,0]]},
+  {id:'datop2',kind:'real',lvl:'honors',
+   q:'District 0, deferred acceptance, everyone honest. How many of the 6 students get one of their top 2 choices?',
+   num:{ans:6,tol:0,unit:'students'},
+   steps:['Deferred acceptance gives Students 1, 2, 3 and 4 their 1st choice.','You get Birch (your 2nd), and Student 5, bumped from Birch by your better lottery number, gets Cedar (her 2nd).','So all 6 are in their top 2. Under the Boston rule only 5 are, because you fall to your 3rd choice, even though Boston puts 5 at their 1st choice instead of 4.'],
+   lab:{set:{seed:0,rule:'da',first:'0',second:'1',cap:'3',block:false},act:'run',look:'Read <b>Students at one of their top 2</b> and <b>Students at their 1st choice</b>.'},verify:[['top2',6,0],['first1',4,0]]},
+  {id:'cap2',kind:'real',lvl:'ap',
+   q:'Denver’s old rule: Boston with only 2 choices. District 0, you list your true top 2: Aspen, Birch. Where do you end up?',
+   choices:['Birch','Cedar','Dogwood, placed by the district'],correct:2,
+   steps:['Round 1 is the same as before: Aspen and Birch both fill with other students, and those seats are final.','Round 2: Birch is full, and your list has no 3rd school.','You are left unmatched, so the district places you at Dogwood, a school you never listed. Under deferred acceptance with the same 2-school list, you get Birch.'],
+   lab:{set:{seed:0,rule:'boston',first:'0',second:'1',cap:'2',block:false},act:'run',look:'Read <b>Your school</b> and <b>Placed at a school they didn’t list</b>. Then switch to deferred acceptance.'},verify:[['place',4,0],['unl',1,0]]},
+  {id:'capda',kind:'test',lvl:'ap',
+   q:'District 8, deferred acceptance, families may list only 2 schools. Your true top 2 is Aspen, Birch. What happens, and is there a better list?',
+   choices:['You get Birch; no list does better','You are placed at Dogwood; listing Cedar 2nd would get you Cedar','You get Aspen'],correct:1,
+   steps:['With only 2 schools allowed, your honest list stops at Birch. Both Aspen and Birch end up held by students ahead of you.','Turned down twice, you run out of list and the district places you at Dogwood.','Listing Aspen, Cedar instead gets you Cedar, your 3rd choice but still a school you like more than Dogwood. A cap breaks strategy-proofness, one reason Denver allows 5 choices.'],
+   lab:{set:{seed:8,rule:'da',first:'0',second:'1',cap:'2',block:false},act:'run',look:'Read <b>Your school</b>, then set your 2nd choice to Cedar and run it again.'},verify:[['place',4,0]]}
+ ]
+}
+});

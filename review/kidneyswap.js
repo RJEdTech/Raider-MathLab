@@ -1,0 +1,40 @@
+BioLab.addReview({
+kidneyswap:{
+ questions:[
+  {id:'abo',kind:'test',lvl:'bio',
+   q:'By blood type alone, which donors can give a kidney to a patient with type A blood?',
+   choices:['Type A or type O','Type A only','Type A or type AB','Any type'],correct:0,
+   steps:['A patient can receive from a donor whose blood type has nothing her body would attack.','Type O donors can give to everyone, and type A donors can give to A and AB patients.','So a type A patient can receive from type A or type O donors.']},
+  {id:'best2',kind:'real',lvl:'bio',
+   q:'In set 0, using 2-way swaps only, what is the greatest number of the 8 patients who can get a kidney?',
+   num:{ans:6,tol:0,unit:'patients'},
+   steps:['Pair 3’s and Pair 6’s patients are type O, so only an O donor can help them: Pair 1’s or Pair 5’s.','Pair 5 can swap with Pair 6 (O gives to O, A gives to A), and Pair 1 can swap with Pair 3 (O gives to O, AB gives to AB).','Pair 2 can still swap with Pair 4 (A to A, B to B). That is 3 swaps, 6 patients. Pairs 7 and 8 have no partner left, and an exhaustive search confirms 6 is the most.'],
+   lab:{set:{seed:0,loops:'2',alt:'none',xm:false},act:'best',look:'Read <b>Patients who get a kidney</b>.'},verify:[['tx',6,0]]},
+  {id:'trap',kind:'real',lvl:'bio',
+   q:'In set 0 you swap Pair 1 with Pair 2 first, because it works. Using 2-way swaps only, what is the most patients you can help in all?',
+   num:{ans:4,tol:0,unit:'patients'},
+   steps:['1 ⇄ 2 works: Pair 1’s O donor gives to Pair 2’s B patient, and Pair 2’s A donor gives to Pair 1’s AB patient.','Among Pairs 3 to 8, the only 2-way swap left is 5 ⇄ 6. Pairs 3, 4, 7 and 8 each needed Pair 1 or Pair 2.','So the plan stops at 2 + 2 = 4 patients, two fewer than the best plan’s 6.'],
+   lab:{set:{seed:0,loops:'2',alt:'none',xm:false},look:'Click Pair 1, then Pair 2. Then look for any other swap.'}},
+  {id:'count',kind:'test',lvl:'honors',
+   q:'In set 0, how many different 2-way swaps are possible (before you choose any)?',
+   num:{ans:11,tol:0,unit:'swaps'},
+   steps:['Pair 1’s donor is type O (gives to everyone) and its patient is type AB (takes from everyone), so Pair 1 can swap with each of the other 7 pairs.','Among Pairs 2 to 8: 2 ⇄ 4, 2 ⇄ 5, 2 ⇄ 7 and 5 ⇄ 6 work. Check each in both directions.','7 + 4 = 11 possible swaps. A plan is a set of these that share no pair.'],
+   lab:{set:{seed:0,loops:'2',alt:'none',xm:false},look:'Read <b>Possible loops with these rules</b>.'},verify:[['opts',11,0]]},
+  {id:'ops',kind:'real',lvl:'honors',
+   q:'All surgeries in a loop happen at the same time, and each pair needs two operations (the donor’s and the patient’s). How many operations must run at once for a 3-way loop?',
+   num:{ans:6,tol:0,unit:'operations'},
+   steps:['A 3-way loop has 3 pairs: 3 donors and 3 patients.','Each needs an operation: 3 + 3 = 6, all at the same time, so no donor can back out after their own patient has received.','That is why exchanges keep loops short. In set 0, the best plan with loops up to 3 includes the 3-way loop 1 → 4 → 8 → 1.'],
+   lab:{set:{seed:0,loops:'3',alt:'none',xm:false},act:'best',look:'Read <b>Most operations at the same time</b>.'},verify:[['surg',6,0],['tx',7,0]]},
+  {id:'altb',kind:'real',lvl:'ap',
+   q:'Set 0, loops of up to 3 pairs. An altruistic donor with type B blood joins. What is the most patients who can now get a kidney?',
+   num:{ans:7,tol:0,unit:'patients'},
+   steps:['A type B donor can only give to a type B or AB patient: Pairs 1, 2 or 8. Her chain has to start there.','Without her, the best plan helps 7 and leaves Pair 3’s type O patient waiting, because only an O donor can help her.','The search tries every chain she could start, with the best loops among the pairs left. None reaches all 8, so the best is still 7. With a type O altruistic donor it would be 8.'],
+   lab:{set:{seed:0,loops:'3',alt:'B',xm:false},act:'best',look:'Read <b>Patients who get a kidney</b>. Then switch the donor to type O.'},verify:[['tx',7,0]]},
+  {id:'xm',kind:'test',lvl:'ap',
+   q:'Set 0, 2-way swaps only, no altruistic donor. The crossmatch shows Pair 6’s patient has antibodies against Pair 5’s donor. What is the most patients who can get a kidney now?',
+   choices:['6','5','4','2'],correct:2,
+   steps:['The swap 5 ⇄ 6 is gone, so 10 swaps are left: Pair 1 with each other pair, plus 2 ⇄ 4, 2 ⇄ 5 and 2 ⇄ 7.','Every one of those swaps uses Pair 1 or Pair 2, so a plan can hold at most two of them.','The best is 2 swaps, 4 patients, down from 6. Highly sensitized patients are hard to match.'],
+   lab:{set:{seed:0,loops:'2',alt:'none',xm:true},act:'best',look:'Read <b>Patients who get a kidney</b>.'},verify:[['tx',4,0],['opts',10,0]]}
+ ]
+}
+});
