@@ -59,11 +59,12 @@
     if (f.sheet) this.mount(); else this.stage.hidden = true;
     this.go(0);
   };
-  P.mount = function () {
+  /* keep=true re-draws the grid around the same sheet (the science track grows the grid once the student picks an analysis) */
+  P.mount = function (keep) {
     var f = this.flow, self = this, sd = f.sheet;
     if (this.ui) { this.coach.destroy(); this.ui.destroy(); }
-    var sh = R.create({ name: sd.name || f.title, rows: sd.rows || 10, cols: sd.cols || 4, colWidths: sd.widths });
-    sh.batch(function () { sd.setup(sh, self.ctx); });
+    var sh = keep && this.sheet ? this.sheet : null;
+    if (!sh) { sh = R.create({ name: sd.name || f.title, rows: sd.rows || 10, cols: sd.cols || 4, colWidths: sd.widths }); sh.batch(function () { sd.setup(sh, self.ctx); }); }
     this.sheet = sh; this.ctx.sheet = sh;
     var u = f.ui || {}, btns = [];
     (u.buttons || []).forEach(function (b) {
@@ -118,7 +119,8 @@
     if (!s) return;
     if (s.skipIf && s.skipIf(this.ctx)) { if (s.after) s.after(this.ctx); return this.go(i + 1, { text: this.text(s.ok) || (carry && carry.text) || '', kind: 'good' }); }
     this.state = {};
-    this.prog.innerHTML = '<span>Step ' + (i + 1) + ' of ' + n + '</span><span class="xl-pbar" aria-hidden="true"><i style="width:' + Math.round((i + 1) / n * 100) + '%"></i></span>';
+    var getting = this.flow.setupSteps && i < this.flow.setupSteps;
+    this.prog.innerHTML = '<span>' + (getting ? 'Getting started: step ' + (i + 1) + ' of ' + this.flow.setupSteps : 'Step ' + (i + 1) + ' of ' + n) + '</span><span class="xl-pbar" aria-hidden="true"><i style="width:' + Math.round((i + 1) / n * 100) + '%"></i></span>';
     this.feedback(carry ? carry.text : '', carry ? carry.kind : '');
     this.say.innerHTML = words(this.text(s.say) || '');
     this.extra.innerHTML = ''; this.acts.innerHTML = '';
@@ -241,6 +243,7 @@
     var self = this, P2 = this.ui.parts(), box = P2.root.querySelector('.xl-ctype');
     if (!box) { box = el('div', 'xl-ctype'); P2.charts.parentNode.insertBefore(box, P2.charts); }
     var types = this.flow.chartTypes || ['column', 'line'];
+    if (types.length < 2) { box.remove(); return; }
     box.innerHTML = '<span class="xl-ctype-l" id="xl-ct-l">Chart type</span>';
     var seg = el('div', 'seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-labelledby', 'xl-ct-l');
     types.forEach(function (t) {
@@ -298,7 +301,7 @@
       if (s.learned) this.extra.appendChild(el('ul', 'xl-learned', s.learned.map(function (x) { return '<li>' + words(x) + '</li>'; }).join('')));
       if (f.nextHref) { var a = el('a', 'xl-btn primary xl-next', esc(f.nextLabel || 'Next lesson')); a.href = f.nextHref; this.acts.appendChild(a); }
       var h = el('a', 'xl-btn', 'All lessons'); h.href = '#home'; this.acts.appendChild(h);
-      this.addBtn('Do this lesson again', function () { self.restart(); }, '');
+      this.addBtn(f.againLabel || 'Do this lesson again', function () { self.restart(); }, '');
       if (this.opts.onDone) this.opts.onDone();
     }
   };
@@ -634,6 +637,7 @@
       c.appendChild(row); bl.appendChild(c);
     });
     v.appendChild(bl);
+    if (XL.analyze) v.appendChild(XL.analyze.homeBlock(done));
     return v;
   }
   function lessonView(l) {
@@ -680,10 +684,11 @@
     var made = null;
     if ((m = /^lesson-(\d+)$/.exec(h)) && XL.byId[h]) made = lessonView(XL.byId[h]);
     else if ((m = /^(build-[a-z]+?)(?:-(closer|deep|big))?$/.exec(h)) && XL.buildById[m[1]]) made = buildView(XL.buildById[m[1]], m[2] || 'big');
+    else if (/^analyze(?:$|[-=])/.test(h) && XL.analyze) made = XL.analyze.route(h);
     if (made) {
       app.appendChild(made.v);
-      current = new Run(made.body, made.flow, {});
-      document.title = made.flow.title.replace(/^(.*)$/, '$1') + ' | Excel from zero | Raider MathLab';
+      if (made.flow) current = new Run(made.body, made.flow, {});
+      document.title = (made.flow ? made.flow.title : made.title) + ' | Excel from zero | Raider MathLab';
       window.scrollTo(0, 0);
       var h2 = made.v.querySelector('h2'); if (h2) { h2.tabIndex = -1; h2.focus({ preventScroll: true }); }
     } else {

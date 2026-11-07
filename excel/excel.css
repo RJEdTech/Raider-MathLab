@@ -207,6 +207,80 @@ body.xl-inlesson .rj-masthead{margin-bottom:22px!important}
 .xl-rule{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,330px);gap:14px;align-items:center;background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));border-radius:12px;padding:12px 14px}
 .xl-rule p{margin:0}
 
+/* ---------- Analyze your lab data (the science track) ---------- */
+.xl-az-home{margin-top:6px}
+.xl-az-homecard{display:flex;flex-wrap:wrap;gap:10px;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--s2,var(--rj));border-radius:12px;padding:14px 16px}
+.xl-az-start{display:block}
+.xl-az-start h3{margin:2px 0 12px}
+.xl-az-ways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.xl-az-way{display:flex;flex-direction:column;gap:4px;min-height:96px;padding:14px 16px;border:2px solid var(--line);border-radius:12px;background:var(--card2);color:var(--fg);text-decoration:none}
+.xl-az-way b{font-size:19px}
+.xl-az-way small{font-size:15px;color:var(--muted);line-height:1.4}
+.xl-az-way:hover{border-color:var(--rj)}
+.xl-az-way:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.xl-az-way.xl-az-first{border-color:var(--rj);box-shadow:inset 4px 0 0 var(--rj)}
+.xl-az-lab{margin:14px 0 0;color:var(--muted)}
+.xl-az-msg{margin:0 0 14px;max-width:78ch}
+.xl-az-turn{display:block;margin-top:4px;font-weight:700}
+.xl-az-how{margin:0 0 12px;padding-left:22px;font-size:16px;line-height:1.5}
+.xl-az-how li{margin:3px 0}
+.xl-az-l{display:block;font-weight:800;margin:0 0 6px}
+.xl-az-ta{display:block;width:100%;box-sizing:border-box;min-height:170px;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);font:15px/1.45 ui-monospace,Consolas,Menlo,monospace;resize:vertical}
+.xl-az-ta:focus-visible,.xl-az-q input:focus-visible,.xl-az-q select:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.xl-az-paste .xl-fb,.xl-az-type .xl-fb{margin-top:10px}
+.xl-az-q{margin:0 0 12px;border:0;padding:0;min-width:0}
+.xl-az-q>label,.xl-az-q>legend{display:block;font-weight:800;margin:0 0 6px;padding:0}
+.xl-az-q small{display:block;font-weight:500;color:var(--muted);font-size:14px}
+.xl-az-q select,.xl-az-q input[type=text],.xl-az-q input[type=number]{width:100%;max-width:560px;box-sizing:border-box;min-height:44px;padding:8px 10px;font:16px var(--font);border:2px solid var(--line);border-radius:9px;background:var(--card);color:var(--fg)}
+.xl-az-n input{max-width:140px!important}
+.xl-az-opt{display:flex;align-items:center;gap:10px;min-height:40px;font-size:16px;cursor:pointer;margin:2px 0}
+.xl-az-opt input{width:20px;height:20px;flex:0 0 auto;accent-color:var(--rj)}
+.xl-az-hintp{margin:4px 0 0;color:var(--muted);font-size:14px}
+.xl-az-plan{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 22px;margin-top:6px}
+.xl-az-colrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,160px) auto;gap:10px;align-items:end;margin-bottom:6px}
+.xl-az-colrow .xl-az-q{margin:0}
+.xl-az-colrow .xl-az-rm{min-height:44px}
+.xl-az-add{margin:6px 0 10px}
+.xl-az-type .xl-az-trial{margin-right:0}
+.xl-az-type>.xl-az-opt{margin:0 0 12px}
+.xl-az-issues{background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));border-radius:10px;padding:8px 12px}
+.xl-az-ih{margin:0 0 4px;font-weight:800}
+.xl-az-issues ul{margin:0;padding-left:0;list-style:none}
+.xl-az-issues li{margin:6px 0;line-height:1.45}
+.xl-az-go{min-height:32px;min-width:46px;padding:2px 8px;margin-right:6px;border-radius:7px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:800 14px ui-monospace,Consolas,Menlo,monospace;cursor:pointer}
+.xl-az-go:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.xl-az-more{margin:4px 0 0;color:var(--muted)}
+.xl-az-heads{display:flex;flex-wrap:wrap;gap:6px 18px;margin:4px 0 0;padding:0;list-style:none;font-size:15px}
+.xl-az-heads b{font-family:ui-monospace,Consolas,Menlo,monospace;margin-right:4px}
+.xl-az-heads small{color:var(--muted)}
+.xl-az-miss{color:var(--bad)!important;font-weight:700}
+.xl-az-src{margin:0 0 14px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card2);max-width:86ch}
+.xl-az-src p{margin:0}
+.xl-az-src p+p{margin-top:6px}
+.xl-az-src small{color:var(--muted)}
+.xl-az-src a{color:var(--s2,var(--fg));font-weight:700}
+.xl-az-warn{color:var(--fg);background:var(--warn-bg);border-radius:7px;padding:4px 8px}
+.xl-az-note{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 14px;max-width:86ch}
+.xl-az-note h3{margin:0 0 6px;font-size:18px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.xl-az-note p{margin:0 0 6px}
+.xl-az-note ol{margin:0;padding-left:22px}
+.xl-az-note li{margin:3px 0}
+.xl-az-tag{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#217346;border-radius:5px;padding:2px 7px}
+.xl-az-sample{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.xl-az-sample h4{margin:0;font-size:18px}
+.xl-az-sample p{margin:0;color:var(--muted);font-size:15px}
+.xl-az-sample .xl-az-kind{color:var(--rj-ink);font-weight:700;font-size:14px}
+.xl-az-sample .xl-btn{margin-top:auto}
+@media (max-width:700px){
+  .xl-az-ways{grid-template-columns:1fr}
+  .xl-az-plan{grid-template-columns:1fr}
+  .xl-az-colrow{grid-template-columns:minmax(0,1fr) minmax(0,96px)}
+  .xl-az-colrow .xl-az-rm{grid-column:1/-1;justify-self:start}
+  .xl-az-opt{min-height:44px}
+  .xl-az-go{min-height:44px}
+  .xl-az-homecard .xl-btn{flex:1 1 100%}
+}
+
 /* ---------- teachers' notes ---------- */
 .xl-notes{margin-top:30px}
 .xl-notes code{font:14px ui-monospace,Consolas,Menlo,monospace;background:var(--card2);border:1px solid var(--line);border-radius:5px;padding:0 4px}
