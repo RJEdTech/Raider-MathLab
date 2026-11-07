@@ -4,7 +4,7 @@ BioLab.COURSES = [
  {id:'alg1',name:'Algebra 1',blurb:'Algebra 1 and Honors Algebra 1, in the order your class covers it. Honors chapter numbers are in each unit’s note.',
   units:[
    {n:'Unit 1',t:'Intro to algebra: expressions and variables',ids:['formulas'],note:'Honors: Chapter 1.'},
-   {n:'Unit 2',t:'Multistep equations and proportions',ids:['scaleit','formulas','livessaved','costofliving','carquote','livingwage','aidoptimizer','rankcolleges'],note:'Honors: Chapter 1.'},
+   {n:'Unit 2',t:'Multistep equations and proportions',ids:['scaleit','formulas','livessaved','costofliving','carquote','livingwage','aidoptimizer','rankcolleges','billions'],note:'Honors: Chapter 1.'},
    {n:'Unit 3',t:'Functions',ids:['checkout','rideshare','formulas'],note:'Honors: Chapter 3.'},
    {n:'Unit 4',t:'Writing and graphing linear equations',ids:['rideshare'],note:'Honors: Chapters 3 and 4.'},
    {n:'Unit 5',t:'Systems of equations and inequalities',ids:['breakeven','budget','schedule'],note:'Honors: Chapter 2 (inequalities) and Chapter 5 (systems).'},
@@ -51,7 +51,7 @@ BioLab.COURSES = [
    {n:'Unit 1A',t:'Polynomial functions',ids:['coaster','openbox']},
    {n:'Unit 1B',t:'Rational functions',ids:['splitcost','sharedwork']},
    {n:'Unit 2A',t:'Exponential functions',ids:['creditcard','caffeine','logscale','hotspot','onepercent']},
-   {n:'Unit 2B',t:'Logarithmic functions and inverses',ids:['decibels','passwords','logscale','cipher']},
+   {n:'Unit 2B',t:'Logarithmic functions and inverses',ids:['decibels','passwords','logscale','cipher','billions']},
    {n:'Unit 3A',t:'Trigonometric functions',ids:['daylight','noisecancel']},
    {n:'Unit 3B',t:'Polar functions and rotations',ids:['rotations']},
    {n:'Unit 4',t:'Functions involving parameters, vectors and matrices',ids:['matrices','windvectors','orbits','opportunity'],note:'Not on the AP exam.'}
@@ -104,7 +104,7 @@ BioLab.COURSES = [
   ]}
 ];BioLab.TOPIC_ORDER = {
  1:['formulas','scaleit'],2:['rideshare','breakeven','budget'],3:['areamodel','freethrow','ticketprice','dish','coaster','openbox'],
- 4:['datasize','skidmarks','creditcard','caffeine','decibels','passwords','logscale'],5:['splitcost','sharedwork'],6:['checkout','pondday','photofilter','cipher','rotations'],
+ 4:['datasize','skidmarks','creditcard','caffeine','decibels','passwords','logscale','billions'],5:['splitcost','sharedwork'],6:['checkout','pondday','photofilter','cipher','rotations'],
  7:['logic'],8:['screens','parking','truss','shadow','ramp','triangulate'],12:['tiling','packaging','sprites'],10:['gps','tires','shotangle'],
  9:['daylight','noisecancel'],11:['fontcurves','matrices','windvectors','orbits'],
  13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
