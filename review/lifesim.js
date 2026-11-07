@@ -1,0 +1,41 @@
+BioLab.addReview({
+lifesim:{
+ questions:[
+  {id:'count',kind:'real',lvl:'bio',
+   q:'In the model, 1,000 children are born in Aurora and Denver to parents in the bottom fifth of incomes there. How many reach the top fifth of adult incomes by 30?',
+   num:{ans:91,tol:3,unit:'of 1,000'},
+   steps:['Each child’s path is drawn stage by stage: survival to 5, reading, school, work and luck.','At 30, each income is compared with fixed cutoffs from 5,000 children born in the same place. Incomes above the 80th percentile cutoff are in the top fifth.','The count is 91 of 1,000, about 9 in 100. With no link to parents it would be 200, so these children have less than half the even-odds chance.'],
+   lab:{set:{place:'arap',pq:1,view:'dist',lever:'none',reveal:true},look:'Read <b>Reach the top fifth by 30</b>.'},verify:[['top',91,0.5]]},
+  {id:'yardstick',kind:'real',lvl:'bio',
+   q:'A headline reads: “Kenya 39.8% poor, Germany 14.8% poor.” Before comparing the two, which question matters most?',
+   choices:['Which country is bigger?','Poor by which line? Germany’s figure uses a relative line (below a share of the typical income), and each country draws its own national line.','Were both figures rounded?'],correct:1,
+   steps:['Ask “Compared to what?” A poverty rate is only as meaningful as its line.','Germany’s 14.8% uses a relative line; Kenya’s 39.8% uses Kenya’s national line. They are different rulers.','On one shared line, $8.30 a day (2021 prices), the World Bank puts Germany at 1.6% and Kenya at 90.1%. Same countries, very different gap.']},
+  {id:'payday',kind:'test',lvl:'honors',
+   q:'A payday loan charges $15 per $100 every two weeks. You borrow $300 and roll it over 10 times. How much have you paid in fees, with the $300 still owed?',
+   num:{ans:450,tol:0.5,unit:'$'},
+   steps:['Fee per two weeks: $300 × 15/100 = $45.','Ten rollovers: 10 × $45 = $450.','As a simple annual rate: 15% × 26 = 390%. The CFPB found that more than 4 in 5 payday loans were rolled over or followed by another within 14 days.']},
+  {id:'moneylender',kind:'test',lvl:'honors',
+   q:'A moneylender charges 5% a month, compounded monthly. To the nearest 0.1%, what is the effective annual rate?',
+   num:{ans:79.6,tol:0.15,unit:'%'},
+   steps:['Growth over a year: 1.05¹² = 1.7959.','Effective annual rate = 1.7959 − 1 = 0.7959, or about 79.6%.','Compare Ecuador’s legal maximum for retail microcredit, 28.23% a year: a $500 loan costs at most about $141 in a year there, against about $398 at 79.6%.']},
+  {id:'cash',kind:'real',lvl:'honors',
+   q:'In Dallas County, for children of bottom-fifth parents, turn on the cash transfer (0.15 poverty lines a year in any year income falls below the line). By how many per 1,000 alive does poverty at 30 fall?',
+   num:{ans:58,tol:2,unit:'per 1,000'},
+   steps:['Without the transfer: 321 per 1,000 alive are poor at 30.','With it: 263 per 1,000.','321 − 263 = 58 fewer per 1,000. The same lives with the same luck are compared, so the whole difference comes from the transfer. A question to ask: how many of the 58 were just below the line, so that a small payment moved them over it?'],
+   lab:{set:{place:'dal',pq:1,view:'dist',lever:'cash',cash:0.15},look:'Read <b>Poor at 30</b> and <b>What the change did</b>.'},verify:[['pov30',263,0.6]]},
+  {id:'pension',kind:'real',lvl:'honors',
+   q:'Rural highlands of Ecuador, bottom-fifth parents. With social insurance for every worker, nearly everyone alive at 65 has a pension. Poverty at 65 still stays high. How many per 1,000 alive are poor at 65 with it?',
+   num:{ans:664,tol:2,unit:'per 1,000'},
+   steps:['Without the change, 62 of the 747 people alive at 65 have a pension, and 851 per 1,000 alive are poor.','With every year of work counted, 747 of 747 have one, and poverty at 65 falls to 664 per 1,000.','A pension pays a share of past pay: 61.4% × average pay × min(1, years ÷ 35). When past pay was low, 61.4% of it can still be below 0.6 poverty lines. Coverage and the size of the benefit are two different questions.'],
+   lab:{set:{place:'andes',pq:1,view:'dist',lever:'social'},look:'Read <b>Poor at 65</b> and <b>Have a pension at 65</b>.'},verify:[['pov65',664,0.6],['pen',747,0.5]]},
+  {id:'invnorm',kind:'test',lvl:'ap',
+   q:'Ecuador’s share of 15-year-olds reading at the minimum level is 38%. The model shifts rural reading scores down by 0.32 SD (the 32-point urban-rural gap on a scale with SD 100). What share of rural students is above the line, to the nearest 0.1%?',
+   num:{ans:26.6,tol:0.15,unit:'%'},
+   steps:['Find the cutoff: Φ⁻¹(0.38) ≈ −0.305, so 38% of a standard normal lies above z = 0.305.','Shifting scores down by 0.32 is the same as moving the cutoff up: the share above is Φ(−0.305 − 0.32) = Φ(−0.625).','Φ(−0.625) ≈ 0.266, or about 26.6%. It is a modeled figure, so the tool marks it with a dashed ring.']},
+  {id:'swings',kind:'test',lvl:'ap',
+   q:'Two households earn 1.5 poverty lines a year. One has formal pay with monthly swings CV 0.33; the other informal pay with CV 0.55. Using shortfall = c·y·φ(d) + (1 − y)·Φ(d), d = (1 − y)/(c·y), how many times larger is the informal household’s expected shortfall?',
+   num:{ans:3.4,tol:0.1,unit:'times'},
+   steps:['Formal: d = −0.5/0.495 ≈ −1.010; shortfall ≈ 0.495 × 0.240 − 0.5 × 0.156 ≈ 0.040 poverty lines.','Informal: d = −0.5/0.825 ≈ −0.606; shortfall ≈ 0.825 × 0.332 − 0.5 × 0.272 ≈ 0.138 poverty lines.','0.138 ÷ 0.040 ≈ 3.4. Same yearly income, about 3.4 times as much to cover from savings or a loan, which is where high interest rates bite.']}
+ ]
+}
+});
