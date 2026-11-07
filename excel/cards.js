@@ -112,13 +112,14 @@
       'The keys Ctrl and S, outlined and marked 1. Press them together to save. On a Mac, Cmd and S.',
       'Screenshot: desktop Excel with the Save button or the Save As window');
   };
-  F.install = function () {
-    return fig(browser('microsoft365.com',
-      t(14, 56, 'Welcome', 'f-t f-b') + r(14, 66, 160, 10, 'f-ph', 3) + r(14, 84, 120, 10, 'f-ph', 3) +
-      btn(214, 40, 92, 'Install apps') + hl(214, 40, 92, 24, 1) +
-      tile(14, 110, 52, 30) + r(76, 110, 52, 30, 'f-ph', 5) + r(138, 110, 52, 30, 'f-ph', 5)),
-      'The Microsoft 365 home page at microsoft365.com, signed in. The Install apps button at the top right is outlined and marked 1.',
-      'Screenshot: microsoft365.com home page with Install apps, signed in with a student RJ account');
+  F.findExcel = function () {
+    return fig(r(1, 1, W - 2, H - 2, 'f-win', 6) +
+      r(14, 16, 200, 26, 'f-field', 5) + t(24, 33, 'Excel', 'f-t f-sm') + hl(14, 16, 200, 26, 1) +
+      t(14, 64, 'Best match', 'f-t f-xs f-mut') +
+      tile(14, 72, 40, 26) + t(64, 90, 'Excel', 'f-t f-b') + t(64, 104, 'App', 'f-t f-xs f-mut') + hl(10, 68, 120, 42, 2) +
+      r(14, 124, 140, 10, 'f-ph', 3) + r(14, 142, 110, 10, 'f-ph', 3),
+      'A computer search box with the word Excel typed in it, outlined and marked 1. Under Best match, the Excel app is outlined and marked 2.',
+      'Screenshot: Windows Start search on an RJ student laptop, typing Excel, with the Excel app as the best match');
   };
   F.openDesktop = function () {
     return fig(browser('excel.office.com',
@@ -150,7 +151,7 @@
   XL.figures = F;
 
   function step(n, title, html, figure) {
-    return '<li class="xl-ostep"><div class="xl-otext"><p class="xl-on">Step ' + n + '</p><h4>' + title + '</h4><p>' + html + '</p></div>' + figure + '</li>';
+    return '<li class="xl-ostep"><div class="xl-otext"><p class="xl-on">' + (typeof n === 'number' || /^\d/.test(n) ? 'Step ' + n : n) + '</p><h4>' + title + '</h4><p>' + html + '</p></div>' + figure + '</li>';
   }
   /* tabs with arrow-key support */
   function tabs(box, names) {
@@ -192,7 +193,7 @@
       step('2a', 'Open the file', 'Open your <b>Downloads</b> folder and double-click <b>' + esc(file) + '</b>. It opens in the Excel desktop app.', F.folder(file)) +
       step('2b', 'Click Enable Editing', 'See a yellow bar that says <b>Protected View</b>? Excel opens files that came from the internet as read-only at first, to keep you safe. You made this file, so click <b>Enable Editing</b>.', F.protected(file)) +
       step('2c', 'Save it', 'Press <b>Ctrl+S</b> to save (on a Mac, <b>Cmd+S</b>). To keep it somewhere safe, choose <b>File &gt; Save As</b> and pick your OneDrive.', F.save()) +
-      step('If you need it', 'Don’t have the desktop app yet?', 'Every RJ student can install it with their RJ account: sign in at <b>microsoft365.com</b> and choose <b>Install apps</b>, then <b>Microsoft 365 apps</b>. Until then, use Excel for the web: everything in these lessons works there.', F.install()) +
+      step('If you need it', 'Can’t find the desktop app?', 'Excel is already installed on your RJ laptop. Click <b>Start</b> (or press the <b>Windows key</b>), type <b>Excel</b>, and open the app. If it asks you to sign in, use your <b>RJ account</b>. Still stuck? Use Excel for the web for now (everything in these lessons works there) and ask your teacher or RJ tech support.', F.findExcel()) +
       '</ol></div>' +
       '<h3 class="xl-canvas-h">Turn it in on Canvas</h3>' +
       '<ol class="xl-osteps">' +
@@ -216,7 +217,7 @@
       '<li>Your lab partner can work in the same file at the same time.</li>' +
       '<li>Everything in MathLab and your lab data analysis works here.</li>' +
       '<li>Needs internet. A very big workbook (over 100 MB) saved in OneDrive or SharePoint will not open in the browser.</li></ul></section>' +
-      '<section class="xl-two-c"><h4>Excel desktop app</h4><p class="xl-two-sub">The green Excel icon on your laptop. Every RJ student can install it with their RJ account.</p><ul>' +
+      '<section class="xl-two-c"><h4>Excel desktop app</h4><p class="xl-two-sub">The green Excel icon. It’s already installed on your RJ laptop.</p><ul>' +
       '<li>Has extra power tools the web version doesn’t: the Data Analysis button (regression, t-tests, histograms), Power Pivot, macros, and more chart options.</li>' +
       '<li>Works without internet.</li>' +
       '<li>Handles very big files.</li></ul></section>' +
