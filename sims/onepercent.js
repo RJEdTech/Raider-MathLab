@@ -15,16 +15,22 @@ const naive=sim=>sim.p.amt*gapNow(sim)/100*sim.p.yrs;
 /* interest paid by the end of each month, for the cumulative graph */
 function cumInt(P,r,n){const i=r/1200,M=pay(P,r,n);let B=P,I=0;const out=[0];for(let m=1;m<=n;m++){const it=B*i;I+=it;B=B+it-M;out.push(I);}return out;}
 const GS=sim=>(sim.tour&&sim.tour.on)?null:sim.gutS;
-const shown=sim=>!!(sim.p.reveal||(sim.tour&&sim.tour.on)||(sim.gutS&&sim.gutS.g));
+/* Totals stay hidden while the student works out the extra ("Your turn"), so the picture does not give it away. */
+const shown=sim=>!!(sim.p.reveal||(sim.tour&&sim.tour.on)||(sim.gutS&&sim.gutS.g&&!(BioLab.calcPending&&BioLab.calcPending(sim))));
 const $=v=>'$'+Math.round(v).toLocaleString('en-US');
 const $2=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const pc=v=>(Math.round(v*100)/100).toString()+'%';
 const loanName=sim=>(LOAN[sim.p.loan]||LOAN.car).l;
+/* "Your turn": the extra from the two payments, rounded to the cent as a lender shows them. */
+const c2=v=>Math.round(v*100)/100;
+const gapPay=sim=>c2(mB(sim))-c2(mA(sim));
+const calcAns=sim=>c2(N(sim)*gapPay(sim));
 function clearGut(sim){if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
 function setLoan(sim){const L=LOAN[sim.p.loan]||LOAN.car;BioLab.setValues(sim,{amt:L.amt,yrs:L.yrs,rate:L.rate});clearGut(sim);}
 
 const SIM={
  id:'onepercent',hash:'onepercent',apUnit:19,order:10,tab:'1% apart',kind:'Simulation',
+ skills:{bio:'Percentage points and repeated payments · Algebra 2 (Unit 5)',honors:'The loan payment formula and percentage points · Algebra 2 (Unit 5)',ap:'Geometric series and the loan payment formula · Algebra 2 (Unit 5), AP Precalculus (Unit 2A)'},
  card:'Guess what one extra percentage point costs on a car or student loan, then let the payment formula count every dollar.',
  title:'1% apart: what a slightly higher rate really costs',
  lede:{bio:'Two people borrow the same amount for the same car. One gets 7%, the other 8%, maybe because a score put them in a lower tier. One point sounds tiny. How many dollars is it?',
@@ -93,8 +99,8 @@ const SIM={
    if(sh){ctx.fillStyle=PAL['s1'];ctx.globalAlpha=.16;ctx.beginPath();for(let m=0;m<=n;m++)ctx.lineTo(X(m),Y(cB[m]));for(let m=n;m>=0;m--)ctx.lineTo(X(m),Y(cA[m]));ctx.closePath();ctx.fill();ctx.globalAlpha=1;
     [[cA,PAL['s3']],[cB,PAL['s1']]].forEach(([c,col])=>{ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();for(let m=0;m<=n;m++){m?ctx.lineTo(X(m),Y(c[m])):ctx.moveTo(X(m),Y(c[m]));}ctx.stroke();});
     if(!big)txt(ctx,'Shaded: the extra, adding up month by month',X(n*0.5),Y(cB[Math.round(n*0.5)])-14,{s:12*k,c:PAL['cv-soft'],a:'right'});}
-   else txt(ctx,big?'Lock in your gut to see':'Lock in your gut to see how the interest adds up',(gL+gR)/2,(gT+gB)/2,{s:13*k,c:PAL['cv-soft'],a:'center'});}
-  if(G&&G.g&&gB-gT>60){pill(ctx,'Your gut: '+$(G.g.guess)+' extra',gR-80*k,gB-30*k,PAL['card2'],PAL['s4'],12*Math.min(k,1.4));}},
+   else{const mine=G&&G.g;txt(ctx,mine?(big?'Work out the extra first':'Work out the extra to see how the interest adds up'):(big?'Lock in your gut to see':'Lock in your gut to see how the interest adds up'),(gL+gR)/2,(gT+gB)/2,{s:13*k,c:PAL['cv-soft'],a:'center'});}}
+  if(G&&G.g&&gB-gT>60&&(sh||!big)){pill(ctx,'Your gut: '+$(G.g.guess)+' extra',gR-80*k,gB-30*k,PAL['card2'],PAL['s4'],12*Math.min(k,1.4));}},
  narrate(sim){const n=N(sim),e=extra(sim);
   if(!shown(sim))return `Same ${$(sim.p.amt)} ${loanName(sim)}, same ${n} payments. One rate is ${pc(sim.p.rate)}, the other ${pc(rB(sim))}. The payments differ by only ${$2(mB(sim)-mA(sim))} a month. <b>How much is that over the whole loan?</b>`;
   return `The higher rate costs <b>${$(e)} more</b> over ${n} payments: ${$2(mB(sim)-mA(sim))} a month, every month. ${e<naive(sim)?`That is less than ${pc(gapNow(sim))} of ${$(sim.p.amt)} for each year (${$(naive(sim))}), because you owe less each month as you pay the loan down.`:'Here the extra is even more than the gap times the amount times the years, because interest builds on a balance that shrinks slowly.'}`;},
@@ -103,19 +109,35 @@ const SIM={
    honors:'Before the formula: drag the slider here to your gut guess of the extra dollars the higher rate costs over the whole loan, then lock it in.'},
   lock(sim){return {v:Math.abs(sim.p.guess-extra(sim)),guess:sim.p.guess,label:`about ${$(sim.p.guess)} extra`};},
   solve(sim){const e=extra(sim);sim.p.guess=Math.round(e);return {v:Math.abs(sim.p.guess-e),guess:e,label:`${$(e)} extra (${$2(mB(sim)-mA(sim))} a month)`};},
+  hint:{bio:'Lock in your gut answer. Then you will work out the real number yourself from the two monthly payments.'},
+  calc:{unit:'$',d:2,tol:a=>Math.max(5,0.01*a),
+   prompt:{bio:sim=>`At ${pc(sim.p.rate)} the payment is <b>${$2(mA(sim))}</b> a month. At ${pc(rB(sim))} it is <b>${$2(mB(sim))}</b>. Both loans have ${N(sim)} monthly payments. How many extra dollars does the higher rate cost over the whole loan?`,
+    ap:sim=>`At ${pc(sim.p.rate)} the payment on ${$(sim.p.amt)} is ${$2(mA(sim))} a month for ${N(sim)} months. Use M = Pi / (1 − (1 + i)⁻ⁿ) with i = ${pc(rB(sim))} ÷ 12 to find the payment at ${pc(rB(sim))}. Then find the extra over all ${N(sim)} payments.`},
+   answer:calcAns,
+   hint:'Find how much bigger one payment is. Then count how many times you make that payment.',
+   steps(sim){const n=N(sim),out=[];
+    if(atLeast('ap')){const i=rB(sim)/1200;out.push(`i = ${pc(rB(sim))} ÷ 12 = ${i.toFixed(6)} per month and n = ${n}, so (1 + i)⁻ⁿ = ${Math.pow(1+i,-n).toFixed(6)} and M = ${$(sim.p.amt)} × ${i.toFixed(6)} ÷ (1 − ${Math.pow(1+i,-n).toFixed(6)}) = ${$2(mB(sim))}.`);}
+    out.push(`One payment: ${$2(mB(sim))} − ${$2(mA(sim))} = ${$2(gapPay(sim))} more each month.`);
+    out.push(`That gap repeats for every payment: ${n} × ${$2(gapPay(sim))} = <b>${$2(calcAns(sim))}</b>.`);
+    out.push(`Check it with totals: ${n} × ${$2(mB(sim))} = ${$2(n*c2(mB(sim)))}, and ${n} × ${$2(mA(sim))} = ${$2(n*c2(mA(sim)))}. The difference is the same ${$2(calcAns(sim))}.`);
+    return out;}},
+  formula(sim){const n=N(sim),line=`Extra = ${n} payments × (${$2(mB(sim))} − ${$2(mA(sim))}) = ${$2(calcAns(sim))}`;
+   return atLeast('ap')?`M = Pi / (1 − (1 + i)⁻ⁿ) gives ${$2(mA(sim))} at ${pc(sim.p.rate)} and ${$2(mB(sim))} at ${pc(rB(sim))}.<br>${line}`:line;},
   how:{bio:'The math finds each monthly payment from the loan formula, multiplies by the number of payments, and subtracts. Each month the loan charges interest only on what you still owe, so the extra builds up month by month.',
    ap:'M = Pi / (1 − (1 + i)⁻ⁿ) for each rate, then the extra is n·(M₂ − M₁).'},
   compare(sim,g,m){const off=Math.abs(g.guess-m.guess),n=N(sim),mo=mB(sim)-mA(sim),pm=mA(sim);
    const tail=` In real terms: the higher rate takes ${$2(mo)} out of every payment for ${n} months, about ${(m.guess/pm).toFixed(1)} extra monthly payments in all.`;
-   if(off<=Math.max(25,0.05*m.guess))return `Your gut was right on: within ${$(off)}. You already sense how a small rate gap adds up.`+tail;
+   const K=sim.ui.calc,self=K&&K.done&&K.correct?' You also worked it out yourself, so you can price any rate gap this way.':'';
+   if(off<=Math.max(25,0.05*m.guess))return `Your gut was right on: within ${$(off)}. You already sense how a small rate gap adds up.`+tail+self;
    const nv=naive(sim),near=Math.abs(g.guess-nv)<0.1*nv;
-   return `Your gut was off by <b>${$(off)}</b>: you guessed ${$(g.guess)}, and the formula says <b>${$(m.guess)}</b>. ${g.guess>m.guess?(near?`Your guess is close to ${pc(gapNow(sim))} × ${$(sim.p.amt)} × ${sim.p.yrs} years. That would be right only if you owed the full amount the whole time; you pay it down, so the real extra is smaller.`:'You guessed high: you pay the balance down every month, so the extra interest shrinks as you go.'):'You guessed low: one point sounds tiny, but it is charged every month on what you still owe.'}`+tail;},
+   return `Your gut was off by <b>${$(off)}</b>: you guessed ${$(g.guess)}, and the formula says <b>${$(m.guess)}</b>. ${g.guess>m.guess?(near?`Your guess is close to ${pc(gapNow(sim))} × ${$(sim.p.amt)} × ${sim.p.yrs} years. That would be right only if you owed the full amount the whole time; you pay it down, so the real extra is smaller.`:'You guessed high: you pay the balance down every month, so the extra interest shrinks as you go.'):'You guessed low: one point sounds tiny, but it is charged every month on what you still owe.'}`+tail+self;},
   again(sim){const ty=Math.random()<0.5?'car':'student';const R=a=>a[Math.floor(Math.random()*a.length)];
    sim.p.loan=ty;if(ty==='car'){sim.p.amt=R([8000,12000,15000,20000,25000]);sim.p.yrs=R([3,4,5,6]);sim.p.rate=R([5,6,7,8.5,10,12]);}
    else{sim.p.amt=R([10000,20000,30000,40000]);sim.p.yrs=10;sim.p.rate=R([4.5,5.5,6.5,7.5]);}
    sim.p.guess=1000;sim.p.reveal=false;}
  },
  challenges:[
+  {lvl:'bio',kind:'num',q:'A $20,000 car loan for 5 years: the payment is $396.02 a month at 7% and $405.53 a month at 8%. How many extra dollars does the 1-point gap cost over all 60 payments?',answer:570.60,tol:5,unit:'$',d:2,hint:'Subtract the two payments, then multiply by the number of payments.',explain:'$405.53 − $396.02 = $9.51 more each month, and 60 × $9.51 = $570.60. The loan is 4/3 the size of the $15,000 one, and the extra is about 4/3 of $428 too.'},
   {lvl:'bio',instant:true,q:'A $15,000 car loan for 5 years at 7% costs $17,821 in all. At 8% it costs $18,249. Why is the difference ($428) less than 1% of $15,000 for each of 5 years ($750)?',choices:['The bank rounds in your favor','You pay the balance down, so the extra 1% is charged on less and less money','The higher rate only applies in the first year'],correct:1,explain:'Interest is charged on what you still owe. That starts at $15,000 and falls to $0, so on average you owe a little more than half of it. The extra 1% lands on that shrinking balance.'},
   {lvl:'bio',instant:true,q:'Same 1-point gap, but now a $30,000 student loan paid over 10 years (5.5% vs 6.5%). Compared with the $428 on the car loan, the extra is…',choices:['About the same, since the gap is still 1 point','About twice as much','More than four times as much: about $1,808'],correct:2,explain:'Twice the money for twice as long, and interest stacks on interest: $40,877 − $39,069 ≈ $1,808. Bigger and longer loans magnify a small rate gap.'},
   {lvl:'honors',instant:true,q:'A score puts you 4 points higher (11% instead of 7%) on a $15,000, 5-year car loan. About how much more do you pay in total?',choices:['About $428, four times smaller than you think','About $1,750','About $3,000'],correct:1,explain:'At 11% the payment is $326.14 against $297.02, a $29.12 gap for 60 months: about $1,747. That is roughly four times the 1-point cost, a bit more because higher rates compound faster.'},
