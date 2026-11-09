@@ -7,7 +7,7 @@ BioLab.COURSES = [
    {n:'Unit 2',t:'Multistep equations and proportions',ids:['scaleit','formulas','livessaved','costofliving','carquote','livingwage','aidoptimizer','rankcolleges','billions','minutesofwork','stickernet','povertypremium'],note:'Honors: Chapter 1.'},
    {n:'Unit 3',t:'Functions',ids:['checkout','rideshare','formulas','hotspot'],note:'Honors: Chapter 3.'},
    {n:'Unit 4',t:'Writing and graphing linear equations',ids:['rideshare'],note:'Honors: Chapters 3 and 4.'},
-   {n:'Unit 5',t:'Systems of equations and inequalities',ids:['breakeven','budget','schedule'],note:'Honors: Chapter 2 (inequalities) and Chapter 5 (systems).'},
+   {n:'Unit 5',t:'Systems of equations and inequalities',ids:['breakeven','budget','carhouse','schedule'],note:'Honors: Chapter 2 (inequalities) and Chapter 5 (systems).'},
    {n:'Unit 6',t:'Polynomials',ids:['areamodel'],note:'Honors: Chapter 7.'},
    {n:'Unit 7',t:'Graphing and solving quadratics',ids:['freethrow','ticketprice'],note:'Honors: Chapters 8 and 9.'},
    {n:'Unit 8',t:'Exponents and radicals',ids:['datasize','skidmarks','billions'],note:'Honors: Chapter 6. Some sections take this unit before quadratics.'}
@@ -31,7 +31,7 @@ BioLab.COURSES = [
    {n:'Unit 2',t:'Quadratic functions',ids:['dish','ticketprice','freethrow']},
    {n:'Unit 3',t:'Polynomials',ids:['coaster','openbox']},
    {n:'Unit 4',t:'Radicals and rational exponents',ids:['skidmarks']},
-   {n:'Unit 5',t:'Exponential and logarithmic functions',ids:['creditcard','caffeine','decibels','passwords','stickernet','onepercent','povertypremium'],note:'Honors: Chapter 6.'},
+   {n:'Unit 5',t:'Exponential and logarithmic functions',ids:['creditcard','startearly','caffeine','decibels','passwords','stickernet','onepercent','povertypremium'],note:'Honors: Chapter 6.'},
    {n:'Unit 6',t:'Rational functions',ids:['splitcost','sharedwork'],note:'Algebra 2 only.'},
    {n:'Trig',t:'Trigonometry',ids:['daylight','noisecancel'],note:'Honors Algebra 2 / Trig only.'}
   ]},
@@ -44,13 +44,13 @@ BioLab.COURSES = [
    {n:'Unit 3',t:'Triangle trigonometry',ids:['triangulate','ramp']},
    {n:'Unit 4',t:'Trigonometry and the unit circle',ids:['daylight']},
    {n:'Unit 5',t:'Graphing trigonometric functions',ids:['daylight','noisecancel']},
-   {n:'Unit 6',t:'Exponents and logarithms',ids:['logscale','creditcard','decibels']}
+   {n:'Unit 6',t:'Exponents and logarithms',ids:['logscale','creditcard','startearly','decibels']}
   ]},
  {id:'apprecalc',name:'AP Precalculus',blurb:'AP Precalculus, by College Board unit. Unit 4 is taught at RJ but is not on the AP exam.',
   units:[
    {n:'Unit 1A',t:'Polynomial functions',ids:['coaster','openbox']},
    {n:'Unit 1B',t:'Rational functions',ids:['splitcost','sharedwork']},
-   {n:'Unit 2A',t:'Exponential functions',ids:['creditcard','caffeine','logscale','hotspot','onepercent','lifesim']},
+   {n:'Unit 2A',t:'Exponential functions',ids:['creditcard','startearly','caffeine','logscale','hotspot','onepercent','lifesim']},
    {n:'Unit 2B',t:'Logarithmic functions and inverses',ids:['decibels','passwords','logscale','cipher','billions']},
    {n:'Unit 3A',t:'Trigonometric functions',ids:['daylight','noisecancel']},
    {n:'Unit 3B',t:'Polar functions and rotations',ids:['rotations']},
@@ -103,8 +103,8 @@ BioLab.COURSES = [
    {n:'Spring 4',t:'Differential equations, slope fields and Euler’s method',ids:['cooling']}
   ]}
 ];BioLab.TOPIC_ORDER = {
- 1:['formulas','scaleit'],2:['rideshare','breakeven','budget'],3:['areamodel','freethrow','ticketprice','dish','coaster','openbox'],
- 4:['datasize','skidmarks','creditcard','caffeine','decibels','passwords','logscale','billions'],5:['splitcost','sharedwork'],6:['checkout','pondday','photofilter','cipher','rotations'],
+ 1:['formulas','scaleit'],2:['rideshare','breakeven','budget','carhouse'],3:['areamodel','freethrow','ticketprice','dish','coaster','openbox'],
+ 4:['datasize','skidmarks','creditcard','startearly','caffeine','decibels','passwords','logscale','billions'],5:['splitcost','sharedwork'],6:['checkout','pondday','photofilter','cipher','rotations'],
  7:['logic'],8:['screens','parking','truss','shadow','ramp','triangulate'],12:['tiling','packaging','sprites'],10:['gps','tires','shotangle'],
  9:['daylight','noisecancel'],11:['fontcurves','matrices','windvectors','orbits'],
  13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
