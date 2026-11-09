@@ -41,6 +41,7 @@ const clear=sim=>{if(BioLab.gutClear)BioLab.gutClear(sim);};
 /* "Your turn": the most you can borrow at the typical pay, using the payment per $1,000 (rounded to the cent) for the right plan */
 function calcParts(sim){const S=pays(sim)[1],P=allowed(sim,S),y=maxDebt(sim,S).y,kk=per1000(sim,y);return {S,P,y,kk,ans:c2(P/kk*1000)};}
 
+const INV='<p><b>Your turn: investigate.</b> Ask two adults you know three questions: What did you study or train for? What work do you do now? How did you get from one to the other? Do not ask about pay.</p><ol><li>Find each person’s major in this tool, or the closest one.</li><li>Read its three paychecks: low, typical and high.</li></ol><p>Write: What do the three numbers tell you about people with that major? What do they leave out about the paths of the people you talked to?</p>';
 const SIM={
  id:'debtfit',hash:'debtfit',apUnit:1,order:3,tab:'How much debt fits?',kind:'Simulation',
  skills:{bio:'Proportions and percents · Algebra 1 (Unit 2)',honors:'Proportional relationships and piecewise functions · Algebra 1 (Units 2 and 3)',ap:'Proportions and the loan payment formula · Algebra 1 (Unit 2), Algebra 2 (Unit 5)'},
@@ -168,9 +169,9 @@ const SIM={
   {title:'The federal limit',text:'A dependent undergraduate can borrow at most $31,000 in federal loans in all. More than that means private or parent loans, which follow other rules.',pause:true},
   {lvl:'honors',title:'A jump in the function',text:'At $25,000 the plan grows from 10 to 15 years, so the payment drops from $278.44 to $218.05 while the interest goes up. The graph of the most you can borrow jumps there too.',pause:true,setup:sim=>BioLab.setValues(sim,{debt:25000,reveal:true})}
  ],
- lab:{bio:'<p><b>Question:</b> How does the major change the most you can borrow?</p><ol><li>Turn on <b>Show the answer now</b>. Keep 10% and $29,500.</li><li>Record a trial for five majors you are curious about.</li><li>For each, record <b>Most that fits</b> for the low and high jobs.</li></ol><p>Write one sentence: is the gap between low and high bigger than the gap between majors?</p>',
-  honors:'<p><b>Question:</b> Is the payment proportional to the debt?</p><ol><li>Record the monthly payment for $5,000, $10,000, $15,000 and $20,000.</li><li>Then for $25,000, $30,000 and $40,000.</li></ol><p>Find the payment per $1,000 in each group. Explain the change at $25,000 with the new standard plan.</p>',
-  ap:'<p><b>Question:</b> How does the rate change the most you can borrow?</p><ol><li>At typical pay, record <b>Most that fits</b> at rates of 4%, 5%, 6.52% and 8%.</li><li>Record the total interest on your plan at each rate.</li></ol><p><b>CER:</b> Use k = i/(1 − (1 + i)⁻ⁿ) to explain both results.</p>'},
+ lab:{bio:'<p><b>Question:</b> How does the major change the most you can borrow?</p><ol><li>Turn on <b>Show the answer now</b>. Keep 10% and $29,500.</li><li>Record a trial for five majors you are curious about.</li><li>For each, record <b>Most that fits</b> for the low and high jobs.</li></ol><p>Write one sentence: is the gap between low and high bigger than the gap between majors?</p>'+INV,
+  honors:'<p><b>Question:</b> Is the payment proportional to the debt?</p><ol><li>Record the monthly payment for $5,000, $10,000, $15,000 and $20,000.</li><li>Then for $25,000, $30,000 and $40,000.</li></ol><p>Find the payment per $1,000 in each group. Explain the change at $25,000 with the new standard plan.</p>'+INV,
+  ap:'<p><b>Question:</b> How does the rate change the most you can borrow?</p><ol><li>At typical pay, record <b>Most that fits</b> at rates of 4%, 5%, 6.52% and 8%.</li><li>Record the total interest on your plan at each rate.</li></ol><p><b>CER:</b> Use k = i/(1 − (1 + i)⁻ⁿ) to explain both results.</p>'+INV},
  terms:[
   {t:'Proportional relationship',d:'Two amounts whose ratio stays the same: y = kx. Double one and the other doubles.'},
   {t:'Percentile',d:'The value below which a given share of the data falls. The 25th percentile of pay is the pay that a quarter of workers earn less than. Here low, typical and high pay are the 25th, 50th and 75th percentiles.'},
