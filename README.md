@@ -20,3 +20,7 @@ Unit order comes from RJ math teachers' Canvas modules: Algebra 1, Geometry, Alg
 
 ## How it is built
 Static site with no build step: `index.html`, `engine.js` and `biolab.css` (the shared Raider Labs engine, plus MathLab's gut-vs-math and guided cold start), `courses.js` and `why.js`, and one file per tool in `sims/`, `practical/` and `review/`. Everything runs in the browser; no student data leaves the device. See `ENGINE.md` and `MATHLAB.md` to author a tool.
+
+## License
+
+© 2026 Jason Beyer, RJ Ed Tech. Licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): free to share and adapt for non-commercial use with credit. See [LICENSE](LICENSE).
