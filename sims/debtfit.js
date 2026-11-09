@@ -41,7 +41,7 @@ const clear=sim=>{if(BioLab.gutClear)BioLab.gutClear(sim);};
 /* "Your turn": the most you can borrow at the typical pay, using the payment per $1,000 (rounded to the cent) for the right plan */
 function calcParts(sim){const S=pays(sim)[1],P=allowed(sim,S),y=maxDebt(sim,S).y,kk=per1000(sim,y);return {S,P,y,kk,ans:c2(P/kk*1000)};}
 
-const INV='<p><b>Your turn: investigate.</b> Ask two adults you know three questions: What did you study or train for? What work do you do now? How did you get from one to the other? Do not ask about pay.</p><ol><li>Find each person’s major in this tool, or the closest one.</li><li>Read its three paychecks: low, typical and high.</li></ol><p>Write: What do the three numbers tell you about people with that major? What do they leave out about the paths of the people you talked to?</p>';
+const INV='<p><b>Your turn: investigate.</b> Ask two adults you know three questions: What did you study or train for? What work do you do now? What led you to that work? Do not ask about pay.</p><ol><li>Find each person’s major in this tool, or the closest one.</li><li>Read its three paychecks: low, typical and high.</li></ol><p>Write: What do the three numbers tell you about people with that major? What do they leave out about the people you talked to and how they chose their work?</p>';
 const SIM={
  id:'debtfit',hash:'debtfit',apUnit:1,order:3,tab:'How much debt fits?',kind:'Simulation',
  skills:{bio:'Proportions and percents · Algebra 1 (Unit 2)',honors:'Proportional relationships and piecewise functions · Algebra 1 (Units 2 and 3)',ap:'Proportions and the loan payment formula · Algebra 1 (Unit 2), Algebra 2 (Unit 5)'},
