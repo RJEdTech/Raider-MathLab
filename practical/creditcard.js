@@ -5,9 +5,9 @@ creditcard:{
  answer:'About 9.5 years (114 months), with $1,887 in interest: more than the $1,500 you borrowed. Paying a fixed $100 a month clears it in 19 months with $301 in interest, saving $1,586.',
  uses:[
   'Build it yourself: <a href="excel.html#build-creditcard">build this payoff month by month in a spreadsheet</a>, one step at a time, then download it and open it in Excel.',
-  'Your credit card statement: under the US Credit CARD Act of 2009, most monthly statements must show how long the balance will take to pay off with minimum payments only, what that will cost in total, and what monthly payment would clear it in 3 years. Banks compute those numbers by running the balance forward month by month, the same kind of model as this one.',
-  'Car loans and mortgages: the monthly payment on a fixed-rate loan comes from the same formula, B(1 + r)ⁿ − P((1 + r)ⁿ − 1)/r = 0, solved for the payment P instead of the time n. Every loan calculator and payment schedule runs it.',
-  'Savings accounts: US banks must state the annual percentage yield (APY), the yearly rate including compounding. Your savings grow by the same exponential rule, run in your favor.'
+  '<b>Do:</b> when you get a credit card statement, find the “Minimum Payment Warning” box and compare the minimum-only line with the 3-year line. <b>Why:</b> the Credit CARD Act of 2009 makes most card statements print both: how long minimums take and what they cost, next to the payment that clears it in 3 years. That box is this graph, for your own card.',
+  '<b>Do:</b> if you carry a balance, pay a fixed amount every month instead of whatever the minimum says, and set it up as an automatic payment. <b>Why:</b> the minimum shrinks as the balance shrinks, so each month knocks off only about 1%. A fixed $100 cleared this $1,500 in 19 months instead of 114. The Consumer Financial Protection Bureau also warns that paying only the minimum keeps you in debt longer and costs more in interest.',
+  '<b>Do:</b> when you open a savings account, compare banks by the APY, not the interest rate. <b>Why:</b> US banks must state the annual percentage yield, the yearly rate including compounding. It is the same exponential rule as the card, 1.02¹² ≈ 1.268, running in your favor.'
  ],
  takeaway:'Interest is charged on what you still owe. A payment that shrinks with the balance makes the debt decay slowly; a fixed payment well above the interest ends it fast.'
 }

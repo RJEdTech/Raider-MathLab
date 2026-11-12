@@ -58,6 +58,7 @@ const CARD={ship:{A:[['0 to 1 lb','$5.50'],['1 to 2 lb','$7.75'],['2 to 3 lb','$
   C:[['1 ticket','$15'],['2 tickets','$27'],['3 tickets','$39'],['4 tickets','$51'],['Family 4-pack','$45'],['5 tickets','$63'],['6 tickets','$75'],['7 tickets','$87'],['8 tickets','$99']],
   D:[['Total = $12 × tickets'],['+ $3 fee per order'],[''],['Tickets: slide to any'],['amount from 1 to 8.']]}};
 const gutPhase=sim=>sim.mode==='guided'&&!!sim.guide&&sim.guide.phase==='gut';
+const cpend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
 const mathOn=sim=>{const S=sim.gutS;return !!(S&&S.m&&S.m.cs===sim.p.case);};
 function caseChange(sim){const c=C(sim);sim.p.rule='A';sim.p.x=c.xd;sim.p.y=c.yd;if(sim.ui&&sim.ui.ctl)['rule','x','y'].forEach(id=>{if(sim.ui.ctl[id])sim.ui.ctl[id].set(sim.p[id]);});
  if(sim.gutS&&(sim.gutS.g||sim.gutS.m)&&!sim._gutBusy&&!(sim.guide&&sim.guide.keep)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
@@ -97,20 +98,20 @@ const SIM={
   set('x',b?'Try an order':'Test an input',b?'Draws a straight up-and-down line at this order and reads off every price the rule gives it.':'Draws a vertical line at this input and reads off every output the rule gives.');},
  metrics:[
   {id:'err',label:'Last season’s orders that go wrong',unit:'',d:0,min:0,max:null,get:sim=>tally(sim.p.case,sim.p.rule).n},
-  {id:'fx',label:'Your test order',text:true,get:fxText},
-  {id:'fxv',label:'Its one price',unit:'$',d:2,min:0,max:null,lvl:'honors',get:sim=>{const o=outs(sim.p.case,sim.p.rule,sim.p.x);return o.length===1?o[0]:null;}},
-  {id:'isfn',label:'Is this rule a function?',text:true,get:sim=>ISFN[sim.p.case][sim.p.rule]},
-  {id:'dom',label:'Domain: inputs this rule accepts',text:true,lvl:'honors',get:sim=>DOM[sim.p.case][sim.p.rule]},
-  {id:'rng',label:'Range: outputs it gives',text:true,lvl:'honors',get:sim=>RNG[sim.p.case][sim.p.rule]},
+  {id:'fx',label:'Your test order',text:true,get:sim=>gutPhase(sim)?'Lock in your rule first':fxText(sim)},
+  {id:'fxv',label:'Its one price',unit:'$',d:2,min:0,max:null,lvl:'honors',get:sim=>{if(gutPhase(sim))return null;const o=outs(sim.p.case,sim.p.rule,sim.p.x);return o.length===1?o[0]:null;}},
+  {id:'isfn',label:'Is this rule a function?',text:true,get:sim=>gutPhase(sim)?'?':ISFN[sim.p.case][sim.p.rule]},
+  {id:'dom',label:'Domain: inputs this rule accepts',text:true,lvl:'honors',get:sim=>gutPhase(sim)?'?':DOM[sim.p.case][sim.p.rule]},
+  {id:'rng',label:'Range: outputs it gives',text:true,lvl:'honors',get:sim=>gutPhase(sim)?'?':RNG[sim.p.case][sim.p.rule]},
   {id:'sol',label:'Inputs that give the output you picked',text:true,lvl:'honors',get:sim=>{const s=sols(sim.p.case,sim.p.rule,sim.p.y);return (atLeast('ap')?'Undo it: ':'')+s.txt;}},
   {id:'solv',label:'The one input that gives it',unit:'',d:2,lvl:'ap',min:null,max:null,get:sim=>sols(sim.p.case,sim.p.rule,sim.p.y).one}
  ],
  graphs:[{id:'errs',label:'Orders that go wrong, by rule',custom:true}],defaultGraph:'errs',
- plot(sim,ctx,box){const cs=sim.p.case,rs=['A','B','C','D'],v=rs.map(r=>tally(cs,r).n),top=Math.max(5,Math.ceil(Math.max(...v)/5)*5);
+ plot(sim,ctx,box){const cs=sim.p.case,rs=['A','B','C','D'],gp=gutPhase(sim),v=rs.map(r=>gp?0:tally(cs,r).n),top=Math.max(5,Math.ceil(Math.max(...v)/5)*5);
   const ax=axes(ctx,box,{xmin:0,xmax:4,ymin:0,ymax:top,xl:'Rule',xcats:rs.map(r=>'Rule '+r),yl:'Orders that go wrong (of '+C(sim).orders.length+')'});
   rs.forEach((r,i)=>{const x0=ax.X(i+0.2),x1=ax.X(i+0.8);ctx.fillStyle=r===sim.p.rule?PAL['rj']:PAL['s2'];ctx.globalAlpha=r===sim.p.rule?1:.6;ctx.fillRect(x0,ax.Y(v[i]),x1-x0,ax.Y(0)-ax.Y(v[i]));ctx.globalAlpha=1;
-   txt(ctx,String(v[i]),(x0+x1)/2,ax.Y(v[i])-6,{s:13,w:700,c:PAL['cv-ink'],a:'center'});});},
- draw(sim,ctx,vdt,k){const cs=sim.p.case,c=C(sim),M=gmap(c),rule=sim.p.rule,gp=gutPhase(sim),G=sim.gutS,kk=Math.min(k,1.45);
+   txt(ctx,gp?'?':String(v[i]),(x0+x1)/2,ax.Y(v[i])-6,{s:13,w:700,c:PAL['cv-ink'],a:'center'});});},
+ draw(sim,ctx,vdt,k){const cs=sim.p.case,c=C(sim),M=gmap(c),cp=cpend(sim),rule=cp?c.right:sim.p.rule,gp=gutPhase(sim)||cp,G=sim.gutS,kk=Math.min(k,1.45);
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   /* the rule card */
   const rows=CARD[cs][rule];ctx.fillStyle=PAL['card'];ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.beginPath();ctx.rect(14,14,306,296);ctx.fill();ctx.stroke();
@@ -128,6 +129,7 @@ const SIM={
   if(k>1.3)txt(ctx,c.xlab,GR-4,GB-6,{s:12*k,w:700,c:PAL['cv-soft'],a:'right'});else txt(ctx,c.xlab,(GL+GR)/2,GB+31*k,{s:12*k,w:700,c:PAL['cv-soft'],a:'center'});
   if(cs==='ship'){ctx.strokeStyle=PAL['s1'];ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(M.X(10),GT);ctx.lineTo(M.X(10),GB);ctx.stroke();ctx.setLineDash([]);txt(ctx,'Carrier limit',M.X(10)-4,GT+14*k,{s:12*k,w:700,c:PAL['s1'],a:'right'});}
   drawRule(ctx,c,cs,rule,M,PAL['s2']);
+  if(cp){const xq=cs==='ship'?2:5;ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(M.X(xq),GT);ctx.lineTo(M.X(xq),GB);ctx.stroke();ctx.setLineDash([]);pill(ctx,(cs==='ship'?'2.0 lb':'5 tickets')+': ?',M.X(xq)+56,GT+30,PAL['rj'],'#fff',14*kk);}
   /* the test lines */
   if(!gp){const x=sim.p.x,o=outs(cs,rule,x),inW=x>=c.x0&&x<=c.x1;
    if(inW){ctx.strokeStyle=o.length>=2?PAL['s1']:PAL['rj'];ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(M.X(x),GT);ctx.lineTo(M.X(x),GB);ctx.stroke();ctx.setLineDash([]);
@@ -147,11 +149,19 @@ const SIM={
    else{txt(ctx,r1,bx+bw/2,sy+45,{s:r1.length>12?12:13,c:PAL['cv-ink'],a:'center'});if(r2)txt(ctx,r2,bx+bw/2,sy+68,{s:12,w:700,c:j.ok?PAL['s3']:PAL['s1'],a:'center'});}});
   if(G&&G.g&&G.g.cs===cs&&G.g.rule!==rule&&!gp)txt(ctx,'Your gut: Rule '+G.g.rule,GR,GT-8,{s:12*k,w:700,c:PAL['s4'],a:'right'});},
  narrate(sim){const cs=sim.p.case,r=sim.p.rule,T=tally(cs,r),N=C(sim).orders.length,x=sim.p.x,o=outs(cs,r,x);
+  if(cpend(sim))return `The graph shows <b>Rule ${C(sim).right}</b>. Find the dashed line, go up to the graph, and read the price that counts.`;
+  if(gutPhase(sim))return `You are looking at <b>Rule ${r}</b>. Read its table and its graph: look hard at the dots where one price ends and the next begins, and at where the line stops. Which rule would you trust with every order?`;
   if(o.length>=2)return `<b>${inTxt(cs,x)} gets two prices</b> from Rule ${r}: ${o.map(money).join(' and ')}. The vertical line at this input crosses the graph twice, so Rule ${r} is not a function and the checkout can’t pick a price.`;
   if(T.n===0)return `<b>Rule ${r} works.</b> Every one of last season’s ${N} orders gets exactly one ${cs==='ship'?'price, and boxes the carrier won’t take get none':'total, and every impossible entry is refused'}. That is a function on the right domain.`;
   const why=T.two?`${T.two} order${T.two>1?'s':''} get two prices`:T.none?`${T.none} real order${T.none>1?'s':''} get no price`:T.bad?`${T.bad} order${T.bad>1?'s':''} that should be refused get a price`:`${T.wrong} orders get the wrong price`;
   return `Rule ${r} gets <b>${T.n} of last season’s ${N} orders wrong</b>: ${why}. ${T.two?'Every input needs exactly one output.':'The rule’s domain does not match the orders that can really happen.'}`;},
  gut:{better:'lower',controls:['rule'],
+  calc:{after:'tour',unit:'$',d:2,tol:0.005,nextLabel:'See how your rule did',
+   prompt:{bio:sim=>sim.p.case==='tix'?`The graph shows <b>Rule ${C(sim).right}</b>, $12 a ticket plus a $3 fee, as dots. Find <b>5 tickets</b> on the bottom (the dashed line) and go up to the dot. What does the order cost?`:`The graph shows <b>Rule C</b>. At <b>2.0 lb</b> (the dashed line), one step ends and the next begins. One dot there is filled (that price counts) and one is open (it doesn’t). What does a box that weighs exactly 2.0 lb cost?`,
+    ap:sim=>sim.p.case==='tix'?`On the graph of C(n) = 12n + 3, read or compute C(5).`:`Read the graph like a checkout. On Rule C, at exactly 2.0 lb (the dashed line), one dot is filled and one is open. What is C(2.0)?`},
+   answer:sim=>sim.p.case==='tix'?63:7.75,
+   hint:'Go straight up from the dashed line. A filled dot counts; an open dot belongs to the other piece.',
+   steps(sim){if(sim.p.case==='tix')return ['C(5) = 12 × 5 + 3.','60 + 3 = <b>$63</b>. One number of tickets, one total: a function.'];return ['Rule C says “over 1, up to 2 lb: $7.75” and “over 2, up to 3 lb: $9.25”.','“Up to 2” includes 2, so the $7.75 step has the filled dot at 2.0 lb. “Over 2” leaves 2 out, so the $9.25 step starts with an open dot.','A 2.0 lb box costs <b>$7.75</b>. One input, one output: that is what makes Rule C a function.'];}},
   ask:{bio:'Four people wrote rules for your checkout. Click through Rule A to Rule D here and look at each one’s table and graph. Pick the one you think gives every real order exactly one price, then lock it in.',
    honors:'Pick the rule here that you think is a function on the right domain, by looking at the tables and graphs, without testing inputs. Then lock it in.'},
   lockLabel:'Lock in my rule',

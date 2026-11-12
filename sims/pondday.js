@@ -17,6 +17,7 @@ const CASES={
   xl:'Meters past the lip of the jump',yl:'Height above the snow (m)',seen:Array.from({length:9},(_,i)=>i*0.35)}
 };
 const C=sim=>CASES[sim.p.case]||CASES.ice;
+let CUR='ice';
 const yOf=(sh,a,b,h,k,x)=>{const f=PAR[sh](b*(x-h));return Number.isFinite(f)?a*f+k:NaN;};
 const truth=(c,x)=>yOf(c.shape,c.a,1,c.h,c.k,x);
 const bOf=sim=>atLeast('honors')?sim.p.b:1;
@@ -119,7 +120,7 @@ const SIM={
   ctx.fillStyle=PAL['s1'];ctx.globalAlpha=.35;ctx.beginPath();ctx.moveTo(ax.X(xs[0]),ax.Y(0));xs.forEach((x,i)=>ctx.lineTo(ax.X(x),ax.Y(gs[i])));ctx.lineTo(ax.X(xs[n]),ax.Y(0));ctx.closePath();ctx.fill();ctx.globalAlpha=1;
   ctx.strokeStyle=PAL['s1'];ctx.lineWidth=2.5;ctx.beginPath();xs.forEach((x,i)=>i?ctx.lineTo(ax.X(x),ax.Y(gs[i])):ctx.moveTo(ax.X(x),ax.Y(gs[i])));ctx.stroke();
   legend(ctx,box.L+10,box.T+8,[{label:'Above 0: your curve is too high. Below 0: too low.',color:PAL['s1']}]);},
- draw(sim,ctx,vdt,k){const c=C(sim),M=map(c),cs=sim.p.case,Q=P(sim),G=sim.gutS,gp=gutPhase(sim),mo=mathOn(sim);
+ draw(sim,ctx,vdt,k){CUR=sim.p.case;const c=C(sim),M=map(c),cs=sim.p.case,Q=P(sim),G=sim.gutS,gp=gutPhase(sim),mo=mathOn(sim);
   /* tile labels follow the job */
   const tl=sim.ui&&sim.ui.tiles;if(tl&&sim._tl!==cs){sim._tl=cs;const setT=(id,l,u)=>{const t=tl[id];if(!t)return;const w=t.num.closest('.tile');if(!w)return;const a=w.querySelector('.t-l'),b=w.querySelector('.u');if(a)a.textContent=l;if(b)b.textContent=u;};
    setT('gap','Average gap from the real path',c.unit);setT('key',cs==='ice'?'Your curve reaches 4 in on Dec':cs==='bank'?'Your curve at your teammate’s lane':'Your curve lands at',cs==='ice'?'':cs==='bank'?'m out':'m past the lip');}
@@ -186,7 +187,10 @@ const SIM={
   else if(gp)tag('How close is it? Lock in to find out.',PAL['cv-soft']);
   else if(!(mo&&onTruth))tag('Off by '+fmtNum(memo(sim).gap,c.sc===1?2:0)+' '+c.unit+' on average',PAL['cv-soft']);
   /* ice: bottom right is empty; the others: top right */
-  const lx=R-8,lh=18*k;let ly=cs==='ice'?B-10-(lines.length-1)*lh:T+18*k;lines.forEach(([s0,col])=>{txt(ctx,s0,lx,ly,{s:13*k,w:700,c:col,a:'right'});ly+=lh;});},
+  const lx=R-8,lh=18*k;let ly=cs==='ice'?B-10-(lines.length-1)*lh:T+18*k;lines.forEach(([s0,col])=>{txt(ctx,s0,lx,ly,{s:13*k,w:700,c:col,a:'right'});ly+=lh;});
+  if(BioLab.calcPending&&BioLab.calcPending(sim)){const hon=atLeast('honors'),xq=cs==='ice'?(hon?null:12):cs==='bank'?17:(hon?null:4);ctx.save();ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2.5;ctx.setLineDash([5,4]);
+   if(xq!==null){ctx.beginPath();ctx.moveTo(M.X(xq),T);ctx.lineTo(M.X(xq),B);ctx.stroke();ctx.setLineDash([]);pill(ctx,(cs==='ice'?'Dec 12':'x = '+xq+' m')+': ?',M.X(xq),T+22,PAL['rj'],'#fff',14*Math.min(k,1.45));}
+   else{ctx.setLineDash([]);pill(ctx,cs==='ice'?'When does it reach 4 in? ?':'Where does it land? ?',(L+R)/2,T+22,PAL['rj'],'#fff',14*Math.min(k,1.45));}ctx.restore();}},
  narrate(sim){const c=C(sim),Q=P(sim),cs=sim.p.case,g=memo(sim).gap,close=c.sc===1?g<0.05:g<3;
   if(close)return `<b>That is the real path.</b> ${PNAME[c.shape][0].toUpperCase()+PNAME[c.shape].slice(1)}, vertex or starting point at (${f2(c.h)}, ${f2(c.k)}), stretched by ${f2(c.a)}. Now the curve can tell you what the dots could not.`;
   if(Q.sh!==c.shape){const why={line:'a line rises by the same amount every step',abs:'a V is two straight lines that meet at a sharp point',quad:'a parabola is a smooth U that turns around at its vertex',sqrt:'a square root starts at a corner point and rises more and more slowly',cube:'a cubic is an S curve that flattens in the middle'}[Q.sh];
@@ -196,6 +200,21 @@ const SIM={
   if(cs!=='ice'&&Q.a>0)return `The right shape, but it opens <b>upward</b>. The real path turns ${cs==='bank'?'back at the boards':'back down at the top'}, so it needs a negative stretch: a flip.`;
   return `The right shape, about ${fmtNum(g,c.sc===1?2:0)} ${c.unit} off on average. <b>${cs==='ice'?'Put the corner point where the ice started':cs==='bank'?'Put the tip of the V where the puck hit the boards':'Put the vertex at the top of the jump'}</b>, then stretch until the curve passes through one more dot.`;},
  gut:{better:'lower',controls:['shape','a'],
+  calc:{d:2,tol:a=>Math.max(0.02,Math.abs(a)*0.01),get unit(){return CUR==='ice'?(atLeast('honors')?'':'in'):'m';},
+   prompt:{bio:sim=>{const cs=sim.p.case;
+     if(cs==='bank')return `The puck’s real path is y = −1.25|x − 9.4| + 12, a V that bounces off the boards at x = 9.4 m. How far out from the near boards is it at <b>x = 17 m</b>, where your teammate skates?`;
+     if(cs==='jump')return `The rider’s real path is y = −0.1(x − 2.1)² + 1.25, a parabola with its top at x = 2.1 m. How high above the snow is the rider at <b>x = 4 m</b>?`;
+     return `The real ice follows h = 1.3√(x − 4), where x is the December date (the pond froze the evening of Dec 4). How thick is the ice on Saturday, <b>Dec 12</b> (x = 12)?`;},
+    honors:sim=>{const cs=sim.p.case;
+     if(cs==='bank')return `The puck follows y = −1.25|x − 9.4| + 12. Your teammate’s lane is at x = 17 m. What is y there, in meters?`;
+     if(cs==='jump')return `The rider follows y = −0.1(x − 2.1)² + 1.25. Set y = 0 and solve: how far past the lip (x, in meters) does the rider land?`;
+     return `The ice follows h = 1.3√(x − 4). Solve 1.3√(x − 4) = 4. On what December date x does the ice reach 4 inches? (A decimal is fine, like 15.5.)`;}},
+   answer:sim=>{const cs=sim.p.case,hon=atLeast('honors');if(cs==='bank')return -1.25*Math.abs(17-9.4)+12;if(cs==='jump')return hon?2.1+Math.sqrt(12.5):-0.1*Math.pow(4-2.1,2)+1.25;return hon?4+Math.pow(4/1.3,2):1.3*Math.sqrt(8);},
+   hint:{bio:'Put the number in for x, then work from the inside out.',honors:'Undo the steps in reverse order: divide, square (or square root), then add or subtract.'},
+   steps(sim){const cs=sim.p.case,hon=atLeast('honors');
+    if(cs==='bank')return ['x − 9.4 = 17 − 9.4 = 7.6, and |7.6| = 7.6.','−1.25 × 7.6 = −9.5, and −9.5 + 12 = <b>2.5 m</b>.'];
+    if(cs==='jump')return hon?['0 = −0.1(x − 2.1)² + 1.25, so (x − 2.1)² = 12.5.','x − 2.1 = √12.5 ≈ 3.54 (the positive root: the landing is ahead of the lip).','x ≈ <b>5.64 m</b>.']:['x − 2.1 = 4 − 2.1 = 1.9, and 1.9² = 3.61.','−0.1 × 3.61 = −0.361, and −0.361 + 1.25 ≈ <b>0.89 m</b>.'];
+    return hon?['Divide by 1.3: √(x − 4) = 3.077.','Square: x − 4 = 9.47.','x ≈ <b>13.47</b>: the evening of Dec 13, so not safe for Saturday the 12th. Sunday, Dec 14, is the first safe day.']:['x − 4 = 12 − 4 = 8, and √8 ≈ 2.83.','1.3 × 2.83 ≈ <b>3.68 in</b>: still under the 4 inches you need on Saturday.'];}},
   ask:{bio:'Make your red curve fit the blue dots. Pick the shape here first. Then drag the curve on the picture to slide it into place, and use the stretch slider here to bend it. Lock it in when it looks right.',
    honors:'Fit the dots by eye, without <b>Fit it exactly</b>: pick the parent function here, drag the curve to slide it, and set the stretch. Then lock it in.'},
   lockLabel:'Lock in my curve',

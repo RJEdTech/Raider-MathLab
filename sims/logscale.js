@@ -129,6 +129,16 @@ const SIM={
   if(log)return `On the log axis the first 14 days fall close to a <b>straight line</b>: the count grows by about ${fmtNum((D.b-1)*100,0)}% a day, doubling about every ${fmtNum(D.dbl,1)} days. Extend the line to 1,000,000 to see when it gets there.`;
   return `By day 14 there are ${com(D.d[FIT])} ${C.noun}. On a regular axis that looks slow: at last week’s pace of about ${com(pace(D))} new ${C.noun} a day, 1,000,000 would take ${fmtNum(paceYears(D),1)} more years. <b>But the count multiplies each day; it does not add.</b>`;},
  gut:{better:'lower',
+  calc:{d:1,get unit(){return atLeast('honors')?'':'doublings';},tol:a=>atLeast('honors')?0.6:0.01,
+   prompt:{bio:sim=>{const D=data(sim);return `Count by doubling: on day 14 there are <b>${com(D.d[FIT])}</b>. Double it: ${com(2*D.d[FIT])}. Double again: ${com(4*D.d[FIT])}. Keep going. How many doublings until the count passes <b>1,000,000</b>?`;},
+    honors:sim=>{const D=data(sim);return `On day 14 there are ${com(D.d[FIT])}, doubling about every <b>${fmtNum(D.dbl,2)} days</b> (from the fit). Doublings needed: log₂(1,000,000 ÷ ${com(D.d[FIT])}). On what day (a decimal is fine) does it pass 1,000,000?`;},
+    ap:sim=>{const D=data(sim);return `The least-squares line through log₁₀(count) for days 0 to 14 is log₁₀ N = ${D.c.toFixed(4)} + ${D.m.toFixed(4)}t. Solve for the day t when N = 1,000,000 (log₁₀ N = 6).`;}},
+   answer:sim=>{const D=data(sim),N=D.d[FIT];if(atLeast('ap'))return (6-D.c)/D.m;if(atLeast('honors'))return FIT+D.dbl*Math.log2(1e6/N);return Math.ceil(Math.log2(1e6/N));},
+   hint:{bio:'Write the list: each number is twice the one before. Count the steps until you pass 1,000,000.',honors:'log₂(x) = log(x) ÷ log(2). Multiply the doublings by the doubling time, then add 14.',ap:'Subtract the intercept, then divide by the slope.'},
+   steps(sim){const D=data(sim),N=D.d[FIT];
+    if(atLeast('ap')){const t=(6-D.c)/D.m;return [`6 − ${D.c.toFixed(4)} = ${(6-D.c).toFixed(4)}.`,`÷ ${D.m.toFixed(4)} = <b>day ${t.toFixed(1)}</b>.`,`The count passes 1,000,000 during day ${Math.ceil(t)}.`];}
+    if(atLeast('honors')){const n=Math.log2(1e6/N);return [`1,000,000 ÷ ${com(N)} ≈ ${(1e6/N).toFixed(1)}, and log₂ of that ≈ ${n.toFixed(2)} doublings.`,`${n.toFixed(2)} × ${fmtNum(D.dbl,2)} days ≈ ${(n*D.dbl).toFixed(1)} days after day 14.`,`14 + ${(n*D.dbl).toFixed(1)} ≈ <b>day ${(FIT+n*D.dbl).toFixed(1)}</b>.`];}
+    const L=[];let v=N,i=0;while(v<1e6){v*=2;i++;L.push(com(v));}return [`${com(N)} → ${L.join(' → ')}`,`That is <b>${i} doublings</b>. At about ${fmtNum(D.dbl,1)} days each, roughly ${Math.round(i*D.dbl)} more days: weeks, not years.`];}},
   controls:['guess'],
   ask:{bio:'The red dots are the first two weeks. Drag the slider here, or click the shaded future on the chart, to the day you think the total passes 1,000,000. Then lock it in.',
    honors:'Before you switch to the log axis or show the fitted line: on what day will the count pass 1,000,000? Drag the slider here, then lock it in.'},

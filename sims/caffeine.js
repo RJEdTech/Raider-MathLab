@@ -6,10 +6,42 @@ const drinks=sim=>{const L=[{d:sim.p.dose,t:-sim.p.t1}];if(sim.p.two)L.push({d:s
 const hl=sim=>sim.p.half;
 const amt=(sim,t)=>drinks(sim).reduce((s,q)=>s+(t>=q.t?q.d*Math.pow(0.5,(t-q.t)/hl(sim)):0),0);
 const atBed=sim=>amt(sim,0);
-const shown=sim=>!!(sim.peek||(sim.gutS&&sim.gutS.g));
+const cpend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const shown=sim=>!!(sim.peek||(sim.gutS&&sim.gutS.g))&&!cpend(sim);
 const clock=t=>{let h=((22+t)%24+24)%24;const m=Math.round((h-Math.floor(h))*60);h=Math.floor(h);const ap=h<12?'AM':'PM',h12=h%12===0?12:h%12;return h12+(m?':'+String(m).padStart(2,'0'):'')+' '+ap;};
 const mg=v=>Math.round(v)+' mg';
 const XMIN=-14,XMAX=10,R0=780,T0=40,B0=376;let L0=70;
+
+/* walkthrough and "Your turn" pictures */
+function bar(ctx,x,y0,y1,c,lbl,k,ghost){ctx.fillStyle=c;ctx.globalAlpha=ghost?0.22:0.9;ctx.fillRect(x-14,y1,28,y0-y1);ctx.globalAlpha=1;if(lbl)txt(ctx,lbl,x,y1-8,{s:13*Math.min(k,1.4),w:800,c:ghost?PAL['cv-soft']:c,a:'center'});}
+function brace(ctx,x1,x2,y,lbl,k,c){ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y-6);ctx.lineTo(x1,y);ctx.lineTo(x2,y);ctx.lineTo(x2,y-6);ctx.stroke();txt(ctx,lbl,(x1+x2)/2,y+16*Math.min(k,1.4),{s:12*Math.min(k,1.4),w:800,c,a:'center'});}
+function cfOverlay(sim,ctx,k,X,Y,ymax){const tv=(sim.tour&&sim.tour.on)?sim.cfv:null,cp=cpend(sim),B=Y(0),kk=Math.min(k,1.4),d=sim.p.dose,h=hl(sim),q0=-sim.p.t1,A=t=>amt(sim,t);
+ if(cp){const lv=atLeast('ap')?'ap':atLeast('honors')?'honors':'bio';bar(ctx,X(q0),B,Y(d),PAL['s2'],d+' mg',k);
+  const tq=lv==='bio'?q0+h:lv==='honors'?0:9;ctx.strokeStyle=PAL['rj'];ctx.setLineDash([5,4]);ctx.lineWidth=2;ctx.strokeRect(X(tq)-14,Y(d*0.55),28,B-Y(d*0.55));ctx.setLineDash([]);
+  txt(ctx,'?',X(tq),Y(d*0.55)-10,{s:30*kk,w:800,c:PAL['rj'],a:'center'});brace(ctx,X(q0),X(tq),B-44,fmtNum(tq-q0,1)+' hours = '+fmtNum((tq-q0)/h,2)+' half-lives',k,PAL['s4']);return;}
+ if(!tv)return;
+ if(tv==='drink'){bar(ctx,X(q0),B,Y(d),PAL['s2'],d+' mg',k);/* a cup */const cx=X(q0)-44,cy=B-60;ctx.fillStyle='#fff';ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-14,cy-20);ctx.lineTo(cx+14,cy-20);ctx.lineTo(cx+10,cy+18);ctx.lineTo(cx-10,cy+18);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#6b3e1f';ctx.fillRect(cx-12,cy-14,24,6);ctx.beginPath();ctx.arc(cx+17,cy-2,6,-1.4,1.4);ctx.stroke();return;}
+ if(tv==='half'){bar(ctx,X(q0),B,Y(d),PAL['s2'],d+' mg',k,true);bar(ctx,X(q0+h),B,Y(A(q0+h)),PAL['rj'],mg(A(q0+h)),k);brace(ctx,X(q0),X(q0+h),B-44,'5 hours: half gone',k,PAL['s4']);return;}
+ if(tv==='bed'){bar(ctx,X(q0),B,Y(d),PAL['s2'],'',k,true);bar(ctx,X(q0+h),B,Y(A(q0+h)),PAL['rj'],'',k,true);bar(ctx,X(0),B,Y(A(0)),PAL['rj'],'',k);
+  brace(ctx,X(q0),X(q0+h),B-44,'1 half-life',k,PAL['s4']);brace(ctx,X(q0+h),X(0),B-44,'+ 0.4',k,PAL['s4']);return;}
+ if(tv==='night'){for(let n=0;n<4;n++){const t=q0+n*h;if(t>10)break;bar(ctx,X(t),B,Y(A(t)),n?PAL['rj']:PAL['s2'],mg(A(t)),k,n===0);}
+  ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(X(9),Y(A(9)),7,0,7);ctx.fill();pill(ctx,'7 AM: '+mg(A(9)),X(9)-10,Y(A(9))-40,PAL['rj'],'#fff',13*kk);return;}
+ if(tv==='ratio'){const bw=X(q0+1)-X(q0)-8;for(let n=0;n<4;n++){const t=q0+n,x=X(t);ctx.fillStyle=PAL['rj'];ctx.globalAlpha=.9;ctx.fillRect(x-bw/2,Y(A(t)),bw,B-Y(A(t)));ctx.globalAlpha=1;txt(ctx,fmtNum(A(t),0),x,Y(A(t))+16*kk,{s:11*kk,w:800,c:'#fff',a:'center'});
+   if(n)txt(ctx,'×0.87',X(t-0.5),Y(185)+(n%2)*14*kk,{s:12*kk,w:800,c:PAL['s2'],a:'center'});}txt(ctx,'Each hour keeps 87%',X(q0+2),Y(185)-18*kk,{s:12*kk,w:700,c:PAL['s2'],a:'center'});return;}
+ if(tv==='zoom'){const x0=X(1),y0=Y(ymax*0.85),w=X(10)-x0-6,hh=Y(ymax*0.45)-y0;ctx.fillStyle=PAL['card'];ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.fillRect(x0,y0,w,hh);ctx.strokeRect(x0,y0,w,hh);
+  const zx=t=>x0+8+(t-0)/(48)*(w-16),zy=v=>y0+hh-14-v/A(0)*(hh-34);ctx.strokeStyle=PAL['line'];ctx.beginPath();ctx.moveTo(x0+8,zy(0));ctx.lineTo(x0+w-8,zy(0));ctx.stroke();
+  ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2.5;ctx.beginPath();for(let t=0;t<=48;t+=0.25){const x=zx(t),y=zy(A(t));t?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();
+  txt(ctx,'Zoom: the next 2 days',x0+10,y0+16*kk,{s:12*kk,w:700});txt(ctx,'closer and closer to 0, never 0',x0+w-10,zy(0)-8,{s:12*kk,w:700,c:PAL['rj'],a:'right'});return;}
+ if(tv==='shift'){ctx.strokeStyle=PAL['s5'];ctx.lineWidth=2.5;ctx.setLineDash([7,5]);ctx.beginPath();for(let t=q0-2;t<=10;t+=0.05){const v=d*Math.pow(0.5,(t-(q0-2))/h);const x=X(t),y=Y(v);t===q0-2?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();ctx.setLineDash([]);
+  [0,5].forEach(t=>{const a=A(t),b=a*Math.pow(0.5,2/h);ctx.strokeStyle=PAL['s5'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(t)+12,Y(a));ctx.lineTo(X(t)+12,Y(b));ctx.stroke();txt(ctx,'× 0.758',X(t)+18,(Y(a)+Y(b))/2+4,{s:12*kk,w:800,c:PAL['s5']});});
+  pill(ctx,'Dashed: the same drink 2 hours earlier',X(-7),Y(ymax*0.9),PAL['s5'],'#fff',12*kk);return;}
+ if(tv==='people'){[[2,PAL['s3']],[10,PAL['s5']]].forEach(([hh,c])=>{ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.beginPath();for(let t=q0;t<=10;t+=0.05){const x=X(t),y=Y(d*Math.pow(0.5,(t-q0)/hh));t===q0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+   const v=d*Math.pow(0.5,-q0/hh);ctx.fillStyle=c;ctx.beginPath();ctx.arc(X(0),Y(v),6,0,7);ctx.fill();txt(ctx,'half-life '+hh+' h: '+mg(v),X(0)+12,Y(v)+(hh===2?-6:-10),{s:12*kk,w:800,c});});return;}
+ if(tv==='two'){drinks(sim).forEach((q,i)=>{ctx.strokeStyle=i?PAL['s2']:PAL['s4'];ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();for(let t=q.t;t<=10;t+=0.05){const x=X(t),y=Y(q.d*Math.pow(0.5,(t-q.t)/h));t===q.t?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();ctx.setLineDash([]);
+   const v=q.d*Math.pow(0.5,-q.t/h);txt(ctx,mg(v),X(0)-10,Y(v)+4,{s:12*kk,w:800,c:i?PAL['s2']:PAL['s4'],a:'right'});});return;}
+ if(tv==='solve'){const T=h*Math.log2(d/25),tt=q0+T;ctx.strokeStyle=PAL['s5'];ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(X(-14),Y(25));ctx.lineTo(X(10),Y(25));ctx.moveTo(X(tt),Y(25));ctx.lineTo(X(tt),B);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=PAL['s5'];ctx.beginPath();ctx.arc(X(tt),Y(25),7,0,7);ctx.fill();pill(ctx,'25 mg at '+clock(tt)+': t = '+fmtNum(T,1)+' h',X(tt),Y(25)-30,PAL['s5'],'#fff',13*kk);}
+}
 
 const SIM={
  id:'caffeine',hash:'caffeine',apUnit:4,order:4,tab:'Caffeine at bedtime',kind:'Simulation',
@@ -66,20 +98,33 @@ const SIM={
    ctx.strokeStyle=PAL['s2'];ctx.setLineDash([2,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,B0);ctx.lineTo(x,Y(q.d));ctx.stroke();ctx.setLineDash([]);});
   if(sh){/* half-life guides for the first drink */
    if(atLeast('honors')&&!sim.p.two){const q=D[0];ctx.strokeStyle=PAL['cv-soft'];ctx.setLineDash([4,5]);ctx.lineWidth=1;for(let n=1;n<=3;n++){const t=q.t+n*hl(sim);if(t>XMAX)break;const v=q.d/Math.pow(2,n);ctx.beginPath();ctx.moveTo(X(t),B0);ctx.lineTo(X(t),Y(v));ctx.lineTo(X(q.t),Y(v));ctx.stroke();}ctx.setLineDash([]);}
+   const tv=(sim.tour&&sim.tour.on)?sim.cfv:null,tLim=tv==='drink'?-7:tv==='half'?-2:tv==='bed'?0:XMAX;
    ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;ctx.beginPath();let first=true;const t0=Math.min(...D.map(q=>q.t));
-   for(let t=t0;t<=XMAX+1e-9;t+=0.05){const x=X(t),y=Y(amt(sim,t));first?ctx.moveTo(x,y):ctx.lineTo(x,y);first=false;}ctx.stroke();
-   const v=atBed(sim);ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(X(0),Y(v),7,0,7);ctx.fill();
-   pill(ctx,mg(v)+' at bedtime',X(0)+90*Math.min(k,1.5),Y(v)-6,PAL['rj'],'#fff',13*Math.min(k,1.5));}
-  else{txt(ctx,'?',X(0)+20,Y(ymax*0.6),{s:34*kk,w:700,c:PAL['rj']});}
+   for(let t=t0;t<=Math.min(XMAX,tLim)+1e-9;t+=0.05){const x=X(t),y=Y(amt(sim,t));first?ctx.moveTo(x,y):ctx.lineTo(x,y);first=false;}ctx.stroke();
+   const v=atBed(sim);if(tLim>=0){ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(X(0),Y(v),7,0,7);ctx.fill();}
+   if(tLim>=0&&tv!=='zoom')pill(ctx,mg(v)+' at bedtime',X(0)+90*Math.min(k,1.5),Y(v)-6,PAL['rj'],'#fff',13*Math.min(k,1.5));}
+  else if(!cpend(sim)){txt(ctx,'?',X(0)+20,Y(ymax*0.6),{s:34*kk,w:700,c:PAL['rj']});}
   /* gut */
   const gv=G&&G.g?G.g.mg:sim.p.guess,gy=Y(gv);ctx.strokeStyle=PAL['s4'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(X(0),gy,9,0,7);ctx.stroke();
-  const close=sh&&Math.abs(gy-Y(atBed(sim)))<22*kk;txt(ctx,(G&&G.g?'Your gut: ':'Your guess: ')+mg(gv),X(0)-14,gy+(close?(gy<Y(atBed(sim))?-12:22):5),{s:12*kk,w:700,c:PAL['s4'],a:'right'});},
+  const close=sh&&Math.abs(gy-Y(atBed(sim)))<22*kk;txt(ctx,(G&&G.g?'Your gut: ':'Your guess: ')+mg(gv),X(0)-14,gy+(close?(gy<Y(atBed(sim))?-12:22):5),{s:12*kk,w:700,c:PAL['s4'],a:'right'});
+  cfOverlay(sim,ctx,k,X,Y,ymax);},
  narrate(sim){const h=hl(sim);
+  if(cpend(sim))return `Work out the caffeine from the picture. Each half-life cuts what is left in half.`;
   if(!shown(sim))return `Your body clears caffeine by halves. With a half-life of ${fmtNum(h,1)} hours, <b>half of the drink is still in you ${fmtNum(h,1)} hours after you finish it</b>. Lock in your guess for bedtime to see the curve.`;
   const v=atBed(sim),D=drinks(sim);
   if(D.length>1)return `Each drink decays on its own, and the amounts add: <b>${mg(v)} at bedtime</b> in all. The later drink matters most, because it has had less time to decay.`;
   const n=sim.p.t1/h;return `From ${clock(-sim.p.t1)} to 10 PM is ${fmtNum(sim.p.t1,1)} hours, or ${fmtNum(n,2)} half-lives. ${sim.p.dose} mg × (1/2)^${fmtNum(n,2)} = <b>${mg(v)} still in you at bedtime</b>.`;},
  gut:{better:'lower',
+  calc:{unit:'mg',d:1,tol:a=>Math.max(0.5,a*0.01),
+   prompt:{bio:sim=>`From the picture: you drink <b>${sim.p.dose} mg</b> (the blue bar). The half-life is <b>${fmtNum(hl(sim),1)} hours</b>, so after ${fmtNum(hl(sim),1)} hours half of it is gone. How many mg are left at the red “?”`,
+    honors:sim=>`${sim.p.dose} mg, half-life ${fmtNum(hl(sim),1)} hours, and bedtime is ${fmtNum(sim.p.t1,1)} hours later. Use A = A₀(1/2)^(t/h). How many mg are left at 10 PM?`,
+    ap:sim=>`${sim.p.dose} mg at ${clock(-sim.p.t1)}, half-life ${fmtNum(hl(sim),1)} hours. How many mg are still in you at <b>7 AM</b> the next morning?`},
+   answer:sim=>{const d=sim.p.dose,h=hl(sim),t1=sim.p.t1;return atLeast('ap')?d*Math.pow(0.5,(t1+9)/h):atLeast('honors')?d*Math.pow(0.5,t1/h):d/2;},
+   hint:{bio:'One half-life cuts the amount in half.',honors:'Count half-lives: t ÷ h. Then multiply the drink by (1/2) to that power.',ap:'7 AM is 9 hours after 10 PM. Add that to the time before bed.'},
+   steps(sim){const d=sim.p.dose,h=hl(sim),t1=sim.p.t1;
+    if(atLeast('ap')){const t=t1+9,n=t/h;return [`From ${clock(-t1)} to 7 AM is ${fmtNum(t,1)} hours: ${fmtNum(n,2)} half-lives.`,`${d} × (1/2)^${fmtNum(n,2)} ≈ <b>${fmtNum(d*Math.pow(0.5,n),1)} mg</b>.`,'Still there when your alarm goes off.'];}
+    if(atLeast('honors')){const n=t1/h;return [`${fmtNum(t1,1)} hours ÷ ${fmtNum(h,1)} hours = ${fmtNum(n,2)} half-lives.`,`${d} × (1/2)^${fmtNum(n,2)} ≈ <b>${fmtNum(d*Math.pow(0.5,n),1)} mg</b> at bedtime.`];}
+    return [`One half-life cuts the drink in half.`,`${d} ÷ 2 = <b>${fmtNum(d/2,1)} mg</b> still in you.`];}},
   controls:['guess'],
   ask:{bio:'Drag the slider here up to the number of milligrams (mg) you think are still in you at 10 PM. The orange ring on the bedtime line moves with it. Then lock it in.',honors:'Before you see the curve: drag the slider here to how many milligrams are still in you at 10 PM, then lock it in.'},
   lock(sim){const g=sim.p.guess;return {v:Math.abs(g-atBed(sim)),mg:g,label:mg(g)+' at bedtime'};},
@@ -94,7 +139,7 @@ const SIM={
   again(sim){sim.peek=false;sim.p.dose=[60,80,100,120,150,180,200,250][Math.floor(Math.random()*8)];sim.p.t1=[3,4,5,6,7,8,9,10][Math.floor(Math.random()*8)];sim.p.guess=0;
    if(atLeast('honors'))sim.p.half=[3,4,5,5,6,7][Math.floor(Math.random()*6)];}
  },
- onTourExit(sim){sim.peek=false;},
+ onTourExit(sim){sim.peek=false;sim.cfv=null;},
  challenges:[
   {lvl:'bio',instant:true,q:'You have 200 mg of caffeine at 5 PM. Your half-life is 5 hours. About how much is still in you at 10 PM?',choices:['None','50 mg','100 mg','150 mg'],correct:2,explain:'5 PM to 10 PM is 5 hours: exactly one half-life. Half of 200 mg is 100 mg.'},
   {lvl:'bio',instant:true,q:'After two half-lives, how much of the caffeine is left?',choices:['None: two halves make a whole','A quarter','Half'],correct:1,explain:'The first half-life leaves 1/2. The second halves what is left: 1/2 × 1/2 = 1/4. Exponential decay never takes it all at once.'},
@@ -107,16 +152,16 @@ const SIM={
   {lvl:'ap',instant:true,q:'With a 5-hour half-life, what fraction of the caffeine leaves your body each hour?',choices:['10%','About 12.9%','20%','50% ÷ 5 = 10% every hour, then less'],correct:1,explain:'Each hour keeps (1/2)^(1/5) ≈ 0.871 of what was there, so about 12.9% leaves. It is the same fraction every hour: that is what makes it exponential.'}
  ],
  tour:[
-  {title:'The drink',text:'At 3 PM you have a drink with 150 mg of caffeine. The blue marker shows when, and the red curve shows how much is in your body over the next day.',pause:true,setup:sim=>{sim.peek=true;BioLab.setValues(sim,{dose:150,t1:7,half:5,two:false,guess:0});}},
-  {title:'One half-life',text:'With a half-life of 5 hours, half the caffeine is gone by 8 PM. You still have 75 mg.',pause:true},
-  {title:'Bedtime',text:'10 PM is 7 hours after the drink: 7 ÷ 5 = 1.4 half-lives. 150 × (1/2)^1.4 ≈ 57 mg is still in you when you go to bed.',pause:true},
-  {title:'Overnight',text:'It keeps fading while you sleep, but never all at once. At 7 AM, 16 hours later, about 16 mg is left.',pause:true},
-  {lvl:'honors',title:'Equal hours, equal ratios',text:'Hour by hour after the drink: 150, 130.6, 113.7, 99.0 mg. The drops shrink (19.4, 16.9, 14.7 mg), but every hour keeps the same 87% of the hour before. Constant ratios over equal time steps make it exponential, not linear.',pause:true},
-  {lvl:'honors',title:'Always falling, never zero',text:'The curve always decreases, and it is concave up: it drops fastest right after the drink, then more and more slowly. It gets closer and closer to 0 but never reaches it. At Deep dive that is a limit: as t → ∞, A(t) → 0.',pause:true},
-  {lvl:'ap',title:'Same model, other forms',text:'150(1/2)^(t/5) = 150(0.8706)ᵗ with t in hours, or 150(0.0359)^d with d in days, or 150e^(−kt) with the natural base e and k = ln 2 / 5 ≈ 0.1386. And drinking 2 hours earlier multiplies every later amount by (1/2)^(2/5) ≈ 0.758: a horizontal shift is a vertical dilation.',pause:true},
-  {lvl:'honors',title:'People differ',text:'Half-life varies widely from person to person, from roughly 2 to 10 hours. With a 2-hour half-life, 13 mg is left at bedtime. With a 10-hour half-life, 92 mg is.',pause:true,setup:sim=>BioLab.setValues(sim,{half:10})},
-  {lvl:'honors',title:'A second drink adds',text:'Back to 5 hours, and add an 80 mg drink at 6 PM. Each drink decays on its own curve and the amounts add: about 103 mg at bedtime.',pause:true,setup:sim=>BioLab.setValues(sim,{half:5,two:true,dose2:80,t2:4})},
-  {lvl:'ap',title:'Solve for time (Unit 2B preview)',text:'When will a 150 mg drink be down to 25 mg? Solve 150(1/2)^(t/5) = 25: t = 5 · log₂(6) ≈ 12.9 hours. Logarithms undo the exponent.',pause:true,setup:sim=>BioLab.setValues(sim,{two:false})}
+  {title:'The drink',text:'At <b>3 PM</b> you drink <b>150 mg</b> of caffeine, about a 16 oz coffee. The blue bar is all of it, in your body.',pause:true,setup:sim=>{sim.peek=true;sim.cfv='drink';BioLab.setValues(sim,{dose:150,t1:7,half:5,two:false,guess:0});}},
+  {title:'One half-life',text:'Follow the red curve for <b>5 hours</b>. At 8 PM the bar is <b>half</b> as tall: 75 mg. Half is gone; half is still working.',pause:true,setup:sim=>{sim.cfv='half';}},
+  {title:'Bedtime',text:'10 PM is 7 hours after the drink: <b>one half-life plus 0.4 more</b>. The bar at bedtime: 150 × (1/2)^1.4 ≈ <b>57 mg</b>, more than a third of the drink.',pause:true,setup:sim=>{sim.cfv='bed';}},
+  {title:'Overnight',text:'Every 5 hours the bar halves again: 150, 75, 37.5, 19. It never drops all at once. At <b>7 AM</b>, about <b>16 mg</b> is still in you.',pause:true,setup:sim=>{sim.cfv='night';}},
+  {lvl:'honors',title:'Equal hours, equal ratios',text:'Hour by hour: 150, 130.6, 113.7, 99.0 mg. The drops shrink, but every bar is <b>× 0.87</b> of the one before. Same ratio over equal steps: exponential, not linear.',pause:true,setup:sim=>{sim.cfv='ratio';}},
+  {lvl:'honors',title:'Always falling, never zero',text:'Zoom out to two days. The curve keeps falling, fast at first, then slower (concave up). It gets closer and closer to 0 but never reaches it: as t → ∞, A(t) → 0.',pause:true,setup:sim=>{sim.cfv='zoom';}},
+  {lvl:'ap',title:'Same model, other forms',text:'150(1/2)^(t/5) = 150(0.8706)ᵗ = 150e^(−0.1386t). The dashed curve is the same drink 2 hours earlier: a horizontal shift. Every later amount is <b>× 0.758</b>, a vertical dilation by (1/2)^(2/5).',pause:true,setup:sim=>{sim.cfv='shift';}},
+  {lvl:'honors',title:'People differ',text:'Half-life varies from about 2 to 10 hours. Green (2 h): <b>13 mg</b> at bedtime. Red (5 h): 57 mg. Purple (10 h): <b>92 mg</b>. Same drink, very different nights.',pause:true,setup:sim=>{sim.cfv='people';BioLab.setValues(sim,{half:5});}},
+  {lvl:'honors',title:'A second drink adds',text:'Add an 80 mg drink at 6 PM. Each drink fades on its own dashed curve, and the red total is their sum: about <b>103 mg</b> at bedtime.',pause:true,setup:sim=>{sim.cfv='two';BioLab.setValues(sim,{half:5,two:true,dose2:80,t2:4});}},
+  {lvl:'ap',title:'Solve for time (Unit 2B preview)',text:'When is a 150 mg drink down to 25 mg? Where the curve meets the dashed line: 150(1/2)^(t/5) = 25, so t = 5 · log₂(6) ≈ <b>12.9 hours</b>. Logarithms undo the exponent.',pause:true,setup:sim=>{sim.cfv='solve';BioLab.setValues(sim,{two:false});}}
  ],
  lab:{bio:'<p><b>Question:</b> How much does the time of your drink change your bedtime caffeine?</p><ol><li>Press <b>Skip the guess</b> if you have not locked in a guess.</li><li>Keep 150 mg. Set the drink to 2, 4, 6, 8 and 10 hours before bed. Record a trial each time.</li><li>Graph <b>Trials</b> with hours on x and bedtime caffeine on y.</li></ol><p>Write one sentence: what happens each time you add 5 hours?</p>',
   honors:'<p><b>Question:</b> How much does your half-life matter?</p><ol><li>Keep 150 mg at 7 hours before bed. Set the half-life to 2, 4, 6, 8 and 10 hours and record each.</li><li>Then add a second drink and record how the total changes.</li></ol><p>Explain why the amounts from two drinks simply add.</p>',

@@ -33,7 +33,8 @@ function makeSt(g){const c=cntOf(g),r=rng(c.G.seed),dots=[];
 const st=sim=>{if(!sim.st||sim.st.grade!==sim.p.grade)sim.st=makeSt(sim.p.grade);return sim.st;};
 const cnt=sim=>cntOf(sim.p.grade);
 const GS=sim=>(sim.tour&&sim.tour.on)?null:sim.gutS;
-const shown=sim=>!!(sim.p.reveal||st(sim).peek>=2||(GS(sim)&&GS(sim).g));
+const cpend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
+const shown=sim=>!!(sim.p.reveal||st(sim).peek>=2||(GS(sim)&&GS(sim).g))&&!cpend(sim);
 const lvOf=sim=>shown(sim)?2:(st(sim).peek||0);
 const pct=x=>(x*100).toFixed(1)+'%',d3=x=>x.toFixed(3);
 /* The things you can highlight. reg: Venn regions; given: the restricted group for a conditional. */
@@ -190,6 +191,16 @@ const SIM={
   if(s==='sgc')return `“Given club” shrinks the world to the ${c.C} club members. ${c.B} of them play a fall sport: <b>${pct(c.B/c.C)}</b>, against ${pct(c.S/c.N)} of the whole grade.`;
   return `Every student lands in exactly one cell of the table and one region of the Venn diagram: ${c.so} sport only, ${c.B} both, ${c.co} club only, ${c.ne} neither. <b>${c.so} + ${c.B} + ${c.co} = ${c.need} lunches.</b>`;},
  gut:{better:'lower',controls:['order'],lockLabel:'Lock in my order',mathLabel:'Show me the count',
+  calc:{d:1,tol:a=>Math.max(0.5,a*0.005),get unit(){return atLeast('honors')?'%':'lunches';},
+   prompt:{bio:sim=>{const c=cnt(sim);return `Use the circles: <b>${c.S}</b> ${c.G.w} in the sport circle, <b>${c.C}</b> in the club circle, and <b>${c.B}</b> in the overlap, where the circles cross. If you just add ${c.S} + ${c.C}, who gets counted twice? How many lunches do you really need?`;},
+    honors:sim=>{const c=cnt(sim);return `There are ${c.N} ${c.G.w}. ${c.S} play a fall sport, ${c.C} are in a club, ${c.B} do both. Pick one ${c.G.w.replace(/s$/,'')} at random. What is P(sport or club), as a percent?`;},
+    ap:sim=>{const c=cnt(sim);return `Of the ${c.S} ${c.G.w} who play a fall sport, ${c.B} are also in a club. What is P(club | sport), as a percent?`;}},
+   answer:sim=>{const c=cnt(sim);return atLeast('ap')?100*c.B/c.S:atLeast('honors')?100*c.need/c.N:c.need;},
+   hint:{bio:'The overlap students are inside both circles, so adding the two lists counts them twice. Subtract them once.',honors:'Find how many are in sport or club first: S + C − both. Then divide by everyone.',ap:'Given sport means: look only inside the sport circle.'},
+   steps(sim){const c=cnt(sim);
+    if(atLeast('ap'))return [`“Given sport” shrinks the world to the ${c.S} in the sport circle.`,`${c.B} of them are also in a club: ${c.B} ÷ ${c.S} = <b>${(100*c.B/c.S).toFixed(1)}%</b>.`];
+    if(atLeast('honors'))return [`Sport or club: ${c.S} + ${c.C} − ${c.B} = ${c.need}.`,`${c.need} ÷ ${c.N} = <b>${(100*c.need/c.N).toFixed(1)}%</b>.`,'P(A or B) = P(A) + P(B) − P(A and B).'];
+    return [`${c.S} + ${c.C} = ${c.S+c.C}, but the ${c.B} in the overlap are on both lists, so they were counted twice.`,`Take them out once: ${c.S+c.C} − ${c.B} = <b>${c.need} lunches</b>.`,`Order ${c.S+c.C} and you buy ${c.B} lunches nobody eats: $${c.B*10} wasted.`];}},
   ask:{bio:'How many lunches should you order? Drag the slider here to your gut number, then lock it in. Every student on either roster gets exactly one lunch.',
    honors:'Before you fill in the table: drag the slider here to the number of lunches you would order, then lock it in. Every student on either roster gets exactly one.'},
   lock(sim){const c=cnt(sim),o=sim.p.order;return {v:Math.abs(o-c.need),order:o,label:`${o} lunches`};},
