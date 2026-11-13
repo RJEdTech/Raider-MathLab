@@ -101,6 +101,13 @@ const SIM={
   ctx.fillStyle=PAL['s3'];ctx.beginPath();ctx.arc(X(b),Y(Rv(sim,b)),8,0,7);ctx.fill();ctx.strokeStyle=PAL['card'];ctx.lineWidth=2;ctx.stroke();
   const bl=`Break-even: ${fm(b)} bottles, ${usd0(Rv(sim,b))}`;ctx.font='700 '+(12*k)+'px '+FONT;const bw=ctx.measureText(bl).width+16*k;
   pill(ctx,bl,clamp(X(b)-bw/2-12,GL+bw/2+4,GR-bw/2),Y(Rv(sim,b))-22*k,PAL['s3'],'#fff',12*k);
+  /* Walkthrough: the substitution step writes the algebra on the graph, at the point it solves for. */
+  if(sim.tour&&sim.tour.on&&sim.tst===6){const L=[`C(n) = R(n)`,`${fm(p.F)} + ${fm(p.c)}n = ${fm(p.s)}n`,`${fm(p.F)} = ${fm(margin(sim))}n`,`n = ${fm(b)} bottles`];
+   ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(X(b),Y(Rv(sim,b)));ctx.lineTo(X(b),Y(0));ctx.stroke();ctx.setLineDash([]);
+   txt(ctx,'n = '+fm(b),X(b)+6,Y(0)-8,{s:13*k,w:800,c:PAL['rj']});
+   ctx.font='700 '+(13*k)+'px '+FONT;const w=Math.max(...L.map(t=>ctx.measureText(t).width))+24,h=L.length*18*k+16,x0=GR-w-12,y0=Y(0)-h-8;
+   rr(ctx,x0,y0,w,h,8);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;ctx.stroke();
+   L.forEach((t,i)=>txt(ctx,t,x0+12,y0+8+15*k+i*18*k,{s:13*k,w:i===3?800:700,c:i===3?PAL['rj']:PAL['cv-ink']}));}
  },
  narrate(sim){const p=sim.p,b=bep(sim),pf=prof(sim,p.sold);
   if(!shown(sim))return `The setup costs ${usd0(p.F)} before you sell a thing. Each bottle costs ${usd(p.c)} and sells for ${usd(p.s)}. <b>How many bottles until the money in catches the money out?</b>`;
@@ -126,13 +133,13 @@ const SIM={
   {lvl:'ap',instant:true,q:'At $14 the club expects to sell 40 bottles; at $18 it expects to sell only 28. Setup $240, cost $6. Which price makes more money?',choices:['$18: $96 profit against $80','$14: it sells 12 more bottles','They make the same'],correct:0,explain:'At $14: 40 × 8 − 240 = $80. At $18: 28 × 12 − 240 = $96. Fewer sales can still win when each one pays down more of the setup.'}
  ],
  tour:[
-  {title:'Money out, money in',text:'The printer charges $240 to set up your logo, plus $6 for each bottle. The club sells each bottle for $14. Before you sell anything, the club is already $240 in the hole.',pause:true,setup:sim=>BioLab.setValues(sim,{show:false,sold:40})},
-  {title:'Two lines',text:'Money out is a line that starts at $240 and climbs $6 a bottle. Money in starts at $0 and climbs $14 a bottle.',pause:true,setup:sim=>BioLab.setValues(sim,{show:true}),focus:sim=>sim.vis.plot},
-  {title:'Loss, then profit',text:'Money in climbs faster, so it catches up. To the left of the crossing the club is losing money (red). To the right it is making money (green).',pause:true},
-  {title:'The break-even point',text:'The lines cross at 30 bottles. There the club has taken in 30 × $14 = $420 and spent $240 + 30 × $6 = $420. Not a dollar lost, not a dollar made.',pause:true,focus:sim=>sim.vis.be},
-  {title:'Every bottle after that',text:'Each bottle past 30 adds $14 − $6 = $8 of profit. Sell 40 and the club makes $80. Sell only 20 and it loses $80.',pause:true,setup:sim=>BioLab.setValues(sim,{sold:40})},
-  {lvl:'honors',title:'Substitution',text:'Break-even means C(n) = R(n). Substitute: 240 + 6n = 14n. Subtract 6n: 240 = 8n. Divide: n = 30 bottles.',pause:true},
-  {lvl:'ap',title:'Elimination and a profit goal',text:'Subtract the cost equation from the revenue equation: R − C = 14n − 6n − 240 = 8n − 240. Set it to 0 for break-even (n = 30), or to $200 for a profit goal: 8n = 440, n = 55.',pause:true,setup:sim=>BioLab.setValues(sim,{sold:55})}
+  {title:'Money out, money in',text:'The printer charges $240 to set up your logo, plus $6 for each bottle. The club sells each bottle for $14. Before you sell anything, the club is already $240 in the hole.',pause:true,setup:sim=>{sim.tst=1;return BioLab.setValues(sim,{show:false,sold:40});}},
+  {title:'Two lines',text:'Money out is a line that starts at $240 and climbs $6 a bottle. Money in starts at $0 and climbs $14 a bottle.',pause:true,setup:sim=>{sim.tst=2;return BioLab.setValues(sim,{show:true});},focus:sim=>sim.vis.plot},
+  {title:'Loss, then profit',text:'Money in climbs faster, so it catches up. To the left of the crossing the club is losing money (red). To the right it is making money (green).',pause:true,setup:sim=>{sim.tst=3;}},
+  {title:'The break-even point',text:'The lines cross at 30 bottles. There the club has taken in 30 × $14 = $420 and spent $240 + 30 × $6 = $420. Not a dollar lost, not a dollar made.',pause:true,focus:sim=>sim.vis.be,setup:sim=>{sim.tst=4;}},
+  {title:'Every bottle after that',text:'Each bottle past 30 adds $14 − $6 = $8 of profit. Sell 40 and the club makes $80. Sell only 20 and it loses $80.',pause:true,setup:sim=>{sim.tst=5;return BioLab.setValues(sim,{sold:40});}},
+  {lvl:'honors',title:'Substitution',text:'Break-even means C(n) = R(n). Substitute: 240 + 6n = 14n. Subtract 6n: 240 = 8n. Divide: n = 30 bottles.',pause:true,setup:sim=>{sim.tst=6;}},
+  {lvl:'ap',title:'Elimination and a profit goal',text:'Subtract the cost equation from the revenue equation: R − C = 14n − 6n − 240 = 8n − 240. Set it to 0 for break-even (n = 30), or to $200 for a profit goal: 8n = 440, n = 55.',pause:true,setup:sim=>{sim.tst=7;return BioLab.setValues(sim,{sold:55});}}
  ],
  lab:{bio:'<p><b>Question:</b> How does the price change the break-even point?</p><ol><li>Show the lines. Record the break-even for prices of $10, $12, $14, $18 and $24.</li><li>Graph Trials with price on x and bottles to break even on y.</li></ol><p>Write one sentence: why does a small price change matter so much near $6?</p>',
   honors:'<p><b>Question:</b> Which matters more, the setup cost or the cost per bottle?</p><ol><li>Double the setup cost and record the break-even point.</li><li>Reset it, then raise the cost per bottle by $2 and record it again.</li></ol><p>Explain both changes using the slopes and intercepts of the two lines.</p>',
