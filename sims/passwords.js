@@ -12,6 +12,9 @@ const YR=365.25*86400;
 const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
 const sci=v=>{const e=Math.floor(Math.log10(v)+1e-9),m=v/Math.pow(10,e);return fmtNum(m,1)+' × 10'+String(e).split('').map(c=>SUP[c]).join('');};
 const big=n=>n<1e6?Math.round(n).toLocaleString('en-US'):sci(n);
+const supN=n=>String(n).split('').map(c=>SUP[c]).join('');
+/* Walkthrough stages: each step adds a layer, outlined in red when it is new. */
+function ring(ctx,x,y,w,h){ctx.save();ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;rr(ctx,x,y,w,h,8);ctx.stroke();ctx.restore();}
 function when(s){if(s<1)return 'under a second';if(s<120)return Math.round(s)+' seconds';if(s<7200)return Math.round(s/60)+' minutes';if(s<172800)return Math.round(s/3600)+' hours';
  const y=s/YR;if(y<1)return Math.round(s/86400)+' days';if(y<1e6){if(y<10)return fmtNum(y,1)+' years';const p=Math.pow(10,Math.floor(Math.log10(y))-2);return (Math.round(y/p)*p).toLocaleString('en-US')+' years';}if(y<1e9)return fmtNum(y/1e6,y<1e7?1:0)+' million years';if(y<1e12)return fmtNum(y/1e9,y<1e10?1:0)+' billion years';return sci(y)+' years';}
 /* Example strings: a seeded generator, so the cards stay put between redraws. */
@@ -62,6 +65,7 @@ const SIM={
   const b=bits(sim.p.len,sim.p.set);ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(ax.X(sim.p.len),ax.Y(b),6,0,7);ctx.fill();txt(ctx,'Yours: '+fmtNum(b,1)+' bits',ax.X(sim.p.len)+(sim.p.len>17?-10:10),ax.Y(b)-10,{s:12,w:700,c:PAL['rj'],a:sim.p.len>17?'right':'left'});},
  draw(sim,ctx,vdt,k){if(preG(sim)&&sim.cands&&sim.cands._rand)sim.cands=null;/* Guided always opens on the four cards the question describes */
   const C=cands(sim),G=sim.gutS,solved=!!(G&&G.m),tr=trueRanks(sim),r=rate(sim),ph=k>1.3;
+  const stg=(sim.tour&&sim.tour.on)?(sim.tst||1):99,T=stg<99;
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   const cw=380,gx=12,mx=14,ct=8,ch=ph?Math.min(205,12+80*k):96,gy=ph?12:8;
   C.forEach((c,i)=>{const x=mx+(i%2)*(cw+gx),top=ct+Math.floor(i/2)*(ch+gy),b=bits(c.L,c.set);
@@ -72,9 +76,22 @@ const SIM={
    if(best){ctx.font='800 '+(12*k)+'px '+FONT;const w=ctx.measureText('Strongest').width+14*k;pill(ctx,'Strongest',bx-w/2,by,PAL['s3'],'#fff',12*k);}
    const sx=x+14+28*k,avail=cw-(sx-x)-(mine?(best?160:80):best?80:0)*k-8,ms=Math.min(16*k,avail/(c.L*0.62));ctx.font='600 '+ms+'px ui-monospace,Menlo,Consolas,monospace';ctx.fillStyle=PAL['cv-ink'];ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText(c.s,sx,y1-2);
    txt(ctx,c.L+' chars · '+SETS[c.set].d,x+14,top+54*k,{s:12*k,c:PAL['cv-soft']});
-   if(solved)txt(ctx,(atLeast('honors')?fmtNum(b,1)+' bits · ':'')+when(secs(b,r))+(atLeast('honors')?'':' to try them all'),x+14,top+76*k,{s:13*k,w:700,c:PAL['s3']});});
+   if(solved&&!T)txt(ctx,(atLeast('honors')?fmtNum(b,1)+' bits · ':'')+when(secs(b,r))+(atLeast('honors')?'':' to try them all'),x+14,top+76*k,{s:13*k,w:700,c:PAL['s3']});
+   if(T&&stg>=2){const N=SETS[c.set].n,ly2=top+76*k;
+    const line=(ph&&stg>=5)?when(secs(b,r))+' to try them all':stg===2?N+supN(c.L)+' ≈ '+big(Math.pow(N,c.L))+' possible':c.L+' × '+fmtNum(Math.log2(N),2)+' = '+fmtNum(b,1)+' bits';
+    txt(ctx,line,x+14,ly2,{s:13*k,w:700,c:(ph&&stg>=5)?PAL['s3']:PAL['s2']});
+    if(stg===2||(ph&&(stg===3||stg===5)))ring(ctx,x+6,ly2-16*k,ph?cw-12:200,22*k);
+    if(stg>=3&&!ph){/* one block per character: its width is that character's bits */
+     const bx0=x+190,bw=2.2,by0=top+60,bh=18;ctx.fillStyle=PAL['line'];ctx.fillRect(bx0,by0,80*bw,bh);
+     for(let q=0;q<c.L;q++){const w=Math.log2(N)*bw;ctx.fillStyle=PAL['s2'];ctx.fillRect(bx0+q*w,by0,w,bh);ctx.strokeStyle=PAL['card'];ctx.lineWidth=1.5;ctx.strokeRect(bx0+q*w,by0,w,bh);}
+     txt(ctx,'one block per character',bx0,by0+bh+10,{s:10,c:PAL['cv-soft']});
+     if(stg===3)ring(ctx,x+6,top+61,cw-12,36);}
+    if(stg===4&&i<2)ring(ctx,x-4,top-4,cw+8,ch+8);}
+  });
   const bot=ct+2*ch+gy;
-  txt(ctx,solved?'Orange: your gut. Green: the strongest, by the math.':G&&G.g?'Locked in. Now let the math compare them.':'Which one holds out longest? Pick A, B, C or D.',400,bot+(ph?40:22),{s:(ph?11:12)*k,c:solved?PAL['cv-soft']:PAL['s4'],a:'center',w:700});
+  const phMsg=T&&ph&&stg===6?'“'+HUMAN.s+'”: '+fmtNum(HUMAN.L*Math.log2(94),0)+' bits by the formula, about '+Math.round(HUMAN.pat)+' by its real pattern':T&&ph&&stg===7?'18 random lowercase letters: '+fmtNum(bits(18,'lower'),1)+' bits':'';
+  if(phMsg){txt(ctx,phMsg,400,bot+40,{s:11*k,c:stg===6?PAL['s1']:PAL['rj'],a:'center',w:700});ring(ctx,20,bot+40-16*k,760,24*k);}
+  else txt(ctx,solved?'Orange: your gut. Green: the strongest, by the math.':G&&G.g?'Locked in. Now let the math compare them.':'Which one holds out longest? Pick A, B, C or D.',400,bot+(ph?40:22),{s:(ph?11:12)*k,c:solved?PAL['cv-soft']:PAL['s4'],a:'center',w:700});
   if(ph)return;
   /* time scale */
   const ly=bot+92;
@@ -82,13 +99,16 @@ const SIM={
   ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(LX0,ly);ctx.lineTo(LX1,ly);ctx.stroke();
   [[1,'1 second'],[YR,'1 year'],[1e6*YR,'1 million years'],[13.8e9*YR,'age of the universe']].forEach(([s,l],i)=>{const x=LXs(s);ctx.strokeStyle=PAL['cv-ink'];ctx.beginPath();ctx.moveTo(x,ly-6);ctx.lineTo(x,ly+6);ctx.stroke();txt(ctx,l,x,ly+(i%2?36:20),{s:12*k,c:PAL['cv-soft'],a:'center'});});
   ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;for(let e=LMIN;e<=LMAX;e+=1){const x=LXs(Math.pow(10,e));ctx.beginPath();ctx.moveTo(x,ly-3);ctx.lineTo(x,ly+3);ctx.stroke();}
-  if(solved)C.forEach((c,i)=>{const x=LXs(secs(bits(c.L,c.set),r));ctx.fillStyle=PAL['s3'];ctx.beginPath();ctx.arc(x,ly,5,0,7);ctx.fill();txt(ctx,LET[i],x,ly-10,{s:12*k,w:800,c:PAL['s3'],a:'center'});});
-  if(sim.mode==='guided')return;
-  const yx=LXs(secs(bits(sim.p.len,sim.p.set),r));ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.moveTo(yx,ly-3);ctx.lineTo(yx-7,ly-15);ctx.lineTo(yx+7,ly-15);ctx.closePath();ctx.fill();
+  if(solved||(T&&stg>=5))C.forEach((c,i)=>{const x=LXs(secs(bits(c.L,c.set),r));ctx.fillStyle=PAL['s3'];ctx.beginPath();ctx.arc(x,ly,5,0,7);ctx.fill();txt(ctx,LET[i],x,ly-10,{s:12*k,w:800,c:PAL['s3'],a:'center'});});
+  if(T&&stg===5)ring(ctx,LX0-14,ly-46,LX1-LX0+28,90);
+  if(sim.mode==='guided'&&!(T&&stg>=6))return;
+  if(!(T&&stg===6)){const yx=LXs(secs(bits(sim.p.len,sim.p.set),r));ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.moveTo(yx,ly-3);ctx.lineTo(yx-7,ly-15);ctx.lineTo(yx+7,ly-15);ctx.closePath();ctx.fill();
+   if(T&&stg===7){htxt(ctx,'Red marker: 18 random lowercase letters, '+fmtNum(bits(18,'lower'),1)+' bits',yx,ly+58,{s:12*k,w:700,c:PAL['rj'],a:'center'});ring(ctx,yx-175,ly-22,350,92);}}
   if(sim.p.human&&atLeast('honors')){const xf=LXs(secs(HUMAN.L*Math.log2(94),r)),xp=LXs(secs(HUMAN.pat,r));ctx.strokeStyle=PAL['s1'];ctx.setLineDash([4,4]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xp,ly+9);ctx.lineTo(xf,ly+9);ctx.stroke();ctx.setLineDash([]);
    ctx.fillStyle=PAL['s1'];[xf,xp].forEach(x=>{ctx.beginPath();ctx.arc(x,ly+9,5,0,7);ctx.fill();});
-   htxt(ctx,'“'+HUMAN.s+'” by the formula',Math.min(xf,LX1-100),ly+56,{s:12*k,w:700,c:PAL['s1'],a:'center'});htxt(ctx,'its real pattern',xp,ly+56,{s:12*k,w:700,c:PAL['s1'],a:'center'});}
-  else txt(ctx,'Red marker: the password you build with the sliders',LX0,ly+60,{s:12*k,c:PAL['rj']});},
+   htxt(ctx,'“'+HUMAN.s+'” by the formula',Math.min(xf,LX1-100),ly+56,{s:12*k,w:700,c:PAL['s1'],a:'center'});htxt(ctx,'its real pattern',xp,ly+56,{s:12*k,w:700,c:PAL['s1'],a:'center'});
+   if(T&&stg===6)ring(ctx,Math.min(xp,xf)-70,ly-2,Math.abs(xf-xp)+210,70);}
+  else if(!T)txt(ctx,'Red marker: the password you build with the sliders',LX0,ly+60,{s:12*k,c:PAL['rj']});},
  narrate(sim){const b=bits(sim.p.len,sim.p.set),N=SETS[sim.p.set].n;
   let s=`Your own password: ${sim.p.len} characters with ${N} choices each is ${N}^${sim.p.len} possibilities, or <b>${fmtNum(b,1)} bits</b>. Trying them all takes <b>${when(secs(b,rate(sim)))}</b>.`;
   if(sim.p.human&&atLeast('honors'))s+=` “${HUMAN.s}” scores ${fmtNum(HUMAN.L*Math.log2(94),1)} bits by the formula, but as a common word, a year and a symbol it is only about ${Math.round(HUMAN.pat)} bits.`;
@@ -121,13 +141,13 @@ const SIM={
   {lvl:'ap',instant:true,q:'A 128-bit encryption key at 10 billion guesses a second: about how long to try every key?',choices:['About 10⁹ years','About 10¹⁵ years','About 10²¹ years','About 10³⁸ years'],correct:2,explain:'2¹²⁸ ≈ 3.4 × 10³⁸ keys ÷ 10¹⁰ per second ≈ 3.4 × 10²⁸ seconds ≈ 1.1 × 10²¹ years, about 80 billion times the age of the universe.'}
  ],
  tour:[
-  {title:'Four passwords',text:'These four were made by a computer picking characters at random. A uses every keyboard symbol but is short. B is long but only lowercase. Which is strongest?',pause:true,setup:sim=>{sim.cands=null;BioLab.setValues(sim,{len:12,set:'lower',human:false});}},
-  {title:'Count the possibilities',text:'For each position, count the choices. B has 26 choices in each of 16 spots: 26¹⁶ ≈ 4.4 × 10²² possible passwords. A has 94⁸ ≈ 6.1 × 10¹⁵.',pause:true},
-  {title:'Bits: a log of the count',text:'Bits = log₂ of the count = length × log₂(choices). A: 8 × 6.55 ≈ 52 bits. B: 16 × 4.70 ≈ 75 bits. Each bit doubles the guesses.',pause:true},
-  {title:'Length beats complexity',text:'Adding a character multiplies the count by the whole set size. Switching to a bigger set only raises log₂ N a little. That is why B beats A.',pause:true,setup:sim=>BioLab.setValues(sim,{len:16,set:'lower'})},
-  {title:'Time to try them all',text:'Assume a stolen password file and 10 billion guesses a second. A: about 7 days. B: about 138,000 years. The red marker on the scale is your own build.',pause:true},
-  {lvl:'honors',title:'People are predictable',text:'“Sunflower2024!” is 14 characters, so the formula says 92 bits. But it is a common word, a year and a symbol. Attackers try those patterns first, so it is really closer to 28 bits: a fraction of a second.',pause:true,setup:sim=>BioLab.setValues(sim,{human:true})},
-  {lvl:'ap',title:'Solve for length',text:'How long must a lowercase password be to reach 80 bits? L = 80 ÷ log₂ 26 ≈ 17.0, so 18 letters to be safely past it.',pause:true,setup:sim=>BioLab.setValues(sim,{human:false,len:18})}
+  {title:'Four passwords',text:'These four were made by a computer picking characters at random. A uses every keyboard symbol but is short. B is long but only lowercase. Which is strongest?',pause:true,setup:sim=>{sim.tst=1;sim.cands=null;BioLab.setValues(sim,{len:12,set:'lower',human:false});}},
+  {title:'Count the possibilities',text:'For each position, count the choices. B has 26 choices in each of 16 spots: 26¹⁶ ≈ 4.4 × 10²² possible passwords. A has 94⁸ ≈ 6.1 × 10¹⁵. Each card now shows its count.',pause:true,setup:sim=>{sim.tst=2;}},
+  {title:'Bits: a log of the count',text:'Bits = log₂ of the count = length × log₂(choices). A: 8 × 6.55 ≈ 52 bits. B: 16 × 4.70 ≈ 75 bits. Each bit doubles the guesses. In the bars, each block is one character, and its width is that character’s bits.',pause:true,setup:sim=>{sim.tst=3;}},
+  {title:'Length beats complexity',text:'Adding a character multiplies the count by the whole set size. Switching to a bigger set only raises log₂ N a little. That is why B beats A: its blocks are thinner, but it has twice as many.',pause:true,setup:sim=>{sim.tst=4;return BioLab.setValues(sim,{len:16,set:'lower'});}},
+  {title:'Time to try them all',text:'Assume a stolen password file and 10 billion guesses a second. A: about 7 days. B: about 138,000 years. Each dot on the scale is one card; every tick is 10 times the last.',pause:true,setup:sim=>{sim.tst=5;}},
+  {lvl:'honors',title:'People are predictable',text:'“Sunflower2024!” is 14 characters, so the formula says 92 bits. But it is a common word, a year and a symbol. Attackers try those patterns first, so it is really closer to 28 bits: a fraction of a second. The dashed line on the scale is that gap.',pause:true,setup:sim=>{sim.tst=6;return BioLab.setValues(sim,{human:true});}},
+  {lvl:'ap',title:'Solve for length',text:'How long must a lowercase password be to reach 80 bits? L = 80 ÷ log₂ 26 ≈ 17.0, so 18 letters to be safely past it. The red marker is 18 lowercase letters.',pause:true,setup:sim=>{sim.tst=7;return BioLab.setValues(sim,{human:false,len:18,set:'lower'});}}
  ],
  lab:{bio:'<p><b>Question:</b> What helps more, a longer password or more kinds of characters?</p><ol><li>Set <b>characters allowed</b> to lowercase. Try lengths 8, 12, 16 and 20 and record each.</li><li>Set the length to 8. Try each character set and record each.</li><li>Graph <b>Trials</b> with length on x and bits on y.</li></ol><p>Write one sentence: which change added more bits?</p>',
   honors:'<p><b>Question:</b> How many bits does one more character add?</p><ol><li>For each character set, record the bits at 10 and 11 characters.</li><li>Subtract. Compare the difference with log₂ N.</li></ol><p>Explain why a person’s password can score high by the formula and still be weak.</p>',
