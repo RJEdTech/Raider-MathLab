@@ -72,6 +72,8 @@ const SIM={
   ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(ax.X(sim.p.car),ax.Y(f(sim.p.car)),6,0,7);ctx.fill();
   legend(ctx,box.L+10,box.T+8,[{label:'Most you can borrow, '+backPct(sim)+'% rule',color:PAL['g-line']}]);},
  draw(sim,ctx,vdt,k){const sh=shown(sim),G=GS(sim),big=k>1.3,fs=Math.min(k,1.6),P=sim.p;
+  /* Walkthrough stages: each step adds one layer, outlined in red when it is new (99 = everything). */
+  const stg=(sim.tour&&sim.tour.on)?(sim.tst||1):99,ring=(x,y,w,h)=>{ctx.save();ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;rr(ctx,x,y,w,h,8);ctx.stroke();ctx.restore();};
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   txt(ctx,$(P.inc)+' a month before taxes · other debts '+$(P.debt)+' · car '+$(P.car),20,28*Math.min(k,1.2),{s:14*fs,w:700});
   /* left: the inequality graph, car payment C across, housing payment H up */
@@ -85,33 +87,39 @@ const SIM={
   txt(ctx,'↑ Housing payment',gL+6,gT+4+10*fs,{s:12*fs,w:700,c:PAL['cv-soft']});
   sim.vis.graph=[gL-60,gT-10,gR-gL+70,gB-gT+40];
   if(sh){/* feasible region: H ≥ 0, C ≥ 0, H ≤ 0.28I (rule of thumb), H ≤ back − S − C */
-   const b=bk(sim)-P.debt,lim=c=>maxH(sim,c);ctx.fillStyle=PAL['s3'];ctx.globalAlpha=.16;ctx.beginPath();ctx.moveTo(X(0),Y(0));for(let c=0;c<=CMAX;c+=5)ctx.lineTo(X(c),Y(Math.min(ymax,lim(c))));ctx.lineTo(X(CMAX),Y(0));ctx.closePath();ctx.fill();ctx.globalAlpha=1;
-   if(rule(sim)==='rot'){ctx.strokeStyle=PAL['s2'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(X(0),Y(fr(sim)));ctx.lineTo(X(CMAX),Y(fr(sim)));ctx.stroke();
-    txt(ctx,'Rule 1: H ≤ '+$(fr(sim)),X(CMAX)-4,Y(fr(sim))-6,{s:12*fs,w:700,c:PAL['s2'],a:'right'});}
-   const c1=Math.min(CMAX,b);ctx.strokeStyle=PAL['s1'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(X(0),Y(Math.min(ymax,b)));ctx.lineTo(X(c1),Y(Math.max(0,b-c1)));ctx.stroke();
+   const b=bk(sim)-P.debt,lim=c=>maxH(sim,c);if(stg>=4){ctx.fillStyle=PAL['s3'];ctx.globalAlpha=stg===4?.3:.16;ctx.beginPath();ctx.moveTo(X(0),Y(0));for(let c=0;c<=CMAX;c+=5)ctx.lineTo(X(c),Y(Math.min(ymax,lim(c))));ctx.lineTo(X(CMAX),Y(0));ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+    if(stg===4)ring(gL-4,Y(Math.min(ymax,lim(0)))-10,gR-gL+8,gB-Y(Math.min(ymax,lim(0)))+14);}
+   if(rule(sim)==='rot'&&stg>=2){ctx.strokeStyle=PAL['s2'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(X(0),Y(fr(sim)));ctx.lineTo(X(CMAX),Y(fr(sim)));ctx.stroke();
+    txt(ctx,'Rule 1: H ≤ '+$(fr(sim)),X(CMAX)-4,Y(fr(sim))-6,{s:12*fs,w:700,c:PAL['s2'],a:'right'});
+    if(stg===2)ring(gL-4,Y(fr(sim))-24*fs,gR-gL+8,32*fs);}
+   const c1=Math.min(CMAX,b);if(stg>=3){ctx.strokeStyle=PAL['s1'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(X(0),Y(Math.min(ymax,b)));ctx.lineTo(X(c1),Y(Math.max(0,b-c1)));ctx.stroke();
    const lx=X(Math.min(CMAX*0.62,b*0.8)),ly=Y(Math.max(0,b-Math.min(CMAX*0.62,b*0.8)));
    txt(ctx,(big?'Rule 2':'Rule 2: H + '+$(P.debt)+' + C ≤ '+$(bk(sim))),lx+8,ly+16*fs,{s:12*fs,w:700,c:PAL['s1']});
+   if(stg===3){const y0=Y(Math.min(ymax,b)),y1=Y(Math.max(0,b-c1));ring(gL-4,Math.min(y0,y1)-10,X(c1)-gL+8+(big?0:40),Math.abs(y1-y0)+40*fs);}}
    /* the two answers */
-   ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(X(0),Y(H0(sim)),6,0,7);ctx.fill();
+   if(stg>=4){ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(X(0),Y(H0(sim)),6,0,7);ctx.fill();}
+   if(stg>=5){
    ctx.strokeStyle=PAL['rj'];ctx.setLineDash([4,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(P.car),gB);ctx.lineTo(X(P.car),Y(H1(sim)));ctx.stroke();ctx.setLineDash([]);
    ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(X(P.car),Y(H1(sim)),6,0,7);ctx.fill();
    pill(ctx,$(H1(sim))+' a month',clamp(X(P.car),gL+50*fs,gR-50*fs),Math.max(gT+12,Y(H1(sim))-18*fs),PAL['card2'],PAL['rj'],12*Math.min(k,1.4));
-   if(!big&&kink(sim)>0&&kink(sim)<CMAX)txt(ctx,'Free up to '+$(kink(sim)),X(kink(sim))+4,Y(fr(sim))+16,{s:12,c:PAL['cv-soft']});}
+    if(stg===5)ring(clamp(X(P.car),gL+50*fs,gR-50*fs)-70*fs,Math.max(gT+12,Y(H1(sim))-18*fs)-16*fs,140*fs,gB-Math.max(gT+12,Y(H1(sim))-18*fs)+20*fs);}
+   if(stg>=4&&!big&&kink(sim)>0&&kink(sim)<CMAX)txt(ctx,'Free up to '+$(kink(sim)),X(kink(sim))+4,Y(fr(sim))+16,{s:12,c:PAL['cv-soft']});}
   else{ctx.strokeStyle=PAL['rj'];ctx.setLineDash([4,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(P.car),gB);ctx.lineTo(X(P.car),gT+20);ctx.stroke();ctx.setLineDash([]);
    const m=G&&G.g,lines=m?['Work out the most you can pay','for housing to see the graph']:['Rule 1: housing ≤ 28% of income','Rule 2: housing + all other debts','≤ '+backPct(sim)+'% of income'];
    lines.forEach((s,i)=>txt(ctx,s,(gL+gR)/2+20,gT+(gB-gT)*0.38+i*18*fs,{s:13*fs,c:PAL['cv-soft'],a:'center'}));}
   /* right: the two home loans */
   const bL=big?520:540,bR=780,bT=gT+12*fs,bB=gB,bw=(bR-bL)/2-18,top=Math.max(1,L0(sim))*1.08,BY=v=>bB-(bB-bT-34*fs)*v/top;
   [[L0(sim),PAL['s4'],big?'No car':'No car payment',bL],[L1(sim),PAL['rj'],big?'With car':'With '+$(P.car)+' car',bL+bw+36]].forEach(([v,col,l,x])=>{
-   if(sh){ctx.fillStyle=col;rr(ctx,x,BY(v),bw,bB-BY(v),5);ctx.fill();txt(ctx,$(v),x+bw/2,BY(v)-7,{s:13*fs,w:700,a:'center'});}
+   if(sh&&stg>=6){ctx.fillStyle=col;rr(ctx,x,BY(v),bw,bB-BY(v),5);ctx.fill();txt(ctx,$(v),x+bw/2,BY(v)-7,{s:13*fs,w:700,a:'center'});}
    else{ctx.strokeStyle=PAL['line'];ctx.lineWidth=2;ctx.setLineDash([5,4]);rr(ctx,x,bT+34*fs,bw,bB-bT-34*fs,5);ctx.stroke();ctx.setLineDash([]);txt(ctx,'?',x+bw/2,(bT+bB)/2+20,{s:26*fs,w:700,c:PAL['cv-soft'],a:'center'});}
    txt(ctx,l,x+bw/2,bB+15*fs,{s:12*fs,c:PAL['cv-soft'],a:'center'});});
   txt(ctx,'Home loan you can get',(bL+bR)/2,gT,{s:12*fs,w:700,c:PAL['cv-soft'],a:'center'});
-  if(sh&&diff(sim)>0){txt(ctx,'−'+$(diff(sim)),bL+bw+36+bw/2,BY(L1(sim))-24*fs,{s:13*fs,w:700,c:PAL['rj'],a:'center'});}
+  if(stg===6)ring(bL-10,bT-6,bR-bL+20,bB-bT+28*fs);
+  if(sh&&stg>=6&&diff(sim)>0){txt(ctx,'−'+$(diff(sim)),bL+bw+36+bw/2,BY(L1(sim))-24*fs,{s:13*fs,w:700,c:PAL['rj'],a:'center'});}
   if(G&&G.g){const gy=BY(Math.max(0,L0(sim)-G.g.guess)),x2=bL+bw+36;
-   if(sh){ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2.5;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(x2-8,gy);ctx.lineTo(x2+bw+8,gy);ctx.stroke();ctx.setLineDash([]);
+   if(sh&&stg>=6){ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2.5;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(x2-8,gy);ctx.lineTo(x2+bw+8,gy);ctx.stroke();ctx.setLineDash([]);
     if(!big&&Math.abs(gy-BY(L1(sim)))>40)txt(ctx,'Your gut',x2+bw/2,gy-6,{s:12*fs,w:700,c:PAL['s4'],a:'center'});}
-   else if(!big)pill(ctx,'Your gut: '+$(G.g.guess)+' less',(bL+bR)/2,bT+18*fs,PAL['card2'],PAL['s4'],12*Math.min(k,1.4));}},
+   else if(!big&&!sh)pill(ctx,'Your gut: '+$(G.g.guess)+' less',(bL+bR)/2,bT+18*fs,PAL['card2'],PAL['s4'],12*Math.min(k,1.4));}},
  narrate(sim){const P=sim.p;
   if(!shown(sim))return `You earn ${$(P.inc)} a month before taxes and already pay ${$(P.debt)} a month on other debts. The lender’s rules: housing at most 28% of income, and housing plus all other debts at most ${backPct(sim)}%. <b>How much smaller is your home loan with a ${$(P.car)} car payment?</b>`;
   const d=diff(sim),dh=H0(sim)-H1(sim);
@@ -156,14 +164,14 @@ const SIM={
   {lvl:'ap',instant:true,q:'Which expression is the loan L that a monthly payment M supports at monthly rate i for n months?',choices:['L = M·n','L = M(1 − (1 + i)⁻ⁿ)/i','L = M(1 + i)ⁿ'],correct:1,explain:'It is the loan payment formula M = Li/(1 − (1 + i)⁻ⁿ) solved for L: the present value of n equal payments.'}
  ],
  tour:[
-  {title:'Your first job',text:'You earn $6,000 a month before taxes, $72,000 a year. You already pay $300 a month on a student loan.',pause:true,setup:sim=>BioLab.setValues(sim,{inc:6000,debt:300,car:530,rule:'rot',rate:7.18,ti:500,reveal:true}),focus:[0,0,800,48]},
-  {title:'Rule 1',text:'Housing can be at most 28% of income: H ≤ 0.28 × $6,000 = $1,680. That is the flat blue line. A car payment does not change it.',pause:true,focus:[0,40,500,410]},
-  {title:'Rule 2',text:'Housing plus all other debts can be at most 36%: H + $300 + C ≤ $2,160. So H ≤ $1,860 − C, the red line that slopes down.',pause:true,focus:[0,40,500,410]},
-  {title:'Both rules at once',text:'The shaded region passes both rules. Its top edge is flat until a $180 car payment, where the lines cross. Past that, every dollar of car payment is a dollar less for housing.',pause:true,focus:[0,40,500,410]},
-  {title:'A $530 car payment',text:'At C = $530, rule 2 allows H ≤ $1,330, which is less than $1,680. So the most you can pay for housing drops by $350 a month.',pause:true,focus:[0,40,500,410]},
-  {title:'In home-loan dollars',text:'At 7.18% for 30 years, each $1 a month supports about $147.62 of loan. After $500 for tax and insurance, $1,180 supports $174,186 and $830 supports $122,521: $51,665 less.',pause:true,focus:[500,40,300,410]},
-  {lvl:'honors',title:'A lender’s maximum',text:'Some lenders allow total debt up to 50% of income. Then there is no flat part: the $530 car costs $530 a month of housing, about $78,236 of loan.',pause:true,setup:sim=>BioLab.setValues(sim,{rule:'lender',reveal:true})},
-  {lvl:'ap',title:'Where 147.62 comes from',text:'Solve M = Li/(1 − (1 + i)⁻ⁿ) for L: L = M(1 − (1 + i)⁻ⁿ)/i. With i = 7.18% ÷ 12 and n = 360, the factor is 147.62.',pause:true,setup:sim=>BioLab.setValues(sim,{rule:'rot',reveal:true})}
+  {title:'Your first job',text:'You earn $6,000 a month before taxes, $72,000 a year. You already pay $300 a month on a student loan.',pause:true,setup:sim=>{sim.tst=1;return BioLab.setValues(sim,{inc:6000,debt:300,car:530,rule:'rot',rate:7.18,ti:500,reveal:true});},focus:[0,0,800,48]},
+  {title:'Rule 1',text:'Housing can be at most 28% of income: H ≤ 0.28 × $6,000 = $1,680. That is the flat blue line. A car payment does not change it.',pause:true,setup:sim=>{sim.tst=2;},focus:[0,40,500,410]},
+  {title:'Rule 2',text:'Housing plus all other debts can be at most 36%: H + $300 + C ≤ $2,160. So H ≤ $1,860 − C, the red line that slopes down.',pause:true,setup:sim=>{sim.tst=3;},focus:[0,40,500,410]},
+  {title:'Both rules at once',text:'The shaded region passes both rules. Its top edge is flat until a $180 car payment, where the lines cross. Past that, every dollar of car payment is a dollar less for housing.',pause:true,setup:sim=>{sim.tst=4;},focus:[0,40,500,410]},
+  {title:'A $530 car payment',text:'At C = $530, rule 2 allows H ≤ $1,330, which is less than $1,680. So the most you can pay for housing drops by $350 a month.',pause:true,setup:sim=>{sim.tst=5;},focus:[0,40,500,410]},
+  {title:'In home-loan dollars',text:'At 7.18% for 30 years, each $1 a month supports about $147.62 of loan. After $500 for tax and insurance, $1,180 supports $174,186 and $830 supports $122,521: $51,665 less.',pause:true,setup:sim=>{sim.tst=6;},focus:[500,40,300,410]},
+  {lvl:'honors',title:'A lender’s maximum',text:'Some lenders allow total debt up to 50% of income. Then there is no flat part: the $530 car costs $530 a month of housing, about $78,236 of loan.',pause:true,setup:sim=>{sim.tst=7;return BioLab.setValues(sim,{rule:'lender',reveal:true});}},
+  {lvl:'ap',title:'Where 147.62 comes from',text:'Solve M = Li/(1 − (1 + i)⁻ⁿ) for L: L = M(1 − (1 + i)⁻ⁿ)/i. With i = 7.18% ÷ 12 and n = 360, the factor is 147.62.',pause:true,setup:sim=>{sim.tst=8;return BioLab.setValues(sim,{rule:'rot',reveal:true});}}
  ],
  lab:{bio:'<p><b>Question:</b> How does the size of the car payment change the home loan you can get?</p><ol><li>Turn on <b>Show the answer now</b>. Keep $6,000 income and $300 of other debts.</li><li>Record a trial with car payments of $0, $100, $200, $300, $500 and $700.</li><li>Graph <b>Trials</b> with the car payment on x and the home loan with the car on y.</li></ol><p>Write one sentence: where does the graph start to fall, and why there?</p>',
   honors:'<p><b>Question:</b> How does the lender’s limit change the cost of a car payment?</p><ol><li>With a $530 car, record the home loan under the 28/36 rule and under the 50% lender maximum.</li><li>Repeat for incomes of $4,500, $6,000 and $8,000.</li></ol><p>Explain with the two inequalities why the car costs more house under one limit than the other.</p>',
