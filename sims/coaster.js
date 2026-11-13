@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const {clamp,txt,pill,PAL,FONT,axes,bars,legend,atLeast,fmtNum}=BioLab.h;
+const {clamp,txt,pill,rr,PAL,FONT,axes,bars,legend,atLeast,fmtNum}=BioLab.h;
 /* Site plans: the track leaves H ft up, partway down the first drop, at x = 0, enters a tunnel at r1 and leaves it at r2,
    climbs a hill, then swoops down to skim a pond at s: it must touch the water and rise again without going in. */
 const DESIGNS={A:{H:90,r:[20,60,140]},B:{H:80,r:[20,55,130]},C:{H:100,r:[25,70,155]}};
@@ -129,7 +129,17 @@ const SIM={
   if(hon){const yv=track(sim,p.probe);if(yv>-45&&yv<110){ctx.strokeStyle=PAL['s5'];ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(PX(p.probe),PY(0));ctx.lineTo(PX(p.probe),PY(yv));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=PAL['s5'];ctx.beginPath();ctx.arc(PX(p.probe),PY(yv),4,0,7);ctx.fill();}}
   if(blind)pill(ctx,'Aim for all 3 blue circles',600,PY(96),PAL['s2'],'#fff',14*Math.min(k,1.3));
   else pill(ctx,'Worst miss: '+f1(worst(sim))+' ft',600,PY(96),worst(sim)<0.05?PAL['s3']:PAL['rj'],'#fff',14*k);
-  if(same)txt(ctx,'Your gut: dashed orange',600,PY(96)+26*k,{s:12*k,w:700,c:PAL['s4'],a:'center'});},
+  if(same)txt(ctx,'Your gut: dashed orange',600,PY(96)+26*k,{s:12*k,w:700,c:PAL['s4'],a:'center'});
+  /* Walkthrough layers: steps that explain the formula draw what they name, outlined in red. */
+  const stg=(sim.tour&&sim.tour.on)?(sim.tst||0):0,rg=(x,y,w,h)=>{ctx.save();ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;rr(ctx,x,y,w,h,8);ctx.stroke();ctx.restore();};
+  if(stg===4)D.r.slice(0,2).forEach(x=>{rg(PX(x)-26*k,PY(0)-20*k,52*k,40*k);pill(ctx,'(x − '+x+')',PX(x),PY(0)-34*k,PAL['rj'],'#fff',13*k);});
+  if(stg===5){const x=D.r[2],y0=PY(0);rg(PX(x)-70*k,y0-58*k,140*k,74*k);pill(ctx,'(x − '+x+')²',PX(x),y0-74*k,PAL['rj'],'#fff',13*k);
+   txt(ctx,'+',PX(x)-46*k,y0-24*k,{s:20*k,w:800,c:PAL['rj'],a:'center'});txt(ctx,'+',PX(x)+46*k,y0-24*k,{s:20*k,w:800,c:PAL['rj'],a:'center'});txt(ctx,'0',PX(x),y0+6*k,{s:13*k,w:800,c:PAL['rj'],a:'center'});}
+  if(stg===7){/* both ends rise, and the 3 turning points */
+   [[2,track(sim,2)],[END,track(sim,END)]].forEach(([x,y],i)=>{const X0=PX(x),Y0=clamp(PY(y),PY(118),PY(-40));ctx.strokeStyle=PAL['rj'];ctx.fillStyle=PAL['rj'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(X0,Y0+34*k);ctx.lineTo(X0,Y0);ctx.stroke();ctx.beginPath();ctx.moveTo(X0-8,Y0+8);ctx.lineTo(X0,Y0-4);ctx.lineTo(X0+8,Y0+8);ctx.closePath();ctx.fill();});
+   pill(ctx,'ax⁴ with a > 0: both ends rise',400,PY(-34),PAL['rj'],'#fff',13*k);
+   const tp=[];let prev=null;for(let x=1;x<=Math.min(END,170);x+=0.5){const d=track(sim,x+0.25)-track(sim,x-0.25);if(prev!==null&&Math.sign(d)!==Math.sign(prev)&&d!==0)tp.push(x);prev=d;}
+   tp.slice(0,3).forEach((x,i)=>{rg(PX(x)-16*k,PY(track(sim,x))-16*k,32*k,32*k);txt(ctx,'turn '+(i+1),PX(x),PY(track(sim,x))+(i===1?-24:34)*k,{s:12*k,w:800,c:PAL['rj'],a:'center'});});}},
  onClick(sim,x,y){const fx=(x-OX)/S,fy=(GY-y)/S,p=sim.p;const d1=Math.hypot(fx-p.x1,fy-p.y1),d2=Math.hypot(fx-p.x2,fy-p.y2);
   const r=v=>Math.round(v*2)/2;if(d1<=d2)BioLab.setValues(sim,{x1:clamp(r(fx),10,80),y1:clamp(r(fy),-30,20)});else BioLab.setValues(sim,{x2:clamp(r(fx),90,170),y2:clamp(r(fy),-10,30)});},
  narrate(sim){const D=des(sim),m=misses(sim),w=Math.max(...m),i=m.indexOf(w),s=D.r[2];
@@ -165,15 +175,15 @@ const SIM={
   {lvl:'ap',instant:true,q:'What is the lowest degree of a polynomial that crosses the x-axis at two places and touches it at one more?',choices:['3','4','5','6'],correct:1,explain:'Two crossings give two factors and a touch gives a squared factor: 1 + 1 + 2 = 4. A degree 4 polynomial also has room for the 3 turning points the track needs: the dip, the hill and the skim.'}
  ],
  tour:[
-  {title:'The marks',text:{bio:'This is one section of your coaster, seen from the side. The level fixes the marks: the section starts 90 ft up, partway down the first drop, goes into a tunnel 20 ft along, comes out at 60 ft, then swoops down to skim the pond at 140 ft.',honors:'This is one section of your coaster, seen from the side. The level fixes the marks: (0, 90) where the section starts, partway down the first drop, a tunnel from x = 20 to x = 60, and a skim of the pond at x = 140.'},focus:[10,40,780,520],pause:true,setup:sim=>BioLab.setValues(sim,{design:'A',alt:false,x1:50,y1:-5,x2:125,y2:10})},
-  {title:'Shape it with two low points',text:'The red track is one smooth curve that always starts at the section’s first mark, 90 ft up. You shape the rest with two handles: the bottom of the dip in the tunnel, and the low point of the swoop at the end. Right now it misses the marks.',pause:true,focus:sim=>[PX(sim.p.x1)-40,PY(30)-20,PX(sim.p.x2)-PX(sim.p.x1)+80,PY(sim.p.y1)-PY(30)+60]},
-  {title:'Close, but not exact',text:'Here is a good eyeball try: the swoop right on the pond at 140 ft, and the dip 15 ft down at 35 ft along. It looks right, but the track misses the tunnel exit by 3.6 ft. In steel and concrete, that is a lot.',pause:true,setup:sim=>BioLab.setValues(sim,{x1:35,y1:-15,x2:140,y2:0})},
-  {title:'Crossings give factors',text:'The track passes through ground level at x = 20 and x = 60. Each crossing is a zero with a factor of its own: (x − 20) and (x − 60).',pause:true},
-  {title:'A touch gives a squared factor',text:'At the pond the track must touch the water and rise again. A squared factor, (x − 140)², does that: it is 0 at 140 and positive on both sides. So the track is y = a(x − 20)(x − 60)(x − 140)².',pause:true},
-  {title:'The start height gives a',text:'At x = 0 the track must be 90 ft up: a(−20)(−60)(−140)² = 23,520,000a = 90, so a ≈ 0.00000383. Now every mark is hit exactly.',pause:true,setup:sim=>BioLab.setValues(sim,turns(DESIGNS.A))},
-  {lvl:'honors',title:'Degree and end behavior',text:'Multiply it out and the leading term is ax⁴: degree 4 with a > 0, so both ends rise, as the faint extension shows. Past the pond the track climbs again. A degree 4 curve has at most 3 turning points: here the dip, the hill and the skim.',pause:true},
-  {lvl:'honors',title:'Cross instead of touch',text:'The purple curve uses (x − 140) instead of (x − 140)², through the same start and zeros. It is degree 3, and to start 90 ft up its a must be negative. So it crosses the water level at 140 and dives: the train ends up in the pond.',pause:true,setup:sim=>BioLab.setValues(sim,{alt:true})},
-  {lvl:'ap',title:'Turning points from the derivative',text:'For Plan A, y′ = a(x − 140)(4x² − 520x + 13,600). It is 0 at x = 140 (the skim) and where x² − 130x + 3,400 = 0: x = (130 ± √3,300)/2. So the dip is at x ≈ 36.3 (15.9 ft underground) and the hill at x ≈ 93.7 (20.4 ft up).',pause:true,setup:sim=>BioLab.setValues(sim,{alt:false})}
+  {title:'The marks',text:{bio:'This is one section of your coaster, seen from the side. The level fixes the marks: the section starts 90 ft up, partway down the first drop, goes into a tunnel 20 ft along, comes out at 60 ft, then swoops down to skim the pond at 140 ft.',honors:'This is one section of your coaster, seen from the side. The level fixes the marks: (0, 90) where the section starts, partway down the first drop, a tunnel from x = 20 to x = 60, and a skim of the pond at x = 140.'},focus:[10,40,780,520],pause:true,setup:sim=>{sim.tst=1;return BioLab.setValues(sim,{design:'A',alt:false,x1:50,y1:-5,x2:125,y2:10});}},
+  {title:'Shape it with two low points',text:'The red track is one smooth curve that always starts at the section’s first mark, 90 ft up. You shape the rest with two handles: the bottom of the dip in the tunnel, and the low point of the swoop at the end. Right now it misses the marks.',pause:true,focus:sim=>[PX(sim.p.x1)-40,PY(30)-20,PX(sim.p.x2)-PX(sim.p.x1)+80,PY(sim.p.y1)-PY(30)+60],setup:sim=>{sim.tst=2;}},
+  {title:'Close, but not exact',text:'Here is a good eyeball try: the swoop right on the pond at 140 ft, and the dip 15 ft down at 35 ft along. It looks right, but the track misses the tunnel exit by 3.6 ft. In steel and concrete, that is a lot.',pause:true,setup:sim=>{sim.tst=3;return BioLab.setValues(sim,{x1:35,y1:-15,x2:140,y2:0});}},
+  {title:'Crossings give factors',text:'The track passes through ground level at x = 20 and x = 60. Each crossing is a zero with a factor of its own: (x − 20) and (x − 60).',pause:true,setup:sim=>{sim.tst=4;}},
+  {title:'A touch gives a squared factor',text:'At the pond the track must touch the water and rise again. A squared factor, (x − 140)², does that: it is 0 at 140 and positive on both sides. So the track is y = a(x − 20)(x − 60)(x − 140)².',pause:true,setup:sim=>{sim.tst=5;}},
+  {title:'The start height gives a',text:'At x = 0 the track must be 90 ft up: a(−20)(−60)(−140)² = 23,520,000a = 90, so a ≈ 0.00000383. Now every mark is hit exactly.',pause:true,setup:sim=>{sim.tst=6;return BioLab.setValues(sim,turns(DESIGNS.A));}},
+  {lvl:'honors',title:'Degree and end behavior',text:'Multiply it out and the leading term is ax⁴: degree 4 with a > 0, so both ends rise, as the faint extension shows. Past the pond the track climbs again. A degree 4 curve has at most 3 turning points: here the dip, the hill and the skim.',pause:true,setup:sim=>{sim.tst=7;}},
+  {lvl:'honors',title:'Cross instead of touch',text:'The purple curve uses (x − 140) instead of (x − 140)², through the same start and zeros. It is degree 3, and to start 90 ft up its a must be negative. So it crosses the water level at 140 and dives: the train ends up in the pond.',pause:true,setup:sim=>{sim.tst=8;return BioLab.setValues(sim,{alt:true});}},
+  {lvl:'ap',title:'Turning points from the derivative',text:'For Plan A, y′ = a(x − 140)(4x² − 520x + 13,600). It is 0 at x = 140 (the skim) and where x² − 130x + 3,400 = 0: x = (130 ± √3,300)/2. So the dip is at x ≈ 36.3 (15.9 ft underground) and the hill at x ≈ 93.7 (20.4 ft up).',pause:true,setup:sim=>{sim.tst=9;return BioLab.setValues(sim,{alt:false});}}
  ],
  onTourExit(sim){BioLab.setValues(sim,{alt:false});},
  lab:{bio:'<p><b>Question:</b> How close can you get by eye?</p><ol><li>For Plan A, shape the track by eye. Record a trial with your worst miss.</li><li>Try two more times and record each.</li><li>Then do the same for Plan B.</li></ol><p>Write one sentence: how does the track have to behave differently at the pond than at a tunnel mouth?</p>',
