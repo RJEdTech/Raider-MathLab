@@ -1,0 +1,36 @@
+BioLab.addReview({
+yearlygrowth:{
+ questions:[
+  {id:'double10',kind:'real',lvl:'bio',
+   q:'An index fund doubled, from $1,000 to $2,000, in 10 years. What steady yearly return does that mean, to two decimal places?',
+   num:{ans:7.18,tol:0.02,unit:'%'},
+   steps:['Total growth factor: 2,000 ÷ 1,000 = 2.','Yearly factor: ¹⁰√2 = 2^(1/10) ≈ 1.0718.','1.0718 − 1 = 0.0718, so about 7.18% a year.'],
+   lab:{set:{cs:'savings',A:1000,B:2000,n:10,reveal:true},look:'Read <b>Steady yearly increase</b>.'},verify:[['rate',7.177,0.01]]},
+  {id:'rent',kind:'real',lvl:'bio',
+   q:'Rent went from $1,200 to $1,900 a month in 8 years. A news story says rent “rose 7.3% a year.” What is wrong with that?',
+   choices:['Nothing: 58% ÷ 8 = 7.3%','It ignores compounding; the steady rate is about 5.9% a year','The real rate is higher than 7.3%','You can’t find a yearly rate from two numbers'],correct:1,
+   steps:['The total change is 1,900 ÷ 1,200 = 1.583, a 58% increase.','7.3% a year for 8 years would multiply rent by 1.073⁸ ≈ 1.76, a 76% increase.','The steady rate is ⁸√1.583 − 1 ≈ 5.9% a year.'],
+   lab:{set:{cs:'rent',A:1200,B:1900,n:8,reveal:true},look:'Compare the bars with the dashed line.'},verify:[['rate',5.912,0.01]]},
+  {id:'root4',kind:'test',lvl:'bio',
+   q:'Which expression equals the 4th root of 81?',
+   choices:['81 ÷ 4','81⁴','81^(1/4)','4 × 81'],correct:2,
+   steps:['The nth root of x is x^(1/n).','So ⁴√81 = 81^(1/4).','81^(1/4) = 3, because 3⁴ = 81.']},
+  {id:'frac',kind:'test',lvl:'honors',
+   q:'Simplify 27^(2/3).',
+   num:{ans:9,tol:0,unit:''},
+   steps:['x^(m/n) = (ⁿ√x)ᵐ.','∛27 = 3.','3² = 9.']},
+  {id:'solve',kind:'test',lvl:'honors',
+   q:'Solve 15,000 = 9,000(1 + r)¹² for r, as a percent to two decimal places.',
+   num:{ans:4.35,tol:0.02,unit:'%'},
+   steps:['Divide: (1 + r)¹² = 15,000 ÷ 9,000 = 1.6667.','Raise both sides to the 1/12 power: 1 + r = 1.6667^(1/12) ≈ 1.0435.','r ≈ 0.0435, or 4.35% a year.'],
+   lab:{set:{cs:'tuition',A:9000,B:15000,n:12,reveal:true},look:'Read <b>Steady yearly increase</b>.'},verify:[['rate',4.352,0.01]]},
+  {id:'negexp',kind:'test',lvl:'honors',
+   q:'Which is equal to 32^(−2/5)?',
+   choices:['−4','1/4','4','−1/4'],correct:1,
+   steps:['A negative exponent means a reciprocal: 32^(−2/5) = 1 ÷ 32^(2/5).','32^(2/5) = (⁵√32)² = 2² = 4.','So 32^(−2/5) = 1/4.']},
+  {id:'dbl',kind:'test',lvl:'ap',
+   q:'A price grows 6% a year. To one decimal place, how many years until it doubles?',
+   num:{ans:11.9,tol:0.05,unit:'years'},
+   steps:['1.06ᵗ = 2.','t = ln 2 ÷ ln 1.06 = 0.6931 ÷ 0.05827.','≈ 11.9 years (the rule of 72 gives 72 ÷ 6 = 12).']}
+ ]}
+});

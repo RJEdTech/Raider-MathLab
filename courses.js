@@ -10,7 +10,7 @@ BioLab.COURSES = [
    {n:'Unit 5',t:'Systems of equations and inequalities',ids:['breakeven','budget','carhouse','schedule'],note:'Honors: Chapter 2 (inequalities) and Chapter 5 (systems).'},
    {n:'Unit 6',t:'Polynomials',ids:['areamodel'],note:'Honors: Chapter 7.'},
    {n:'Unit 7',t:'Graphing and solving quadratics',ids:['freethrow','ticketprice'],note:'Honors: Chapters 8 and 9.'},
-   {n:'Unit 8',t:'Exponents and radicals',ids:['datasize','skidmarks','billions'],note:'Honors: Chapter 6. Some sections take this unit before quadratics.'}
+   {n:'Unit 8',t:'Exponents and radicals',ids:['datasize','skidmarks','billions','yearlygrowth'],note:'Honors: Chapter 6. Some sections take this unit before quadratics.'}
   ]},
  {id:'geo',finals:[{"t": "Geometry fall final review", "units": [0, 1, 2, 3], "note": "Covers Units 1 to 4, through triangles. Your teacher decides what is on the final, so check the study guide."}, {"t": "Honors Geometry fall final review", "units": [0, 1, 2, 3, 9], "note": "Covers basics, logic, parallel lines, triangles and similarity, and probability. Your teacher decides what is on the final, so check the study guide."}],name:'Geometry',blurb:'Geometry and Honors Geometry, in the order your class covers it.',
   units:[
@@ -31,7 +31,7 @@ BioLab.COURSES = [
    {n:'Unit 1',t:'Parent functions and transformations',ids:['pondday','photofilter']},
    {n:'Unit 2',t:'Quadratic functions',ids:['dish','ticketprice','freethrow']},
    {n:'Unit 3',t:'Polynomials',ids:['coaster','openbox']},
-   {n:'Unit 4',t:'Radicals and rational exponents',ids:['skidmarks']},
+   {n:'Unit 4',t:'Radicals and rational exponents',ids:['skidmarks','yearlygrowth']},
    {n:'Unit 5',t:'Exponential and logarithmic functions',ids:['creditcard','startearly','mortgageterm','caffeine','decibels','passwords','stickernet','onepercent','povertypremium'],note:'Honors: Chapter 6.'},
    {n:'Unit 6',t:'Rational functions',ids:['splitcost','sharedwork'],note:'Algebra 2 only.'},
    {n:'Trig',t:'Trigonometry',ids:['daylight','noisecancel'],note:'Honors Algebra 2 / Trig only.'}
@@ -51,7 +51,7 @@ BioLab.COURSES = [
   units:[
    {n:'Unit 1A',t:'Polynomial functions',ids:['coaster','openbox']},
    {n:'Unit 1B',t:'Rational functions',ids:['splitcost','sharedwork']},
-   {n:'Unit 2A',t:'Exponential functions',ids:['creditcard','startearly','mortgageterm','caffeine','logscale','hotspot','onepercent','lifesim']},
+   {n:'Unit 2A',t:'Exponential functions',ids:['yearlygrowth','creditcard','startearly','mortgageterm','caffeine','logscale','hotspot','onepercent','lifesim']},
    {n:'Unit 2B',t:'Logarithmic functions and inverses',ids:['decibels','passwords','logscale','mortgageterm','cipher','billions']},
    {n:'Unit 3A',t:'Trigonometric functions',ids:['daylight','noisecancel']},
    {n:'Unit 3B',t:'Polar functions and rotations',ids:['rotations']},
