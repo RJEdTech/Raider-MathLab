@@ -1,7 +1,7 @@
 /* Raider MathLab: course order comes from the RJ math teachers' Canvas modules (Statistics, AP Statistics and AP Calculus added Nov 6, 2026 from the 2025-26 and Fall 2026 shells) (Fall 2026 shells for semester 1,
    Spring 2026 shells for semester 2). Each unit may carry a "why" card: {hook, problems:[...], uses:[...]}. */
 BioLab.COURSES = [
- {id:'alg1',name:'Algebra 1',blurb:'Algebra 1 and Honors Algebra 1, in the order your class covers it. Honors chapter numbers are in each unit’s note.',
+ {id:'alg1',finals:[{"t": "Algebra 1 fall final review", "units": [0, 1, 2, 3], "note": "Covers Units 1 to 4. Your teacher decides what is on the final, so check the study guide."}, {"t": "Honors Algebra 1 fall final review", "units": [0, 1, 2, 3, 4], "note": "Covers Chapters 1 to 5, through systems of equations and inequalities. Your teacher decides what is on the final, so check the study guide."}],name:'Algebra 1',blurb:'Algebra 1 and Honors Algebra 1, in the order your class covers it. Honors chapter numbers are in each unit’s note.',
   units:[
    {n:'Unit 1',t:'Intro to algebra: expressions and variables',ids:['formulas'],note:'Honors: Chapter 1.'},
    {n:'Unit 2',t:'Multistep equations and proportions',ids:['scaleit','formulas','debtfit','livessaved','costofliving','carquote','livingwage','aidoptimizer','rankcolleges','billions','minutesofwork','stickernet','povertypremium'],note:'Honors: Chapter 1.'},
@@ -12,7 +12,7 @@ BioLab.COURSES = [
    {n:'Unit 7',t:'Graphing and solving quadratics',ids:['freethrow','ticketprice'],note:'Honors: Chapters 8 and 9.'},
    {n:'Unit 8',t:'Exponents and radicals',ids:['datasize','skidmarks','billions'],note:'Honors: Chapter 6. Some sections take this unit before quadratics.'}
   ]},
- {id:'geo',name:'Geometry',blurb:'Geometry and Honors Geometry, in the order your class covers it.',
+ {id:'geo',finals:[{"t": "Geometry fall final review", "units": [0, 1, 2, 3], "note": "Covers Units 1 to 4, through triangles. Your teacher decides what is on the final, so check the study guide."}, {"t": "Honors Geometry fall final review", "units": [0, 1, 2, 3, 9], "note": "Covers basics, logic, parallel lines, triangles and similarity, and probability. Your teacher decides what is on the final, so check the study guide."}],name:'Geometry',blurb:'Geometry and Honors Geometry, in the order your class covers it.',
   units:[
    {n:'Unit 1',t:'Geometry basics: distance, midpoint and the Pythagorean theorem',ids:['screens']},
    {n:'Unit 2',t:'Logic and reasoning',ids:['logic','kidneyswap','schoolmatch']},
@@ -22,9 +22,10 @@ BioLab.COURSES = [
    {n:'Polygons',t:'Polygons and quadrilaterals',ids:['tiling'],note:'Honors: Unit 9.'},
    {n:'Circles',t:'Circles: arcs, chords and inscribed angles',ids:['gps','tires','shotangle'],note:'Honors: Unit 10.'},
    {n:'Solids',t:'Surface area and volume',ids:['packaging'],note:'Honors: Unit 11.'},
-   {n:'Transformations',t:'Transformations and coordinate geometry',ids:['sprites'],note:'Honors: transformations and Unit 13.'}
+   {n:'Transformations',t:'Transformations and coordinate geometry',ids:['sprites'],note:'Honors: transformations and Unit 13.'},
+   {n:'Probability',t:'Probability (Honors Geometry)',ids:['lunchcount','rapidtest','makethepros'],note:'Honors Geometry probability unit: two-way tables and Venn diagrams, conditional probability, and multiplying probabilities.'}
   ]},
- {id:'alg2',name:'Algebra 2',blurb:'Algebra 2 and Honors Algebra 2 / Trigonometry, in the order your class covers it.',
+ {id:'alg2',finals:[{"t": "Algebra 2 fall final review", "units": [0, 1, 2], "note": "Covers Units 1 to 3: parent functions, quadratics and polynomials. Your teacher decides what is on the final, so check the study guide."}, {"t": "Honors Algebra 2/Trig fall final review", "units": [0, 1, 2, 3], "note": "Covers Chapters 1 to 3, through rational exponents and radicals. Your teacher decides what is on the final, so check the study guide."}],name:'Algebra 2',blurb:'Algebra 2 and Honors Algebra 2 / Trigonometry, in the order your class covers it.',
   further:['fontcurves'],
   units:[
    {n:'Unit 1',t:'Parent functions and transformations',ids:['pondday','photofilter']},
@@ -35,7 +36,7 @@ BioLab.COURSES = [
    {n:'Unit 6',t:'Rational functions',ids:['splitcost','sharedwork'],note:'Algebra 2 only.'},
    {n:'Trig',t:'Trigonometry',ids:['daylight','noisecancel'],note:'Honors Algebra 2 / Trig only.'}
   ]},
- {id:'precalc',name:'Precalculus',blurb:'Precalculus, in the order your class covers it.',
+ {id:'precalc',finals:[{"t": "Precalculus fall final review", "units": [0, 1, 2], "note": "Covers complex numbers, function basics, and polynomial and rational functions. Your teacher decides what is on the final, so check the study guide."}],name:'Precalculus',blurb:'Precalculus, in the order your class covers it.',
   further:['matrices','windvectors','orbits'],
   units:[
    {n:'Unit 0',t:'Complex numbers',ids:['rotations']},
@@ -46,7 +47,7 @@ BioLab.COURSES = [
    {n:'Unit 5',t:'Graphing trigonometric functions',ids:['daylight','noisecancel']},
    {n:'Unit 6',t:'Exponents and logarithms',ids:['logscale','creditcard','startearly','mortgageterm','decibels']}
   ]},
- {id:'apprecalc',name:'AP Precalculus',blurb:'AP Precalculus, by College Board unit. Unit 4 is taught at RJ but is not on the AP exam.',
+ {id:'apprecalc',finals:[{"t": "AP Precalculus fall final review", "units": [0, 1, 2, 3], "note": "Covers Units 1A to 2B. Your teacher decides what is on the final, so check the study guide."}],name:'AP Precalculus',blurb:'AP Precalculus, by College Board unit. Unit 4 is taught at RJ but is not on the AP exam.',
   units:[
    {n:'Unit 1A',t:'Polynomial functions',ids:['coaster','openbox']},
    {n:'Unit 1B',t:'Rational functions',ids:['splitcost','sharedwork']},
@@ -56,7 +57,7 @@ BioLab.COURSES = [
    {n:'Unit 3B',t:'Polar functions and rotations',ids:['rotations']},
    {n:'Unit 4',t:'Functions involving parameters, vectors and matrices',ids:['matrices','windvectors','orbits','opportunity'],note:'Not on the AP exam.'}
   ]},
- {id:'stats',name:'Statistics',blurb:'Probability & Statistics (fall) and Inferential Statistics (spring), in the order your class covers it.',
+ {id:'stats',finals:[{"t": "Probability & Statistics fall final review", "units": [0, 1, 2], "note": "Covers one-variable data, the normal model and two-variable data. Your teacher decides what is on the final, so check the study guide."}],name:'Statistics',blurb:'Probability & Statistics (fall) and Inferential Statistics (spring), in the order your class covers it.',
   further:['pollmargin'],
   units:[
    {n:'Chapter 1',t:'Analyzing one-variable data',ids:['busroute','babysit'],note:'Probability & Statistics (fall).'},
@@ -67,7 +68,7 @@ BioLab.COURSES = [
    {n:'Chapter 6',t:'Random variables: expected value and the binomial',ids:['insurance','rsvp','povertypremium'],note:'Inferential Statistics (spring).'},
    {n:'Chapter 7',t:'Sampling distributions',ids:['slump','wordgap','valueadded','carquote'],note:'Inferential Statistics (spring).'}
   ]},
- {id:'apstats',name:'AP Statistics',blurb:'AP Statistics, by College Board unit.',
+ {id:'apstats',finals:[{"t": "AP Statistics fall final review", "units": [0, 1, 2], "note": "Covers AP Units 1 to 3. Your teacher decides what is on the final, so check the study guide."}],name:'AP Statistics',blurb:'AP Statistics, by College Board unit.',
   units:[
    {n:'Unit 1',t:'Exploring one-variable data',ids:['busroute','babysit','testchoice','hoodies']},
    {n:'Unit 2',t:'Exploring two-variable data',ids:['lunchcount','lawnjob','zipscores','bookshome']},
@@ -79,7 +80,7 @@ BioLab.COURSES = [
    {n:'Unit 8',t:'Inference for categorical data: chi-square',ids:['lootdrop']},
    {n:'Unit 9',t:'Inference for quantitative data: slopes',ids:['lawnjob'],note:'Use the Deep dive level.'}
   ]},
- {id:'calcab',name:'AP Calculus AB',blurb:'AP Calculus AB, by College Board unit, in the order your class covers it.',
+ {id:'calcab',finals:[{"t": "AP Calculus AB fall final review", "units": [0, 1, 2, 3], "note": "Covers AP Units 1 to 4. Your teacher decides what is on the final, so check the study guide."}],name:'AP Calculus AB',blurb:'AP Calculus AB, by College Board unit, in the order your class covers it.',
   units:[
    {n:'Unit 1',t:'Limits and continuity',ids:['runpace']},
    {n:'Unit 2',t:'Differentiation: definition and basic rules',ids:['runpace','battery']},
@@ -90,7 +91,7 @@ BioLab.COURSES = [
    {n:'Unit 7',t:'Differential equations',ids:['cooling']},
    {n:'Unit 8',t:'Applications of integration: average value, motion, area and volume',ids:['concession','bottle']}
   ]},
- {id:'calcbc',name:'AP Calculus BC',blurb:'AP Calculus BC, in the order your class covers it: series in the fall, applications, parametric and polar, and differential equations in the spring.',
+ {id:'calcbc',finals:[{"t": "AP Calculus BC fall final review", "units": [0, 1, 2, 3, 4], "note": "Covers Fall 1 to 5. Your teacher decides what is on the final, so check the study guide."}],name:'AP Calculus BC',blurb:'AP Calculus BC, in the order your class covers it: series in the fall, applications, parametric and polar, and differential equations in the spring.',
   units:[
    {n:'Fall 1',t:'Limits and continuity',ids:['runpace']},
    {n:'Fall 2',t:'Derivatives and derivative rules',ids:['runpace','battery','camerapan']},
