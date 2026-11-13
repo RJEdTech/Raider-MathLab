@@ -45,9 +45,10 @@ const SIM={
   for(let L=85;L<=110;L+=3){ctx.fillStyle=PAL['s2'];ctx.beginPath();ctx.arc(ax.X(L),ax.Y(safe(L)),4,0,7);ctx.fill();}
   const G=sim.gutS;if(G&&G.g){ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(ax.X(G.g.L),ax.Y(G.g.min),6,0,7);ctx.fill();txt(ctx,'Your gut',ax.X(G.g.L)+10,ax.Y(G.g.min)+4,{s:12,w:700,c:PAL['s4']});}
   const L=sim.p.level;ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(ax.X(L),ax.Y(safe(L)),6,0,7);ctx.fill();txt(ctx,L+U()+': '+tms(safe(L)),ax.X(L)+10,ax.Y(safe(L))-10,{s:12,w:700,c:PAL['rj']});},
- draw(sim,ctx,vdt,k){const sh=shown(sim),G=sim.gutS,L=sim.p.level,hon=atLeast('honors');
+ draw(sim,ctx,vdt,k){const stg=(sim.tour&&sim.tour.on)?(sim.tst||1):99,sh=shown(sim)||stg<99&&stg>=3,G=sim.gutS,L=sim.p.level,hon=atLeast('honors');
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   /* left: intensity as area */
+  if(stg>=2){
   const s0=16,r=ratio(L,85),side=s0*Math.sqrt(r),ox=34,oy=420;
   txt(ctx,hon?'Intensity, as area':'Sound energy, shown as area',ox,34,{s:13*k,w:700});
   ctx.fillStyle=PAL['s5'];ctx.globalAlpha=.3;ctx.fillRect(ox,oy-side,side,side);ctx.globalAlpha=1;ctx.strokeStyle=PAL['s5'];ctx.lineWidth=2;ctx.strokeRect(ox,oy-side,side,side);
@@ -56,19 +57,25 @@ const SIM={
   txt(ctx,'85'+U(),ox+s0+6,oy-3,{s:12*k,w:700});
   const ly=Math.max(64*k,oy-side-12-18*k);htxt(ctx,L+U()+':',ox,ly,{s:12*k,w:700,c:PAL['s5']});htxt(ctx,xf(r)+(hon?' × the intensity of 85':' × the energy of 85 dB'),ox,ly+17*k,{s:12*k,w:700,c:PAL['s5']});
   if(hon&&sim.p.comp!==85)htxt(ctx,'Dashed: '+sim.p.comp+U(),ox,ly+34*k,{s:12*k,c:PAL['s2']});
+  if(stg===2){ctx.strokeStyle=PAL['s5'];ctx.lineWidth=4;ctx.strokeRect(ox-3,oy-side-3,side+6,side+6);}
+  }
   /* right: safe-time ladder */
-  const x0=450,W=250,rows=sh?[85,88,91,94,97,100,103,106,109]:[85],rh=28;
+  const x0=450,W=250,rows=stg<=2?[85]:stg===3?[85,88]:stg===4?[85,88,91,94]:sh?[85,88,91,94,97,100,103,106,109]:[85],rh=28;
   txt(ctx,hon?'Safe time per day (NIOSH)':'Safe time per day',x0-46,34,{s:13*k,w:700});
   const bar=(y,lev,min,col,label)=>{txt(ctx,lev+U(),x0-8,y+5,{s:12*k,a:'right',c:PAL['cv-soft']});const w=Math.max(2,min/480*W);ctx.fillStyle=col;ctx.fillRect(x0,y-rh*0.32,w,rh*0.64);
    if(label)txt(ctx,label,x0+w+6,y+5,{s:12*k,w:700,c:col});};
-  rows.forEach((lev,i)=>{const y=62+i*rh;bar(y,lev,safe(lev),lev===L?PAL['rj']:PAL['cv-soft'],lev===85&&!sh?'8 hours':tms(safe(lev)));});
+  rows.forEach((lev,i)=>{const y=62+i*rh,hot=stg===1&&lev===85||stg===3&&lev===88||stg===4&&lev>85;bar(y,lev,safe(lev),lev===L?PAL['rj']:hot?PAL['s2']:PAL['cv-soft'],lev===85&&!sh?'8 hours':tms(safe(lev)));});
+  if(stg===1){ctx.strokeStyle=PAL['s2'];ctx.lineWidth=3;ctx.strokeRect(x0-56,62-rh*0.5,W+120,rh);}
+  if(stg===3){const y2=62+rh;txt(ctx,'85 → 88 is +3 dB:',x0-60,y2+48,{s:14*k,w:700,c:PAL['s2']});txt(ctx,'2 × the energy, so ½ the safe time',x0-60,y2+70,{s:14*k,w:700,c:PAL['s2']});}
+  if(stg<4)return;
   const yU=62+rows.length*rh+10;
   ctx.strokeStyle=PAL['line'];ctx.beginPath();ctx.moveTo(x0-60,yU-rh*0.7);ctx.lineTo(x0+W,yU-rh*0.7);ctx.stroke();
   txt(ctx,'You: '+L+U(),x0-8,yU+5,{s:12*k,w:700,a:'right'});
   if(sh){const w=Math.max(2,safe(L)/480*W);ctx.fillStyle=PAL['rj'];ctx.fillRect(x0,yU-rh*0.32,w,rh*0.64);txt(ctx,tm(safe(L)),x0+w+8,yU+5,{s:12*k,w:700,c:PAL['rj']});}
   else txt(ctx,'?',x0+8,yU+8,{s:24*k,w:700,c:PAL['rj']});
   const gm=G&&G.g?G.g.min:sim.p.guess,gx=x0+gm/480*W;ctx.strokeStyle=PAL['s4'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(gx,yU-rh*0.6);ctx.lineTo(gx,yU+rh*0.6);ctx.stroke();
-  htxt(ctx,(G&&G.g?'Your gut: ':'Your guess: ')+tms(gm),clamp(gx,x0+70,x0+W-70),yU+rh*0.6+15*k,{s:12*k,w:700,c:PAL['s4'],a:'center'});},
+  htxt(ctx,(G&&G.g?'Your gut: ':'Your guess: ')+tms(gm),clamp(gx,x0+70,x0+W-70),yU+rh*0.6+15*k,{s:12*k,w:700,c:PAL['s4'],a:'center'});
+  if(stg===6){ctx.fillStyle=PAL['cv-bg'];ctx.globalAlpha=.92;ctx.fillRect(30,60,270,84);ctx.globalAlpha=1;ctx.strokeStyle=PAL['s2'];ctx.lineWidth=2;ctx.strokeRect(30,60,270,84);txt(ctx,'T = 480 ÷ 2^((L − 85)/3)',42,90,{s:15*k,w:700,c:PAL['s2']});txt(ctx,'L = 85 + 3 log₂(480/T)',42,124,{s:15*k,w:700,c:PAL['s2']});}},
  narrate(sim){const L=sim.p.level,r=ratio(L,85);
   const u=U();if(!shown(sim))return `85${u} is safe for 8 hours a day. At ${L}${u} the sound carries <b>${xf(r)} times the ${atLeast('honors')?'intensity':'sound energy'}</b>. Lock in your guess to see how much that cuts your safe time.`;
   const n=(L-85)/3;return `${L}${u} is ${L-85} dB above 85, or ${fmtNum(n,n%1?1:0)} steps of 3 dB. Each step halves the time: 480 ÷ 2^${fmtNum(n,n%1?2:0)} = <b>${tm(safe(L))} a day</b>.`;},
@@ -96,12 +103,12 @@ const SIM={
   {lvl:'ap',instant:true,q:'A 110 dBA concert versus the 85 dBA limit: how many times the intensity?',choices:['About 25 times','About 32 times','About 316 times','About 2,500 times'],correct:2,explain:'25 dB above: 10^(25/10) = 10^2.5 ≈ 316. Safe time there is 480 ÷ 2^(25/3) ≈ 1.5 minutes.'}
  ],
  tour:[
-  {title:'The starting rule',text:{bio:'US hearing experts recommend a limit: 85 dB, averaged over 8 hours a day. That is the gray bar at the top right.',honors:'Hearing experts at NIOSH set a recommended limit: 85 dBA, averaged over 8 hours a day. That is the gray bar at the top right.'},pause:true,setup:sim=>{sim.peek=false;BioLab.setValues(sim,{level:94,guess:240,comp:85});}},
-  {title:'Decibels are logarithms',text:{bio:'Your earbuds play at 94 dB. That is only 9 dB more, but the purple square shows the sound energy: about 8 times the small solid 85 dB square.',honors:'Your earbuds play at 94 dBA. That is only 9 dB more, but the purple square shows the sound intensity: about 8 times the small solid 85 dBA square.'},pause:true},
-  {title:'The 3 dB rule',text:'Every 3 dB about doubles the intensity. Twice the energy reaches the same daily dose in half the time. So each 3 dB step halves the safe time.',pause:true,setup:sim=>{sim.peek=true;}},
-  {title:'Climb the ladder',text:{bio:'85 → 8 hours. 88 → 4 hours. 91 → 2 hours. 94 → 1 hour. Your earbuds at 94 dB use up a whole day’s limit in 60 minutes.',honors:'85 → 8 hours. 88 → 4 hours. 91 → 2 hours. 94 → 1 hour. Your earbuds at 94 dBA use up a whole day’s limit in 60 minutes.'},pause:true},
-  {title:'Loud gets short fast',text:{bio:'At 100 dB, like a loud concert, the safe time is just 15 minutes. At 110 dB it is under 2 minutes.',honors:'At 100 dBA, like a loud concert, the safe time is just 15 minutes. At 110 dBA it is under 2 minutes.'},pause:true,setup:sim=>BioLab.setValues(sim,{level:100})},
-  {lvl:'ap',title:'The formula',text:'T(L) = 480 ÷ 2^((L − 85)/3). To find the level for a given time, take a log: L = 85 + 3 log₂(480/T). For 15 minutes, log₂ 32 = 5, so L = 100.',pause:true}
+  {title:'The starting rule',text:{bio:'US hearing experts recommend a limit: 85 dB, averaged over 8 hours a day. That is the gray bar at the top right.',honors:'Hearing experts at NIOSH set a recommended limit: 85 dBA, averaged over 8 hours a day. That is the gray bar at the top right.'},pause:true,setup:sim=>{sim.tst=1;sim.peek=false;BioLab.setValues(sim,{level:94,guess:240,comp:85});}},
+  {title:'Decibels are logarithms',text:{bio:'Your earbuds play at 94 dB. That is only 9 dB more, but the purple square shows the sound energy: about 8 times the small solid 85 dB square.',honors:'Your earbuds play at 94 dBA. That is only 9 dB more, but the purple square shows the sound intensity: about 8 times the small solid 85 dBA square.'},pause:true,setup:sim=>{sim.tst=2;}},
+  {title:'The 3 dB rule',text:'Every 3 dB about doubles the intensity. Twice the energy reaches the same daily dose in half the time. So each 3 dB step halves the safe time.',pause:true,setup:sim=>{sim.tst=3;sim.peek=true;}},
+  {title:'Climb the ladder',text:{bio:'85 → 8 hours. 88 → 4 hours. 91 → 2 hours. 94 → 1 hour. Your earbuds at 94 dB use up a whole day’s limit in 60 minutes.',honors:'85 → 8 hours. 88 → 4 hours. 91 → 2 hours. 94 → 1 hour. Your earbuds at 94 dBA use up a whole day’s limit in 60 minutes.'},pause:true,setup:sim=>{sim.tst=4;sim.peek=true;}},
+  {title:'Loud gets short fast',text:{bio:'At 100 dB, like a loud concert, the safe time is just 15 minutes. At 110 dB it is under 2 minutes.',honors:'At 100 dBA, like a loud concert, the safe time is just 15 minutes. At 110 dBA it is under 2 minutes.'},pause:true,setup:sim=>{sim.tst=5;sim.peek=true;BioLab.setValues(sim,{level:100});}},
+  {lvl:'ap',title:'The formula',text:'T(L) = 480 ÷ 2^((L − 85)/3). To find the level for a given time, take a log: L = 85 + 3 log₂(480/T). For 15 minutes, log₂ 32 = 5, so L = 100.',pause:true,setup:sim=>{sim.tst=6;sim.peek=true;}}
  ],
  lab:{bio:'<p><b>Question:</b> How does each 3 dB step change the safe time?</p><ol><li>Press <b>Skip the guess</b> if you have not locked in a guess.</li><li>Set the volume to 85, 88, 91, 94, 97 and 100 dB. Record a trial each time.</li><li>Graph <b>Trials</b> with volume on x and safe time on y.</li></ol><p>Write one sentence: what happens to the safe time every 3 dB?</p>',
   honors:'<p><b>Question:</b> Is the 3 dB rule the same as doubling the intensity?</p><ol><li>Set the volume to 88, 91 and 94 dBA and record the intensity compared with 85 dBA.</li><li>Divide each intensity by the one before.</li></ol><p>Explain why +3 dB gives about 2 times and +10 dB gives exactly 10 times.</p>',

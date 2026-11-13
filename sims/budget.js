@@ -63,14 +63,14 @@ const SIM={
   vals.forEach((v,p)=>{if(v<0)return;const x0=ax.X(p-0.3),x1=ax.X(p+0.3);ctx.fillStyle=p===sim.p.p?PAL['rj']:PAL['g-line'];ctx.globalAlpha=p===sim.p.p?1:.55;ctx.fillRect(x0,ax.Y(v),x1-x0,ax.Y(0)-ax.Y(v));ctx.globalAlpha=1;});
   if(!cheapMode(sim)){ctx.setLineDash([5,4]);ctx.strokeStyle=PAL['s2'];ctx.beginPath();ctx.moveTo(ax.X(-0.5),ax.Y(sim.p.N));ctx.lineTo(ax.X(PMAX+0.5),ax.Y(sim.p.N));ctx.stroke();ctx.setLineDash([]);txt(ctx,`${sim.p.N} people`,box.L+box.W-6,ax.Y(sim.p.N)-6,{s:12,c:PAL['s2'],a:'right'});}
   txt(ctx,'Bars stop where no order with that many pizzas fits',box.L+8,box.T+14,{s:12,c:PAL['cv-soft']});},
- draw(sim,ctx,vdt,k0){const k=Math.max(k0,1.45),P=sim.p,G=sim.gutS||{},sh=shown(sim),big=k>=1.6;
+ draw(sim,ctx,vdt,k0){const k=Math.max(k0,1.45),P=sim.p,G=sim.gutS||{},sh=shown(sim),big=k>=1.6,stg=(sim.tour&&sim.tour.on)?(sim.tst||1):99;  /* walkthrough builds the graph one piece per step */
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   const GL=Math.round(28+16*k),GR=500,GT=16,GB=Math.round(450-14-16*k),X=v=>GL+(GR-GL)*v/PMAX,Y=v=>GB-(GB-GT)*v/WMAX;
   /* lattice of whole-number orders */
-  for(let p=0;p<=PMAX;p++)for(let w=0;w<=WMAX;w++){const ok=fits(sim,p,w)&&fed(p,w)>=P.N;ctx.fillStyle=ok?PAL['s3']:PAL['cv-soft'];ctx.globalAlpha=ok?.7:.3;ctx.beginPath();ctx.arc(X(p),Y(w),ok?3:2.2,0,7);ctx.fill();}ctx.globalAlpha=1;
+  for(let p=0;p<=PMAX;p++)for(let w=0;w<=WMAX;w++){const ok=stg>=5&&fits(sim,p,w)&&fed(p,w)>=P.N;ctx.fillStyle=ok?PAL['s3']:PAL['cv-soft'];ctx.globalAlpha=ok?.7:.3;ctx.beginPath();ctx.arc(X(p),Y(w),ok?3:2.2,0,7);ctx.fill();}ctx.globalAlpha=1;
   /* feasible region */
   const R=region(sim);sim.vis.region=[GL-6,GT-6,GR-GL+12,GB-GT+12];
-  if(R.length>2){ctx.fillStyle=PAL['s3'];ctx.globalAlpha=.16;ctx.beginPath();R.forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+  if(R.length>2&&stg>=5){ctx.fillStyle=PAL['s3'];ctx.globalAlpha=stg===5?.3:.16;ctx.beginPath();R.forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));ctx.closePath();ctx.fill();ctx.globalAlpha=1;
    ctx.strokeStyle=PAL['s3'];ctx.lineWidth=2;ctx.stroke();}
   /* axes */
   ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(GL,GT);ctx.lineTo(GL,GB);ctx.lineTo(GR,GB);ctx.stroke();
@@ -78,18 +78,18 @@ const SIM={
   for(let w=0;w<=WMAX;w+=big?4:3)txt(ctx,String(w),GL-6,Y(w),{s:12*k,c:PAL['cv-soft'],a:'right',b:'middle'});
   txt(ctx,'Pizzas →',GR,GB-6,{s:12*k,w:700,c:PAL['cv-soft'],a:'right'});txt(ctx,'↑ Wing trays',GL+6,GT+12*k,{s:12*k,w:700,c:PAL['cv-soft']});
   /* boundary lines, each labeled where it leaves the plot */
-  const bl=(a,b,c,col,lab,dash,t0)=>{const pts=[];[[0,null],[PMAX,null],[null,0],[null,WMAX]].forEach(([p,w])=>{if(p!==null&&Math.abs(b)>1e-9){const ww=(c-a*p)/b;if(ww>=-1e-9&&ww<=WMAX+1e-9)pts.push([p,ww]);}
+  const bl=(a,b,c,col,lab,dash,t0,hot)=>{const pts=[];[[0,null],[PMAX,null],[null,0],[null,WMAX]].forEach(([p,w])=>{if(p!==null&&Math.abs(b)>1e-9){const ww=(c-a*p)/b;if(ww>=-1e-9&&ww<=WMAX+1e-9)pts.push([p,ww]);}
     if(w!==null&&Math.abs(a)>1e-9){const pp=(c-b*w)/a;if(pp>=-1e-9&&pp<=PMAX+1e-9)pts.push([pp,w]);}});
-   if(pts.length<2)return;pts.sort((u,v)=>u[0]-v[0]);const A=pts[0],Z=pts[pts.length-1];ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.setLineDash(dash?[7,5]:[]);ctx.beginPath();ctx.moveTo(X(A[0]),Y(A[1]));ctx.lineTo(X(Z[0]),Y(Z[1]));ctx.stroke();ctx.setLineDash([]);
+   if(pts.length<2)return;pts.sort((u,v)=>u[0]-v[0]);const A=pts[0],Z=pts[pts.length-1];ctx.strokeStyle=col;ctx.lineWidth=hot?5:2.5;ctx.setLineDash(dash?[7,5]:[]);ctx.beginPath();ctx.moveTo(X(A[0]),Y(A[1]));ctx.lineTo(X(Z[0]),Y(Z[1]));ctx.stroke();ctx.setLineDash([]);
    const t=t0,lx=X(A[0]+(Z[0]-A[0])*t),ly=Y(A[1]+(Z[1]-A[1])*t);ctx.font='700 '+(12*k)+'px '+FONT;const w=ctx.measureText(lab).width;const x=clamp(lx+6,GL+4,GR-w-4),y=clamp(ly-8,GT+14*k,GB-8);
    ctx.fillStyle=PAL['cv-bg'];ctx.globalAlpha=.85;ctx.fillRect(x-3,y-12*k,w+6,15*k);ctx.globalAlpha=1;txt(ctx,lab,x,y,{s:12*k,w:700,c:col});};
-  bl(P.pp,P.wp,P.B,PAL['s1'],`$${P.B} budget`,false,0.12);
-  if(atLeast('honors')||P.L<PMAX+WMAX)bl(1,1,P.L,PAL['s5'],`${P.L} boxes`,false,0.82);
-  bl(PF,WF,P.N,PAL['s2'],`Feeds ${P.N}`,true,0.45);
+  if(stg>=2)bl(P.pp,P.wp,P.B,PAL['s1'],`$${P.B} budget`,false,0.12,stg===2);
+  if(stg>=3&&(atLeast('honors')||P.L<PMAX+WMAX||stg<99))bl(1,1,P.L,PAL['s5'],`${P.L} boxes`,false,0.82,stg===3);
+  if(stg>=4)bl(PF,WF,P.N,PAL['s2'],`Feeds ${P.N}`,true,0.45,stg===4);
   /* corners, objective line and the math's order */
-  const B0=sh?bestOrder(sim):null;
-  if(sh&&atLeast('honors')&&!cheapMode(sim)&&B0.f>0){const c=B0.f;ctx.strokeStyle=PAL['g-line'];ctx.globalAlpha=.6;ctx.lineWidth=1.5;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(X(0),Y(c/WF));ctx.lineTo(X(Math.min(PMAX,c/PF)),Y(Math.max(0,(c-PF*PMAX)/WF)));ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
-  if(sh&&atLeast('ap')&&R.length>2){const cx=R.reduce((s,q)=>s+q[0],0)/R.length,cy=R.reduce((s,q)=>s+q[1],0)/R.length,placed=[[GR-90*k,GB-26*k,90*k,22*k],[GL,GT,120*k,18*k]];
+  const B0=sh&&stg>=6?bestOrder(sim):null;
+  if(sh&&B0&&stg>=7&&atLeast('honors')&&!cheapMode(sim)&&B0.f>0){const c=B0.f;ctx.strokeStyle=PAL['g-line'];ctx.globalAlpha=.6;ctx.lineWidth=1.5;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(X(0),Y(c/WF));ctx.lineTo(X(Math.min(PMAX,c/PF)),Y(Math.max(0,(c-PF*PMAX)/WF)));ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
+  if(sh&&stg>=8&&atLeast('ap')&&R.length>2){const cx=R.reduce((s,q)=>s+q[0],0)/R.length,cy=R.reduce((s,q)=>s+q[1],0)/R.length,placed=[[GR-90*k,GB-26*k,90*k,22*k],[GL,GT,120*k,18*k]];
    const hit=(a)=>placed.some(b=>a[0]<b[0]+b[2]&&b[0]<a[0]+a[2]&&a[1]<b[1]+b[3]&&b[1]<a[1]+a[3]);
    R.forEach(q=>{ctx.fillStyle=PAL['cv-ink'];ctx.beginPath();ctx.arc(X(q[0]),Y(q[1]),4,0,7);ctx.fill();});
    R.forEach(q=>{const vx=X(q[0]),vy=Y(q[1]),dx=vx-X(cx),dy=vy-Y(cy),d=Math.hypot(dx,dy)||1,lab=`(${fm1(q[0])}, ${fm1(q[1])}): ${fm1(cheapMode(sim)?cost(sim,q[0],q[1]):fed(q[0],q[1]))}`;
@@ -146,14 +146,14 @@ const SIM={
   {lvl:'ap',instant:true,q:'With a $160 budget the corner is at p ≈ 3.3, w ≈ 6.7. Rounding gives 3 pizzas + 7 trays. What is wrong, and what is the best whole order?',choices:['3 + 7 costs $162, over budget; 4 pizzas + 6 trays feeds 46','Nothing: 3 + 7 feeds 47 and fits','Round down both: 3 + 6 feeds 42'],correct:0,explain:'3 × 12 + 7 × 18 = $162, which breaks the budget. Checking whole orders near the corner, 4 + 6 costs $156, uses 10 boxes and feeds 46, the most possible. 3 + 6 fits but feeds only 42.'}
  ],
  tour:[
-  {title:'Every possible order',text:'Each dot is one order: pizzas across, wing trays up. A $12 pizza feeds 4 people and an $18 tray of wings feeds 5.',pause:true,setup:sim=>BioLab.setValues(sim,{show:false,p:6,w:2}),focus:sim=>sim.vis.region},
-  {title:'The budget line',text:'The red line is every order that costs exactly $150: 12p + 18w = 150. Orders below it cost less. Orders above it are over budget.',pause:true},
-  {title:'The box limit',text:'The purple line is 10 boxes: p + w = 10. The shop will not deliver an order above it.',pause:true},
-  {title:'Enough food',text:'The dashed blue line is 4p + 5w = 30: enough for 30 people. You want to be on or above it.',pause:true},
-  {title:'The feasible region',text:'The green shape is every order that fits all three limits. Your gut order, 6 pizzas and 2 trays, is inside it: $108, 8 boxes, 34 people. But it leaves money and boxes unused.',pause:true},
-  {title:'The best order is a corner',text:'The order that feeds the most sits where the budget and box lines cross: 5 pizzas and 5 trays. It uses all $150 and all 10 boxes and feeds 45, eleven more people for the same budget.',pause:true,setup:sim=>BioLab.setValues(sim,{show:true,p:5,w:5})},
-  {lvl:'honors',title:'Slide the goal line',text:'The dotted line is 4p + 5w = 45. Lines for bigger goals are parallel to it and farther out. The farthest one that still touches the region touches it at a corner.',pause:true},
-  {lvl:'ap',title:'Corners from systems',text:'Each corner solves a system of two boundary equations. Here 12p + 18w = 150 and p + w = 10 give p = 5, w = 5. The labels show each corner and how many people it feeds.',pause:true}
+  {title:'Every possible order',text:'Each dot is one order: pizzas across, wing trays up. A $12 pizza feeds 4 people and an $18 tray of wings feeds 5.',pause:true,setup:sim=>{sim.tst=1;return BioLab.setValues(sim,{show:false,p:6,w:2})},focus:sim=>sim.vis.region},
+  {title:'The budget line',text:'The red line is every order that costs exactly $150: 12p + 18w = 150. Orders below it cost less. Orders above it are over budget.',pause:true,setup:sim=>{sim.tst=2;}},
+  {title:'The box limit',text:'The purple line is 10 boxes: p + w = 10. The shop will not deliver an order above it.',pause:true,setup:sim=>{sim.tst=3;}},
+  {title:'Enough food',text:'The dashed blue line is 4p + 5w = 30: enough for 30 people. You want to be on or above it.',pause:true,setup:sim=>{sim.tst=4;}},
+  {title:'The feasible region',text:'The green shape is every order that fits all three limits. Your gut order, 6 pizzas and 2 trays, is inside it: $108, 8 boxes, 34 people. But it leaves money and boxes unused.',pause:true,setup:sim=>{sim.tst=5;}},
+  {title:'The best order is a corner',text:'The order that feeds the most sits where the budget and box lines cross: 5 pizzas and 5 trays. It uses all $150 and all 10 boxes and feeds 45, eleven more people for the same budget.',pause:true,setup:sim=>{sim.tst=6;return BioLab.setValues(sim,{show:true,p:5,w:5})}},
+  {lvl:'honors',title:'Slide the goal line',text:'The dotted line is 4p + 5w = 45. Lines for bigger goals are parallel to it and farther out. The farthest one that still touches the region touches it at a corner.',pause:true,setup:sim=>{sim.tst=7;}},
+  {lvl:'ap',title:'Corners from systems',text:'Each corner solves a system of two boundary equations. Here 12p + 18w = 150 and p + w = 10 give p = 5, w = 5. The labels show each corner and how many people it feeds.',pause:true,setup:sim=>{sim.tst=8;}}
  ],
  lab:{bio:'<p><b>Question:</b> Where are the best orders?</p><ol><li>Try five orders inside the green region and record each one.</li><li>Then turn on <b>Show the math’s best order</b> and record it.</li></ol><p>Write one sentence: where is the best order compared with the edges of the region?</p>',
   honors:'<p><b>Question:</b> When does the best corner move?</p><ol><li>Raise the budget from $120 to $200 in $20 steps. Record the math’s order each time.</li><li>Repeat with the box limit from 6 to 14.</li></ol><p>Explain each jump using which two lines meet at the best corner.</p>',

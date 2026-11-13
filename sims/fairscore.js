@@ -77,7 +77,7 @@ const SIM={
   ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax.X(sim.p.tB),ax.Y(0));ctx.lineTo(ax.X(sim.p.tB),ax.Y(100));ctx.stroke();
   legend(ctx,box.L+10,box.T+8,[{label:'B: fine but flagged',color:PAL['s1']},{label:'B: needed help, missed',color:PAL['s2']}]);
   txt(ctx,'Dotted lines: Group A',box.L+box.W-8,box.T+14,{s:12,c:PAL['muted'],a:'right'});},
- draw(sim,ctx,vdt,k){const sh=shown(sim),G=GS(sim),big=k>1.3,ap=atLeast('honors');
+ draw(sim,ctx,vdt,k){const stg=(sim.tour&&sim.tour.on)?(sim.tst||1):99,sh=shown(sim),G=GS(sim),big=k>1.3,ap=atLeast('honors');
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   const A=SA(sim),B=SB(sim),mA=dist(bAof(sim)),mB=dist(bBof(sim));
   /* 20 display bins of 5 points each */
@@ -85,14 +85,15 @@ const SIM={
   let mx=0;[mA,mB].forEach(m=>{for(let j=0;j<20;j++){const q=bin(m,j);mx=Math.max(mx,q.s+q.ok);}});
   const histT=(big?58:50)*Math.min(k,1.3),histB=big?196:224;
   const panel=(x0,w,m,t,name,col,base)=>{
-   txt(ctx,(big?name.replace('Group ','')+': ':name+': ')+Math.round(base*100)+(big?'% struggle':'% would struggle'),x0,26*Math.min(k,1.3),{s:14*k,w:700,c:PAL[col]});
+   const ttl=stg<2?name:(big?name.replace('Group ','')+': ':name+': ')+Math.round(base*100)+(big?'% struggle':'% would struggle');txt(ctx,ttl,x0,26*Math.min(k,1.3),{s:14*k,w:700,c:PAL[col]});
+   if(stg===2){ctx.font='700 '+(14*k)+'px '+FONT;const tw=ctx.measureText(ttl).width;ctx.strokeStyle=PAL[col];ctx.lineWidth=2.5;ctx.strokeRect(x0-5,26*Math.min(k,1.3)-17*k,tw+10,23*k);}
    const bw=w/20,H=histB-histT;
    for(let j=0;j<20;j++){const q=bin(m,j),hs=H*q.s/mx,ho=H*q.ok/mx,x=x0+j*bw;
     ctx.fillStyle=PAL[COL.bad];ctx.fillRect(x+1,histB-hs,bw-2,hs);ctx.fillStyle=PAL[COL.ok];ctx.globalAlpha=.75;ctx.fillRect(x+1,histB-hs-ho,bw-2,ho);ctx.globalAlpha=1;}
-   const cx=x0+w*t/100;ctx.fillStyle=PAL['rj'];ctx.globalAlpha=.12;ctx.fillRect(cx,histT-6,x0+w-cx,histB-histT+6);ctx.globalAlpha=1;
-   ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx,histT-8);ctx.lineTo(cx,histB);ctx.stroke();
+   if(stg>=3){const cx=x0+w*t/100;ctx.fillStyle=PAL['rj'];ctx.globalAlpha=.12;ctx.fillRect(cx,histT-6,x0+w-cx,histB-histT+6);ctx.globalAlpha=1;
+   ctx.strokeStyle=PAL['rj'];ctx.lineWidth=stg===3||stg===6?5:2.5;ctx.beginPath();ctx.moveTo(cx,histT-8);ctx.lineTo(cx,histB);ctx.stroke();
    const lab=(big?'':'Flag at ')+t+'%+';ctx.font='700 '+(12*k)+'px '+FONT;const lw=ctx.measureText(lab).width;
-   txt(ctx,lab,cx+lw+8<x0+w?cx+6:cx-6,histT+6*k,{s:12*k,w:700,c:PAL['rj'],a:cx+lw+8<x0+w?'left':'right'});
+   txt(ctx,lab,cx+lw+8<x0+w?cx+6:cx-6,histT+6*k,{s:12*k,w:700,c:PAL['rj'],a:cx+lw+8<x0+w?'left':'right'});}
    ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,histB);ctx.lineTo(x0+w,histB);ctx.stroke();
    txt(ctx,'0%',x0,histB+15*k,{s:12*k,c:PAL['cv-soft']});txt(ctx,'100%',x0+w,histB+15*k,{s:12*k,c:PAL['cv-soft'],a:'right'});
    if(!big)txt(ctx,'risk score',x0+w/2,histB+15*k,{s:12*k,c:PAL['cv-soft'],a:'center'});};
@@ -103,10 +104,13 @@ const SIM={
   key(COL.bad,big?'would struggle':'would struggle without help');key(COL.ok,'would be fine');
   if(!big){ctx.fillStyle=PAL['rj'];ctx.globalAlpha=.4;ctx.fillRect(kx,ky-10*k,11*k,11*k);ctx.globalAlpha=1;txt(ctx,'flagged',kx+16*k,ky,{s:12*k,c:PAL['cv-ink']});}
   /* the error rates, side by side */
-  const rows=[['Fine, but flagged','fpr'],['Needed help, missed','fnr']];if(ap&&!big)rows.push(['A flag means','ppv']);
-  const rT=ky+(big?14:20)*k,rH=(446-rT)/rows.length,LX=200,RX=big?680:690;
+  const rows=stg>=99?[['Fine, but flagged','fpr'],['Needed help, missed','fnr']]:[];if(stg<99){if(stg>=4)rows.push(['Fine, but flagged','fpr']);if(stg>=5)rows.push(['Needed help, missed','fnr']);}
+  if(stg>=99?ap&&!big:stg>=7&&!big)rows.push(['A flag means','ppv']);
+  const hotK=stg===4?'fpr':stg===5?'fnr':stg===7?'ppv':null;
+  const rT=ky+(big?14:20)*k,rH=(446-rT)/Math.max(rows.length,stg<99?2:1),LX=200,RX=big?680:690;
   rows.forEach(([lab,key2],i)=>{const y=rT+i*rH,top=big?y+18*k:y,bh=big?Math.min(13*k,(rH-18*k)/2-3):Math.min(16*k,rH/2-6),lx=big?44:LX;
    txt(ctx,lab,20,big?y+13*k:y+rH/2+4*k,{s:13*k,w:700,c:PAL['cv-ink']});
+   if(key2===hotK){ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2.5;ctx.strokeRect(12,y-3,768,rH-3);}
    [[A,'A',COL.A],[B,'B',COL.B]].forEach(([S,g,col],j)=>{const yy=top+3+j*(bh+4),v=S[key2];
     txt(ctx,g,lx-8,yy+bh-2,{s:12*k,w:700,c:PAL[col],a:'right'});
     ctx.fillStyle=PAL['card2'];ctx.fillRect(lx,yy,RX-lx,bh);
@@ -114,7 +118,10 @@ const SIM={
      if(G&&G.m&&!big&&bh>=12*k){const c=counts(S,10000),ct=key2==='fpr'?`${cm(c.fp)} of ${cm(c.fine)} fine`:key2==='fnr'?`${cm(c.fn)} of ${cm(c.str)} who struggle`:`${cm(c.tp)} of ${cm(c.fl)} flagged`;
       ctx.font=(12*k)+'px '+FONT;const tw=ctx.measureText(ct).width,fe=lx+(RX-lx)*v,inFill=fe>RX-tw-12;txt(ctx,ct,inFill?fe-6:RX-6,yy+bh-3*k,{s:12*k,c:inFill?'#fff':PAL['cv-soft'],a:'right'});}}
     else txt(ctx,'?',RX+8,yy+bh-2,{s:12*k,w:700,c:PAL['cv-soft']});});});
-  if(G&&G.g&&!big)txt(ctx,'Your gut: Group B flags at '+G.g.t+'%+',780,ky,{s:12*k,w:700,c:PAL['s4'],a:'right'});},
+  if(G&&G.g&&!big)txt(ctx,'Your gut: Group B flags at '+G.g.t+'%+',780,ky,{s:12*k,w:700,c:PAL['s4'],a:'right'});
+  if(stg===8){const X=420,Y=40,W=360,H=170;ctx.fillStyle=PAL['cv-bg'];ctx.globalAlpha=.96;ctx.fillRect(X,Y,W,H);ctx.globalAlpha=1;ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2;ctx.strokeRect(X,Y,W,H);
+   txt(ctx,'COMPAS, ProPublica (2016)',X+14,Y+26,{s:14*k,w:700});txt(ctx,'Did not re-offend, but labeled high risk:',X+14,Y+50,{s:12*k,c:PAL['cv-soft']});
+   [['Black defendants',.45,'s5'],['White defendants',.23,'s2']].forEach(([l,v,c],i)=>{const yy=Y+72+i*44;txt(ctx,l,X+14,yy,{s:12*k,w:700,c:PAL[c]});ctx.fillStyle=PAL['card2'];ctx.fillRect(X+14,yy+6,260,14);ctx.fillStyle=PAL[c];ctx.fillRect(X+14,yy+6,260*v,14);txt(ctx,Math.round(v*100)+'%',X+282,yy+19,{s:12*k,w:700});});}},
  narrate(sim){const a=SA(sim),b=SB(sim),tA=tAof(sim),same=sim.p.tB===tA;
   if(!shown(sim))return `The score is just as accurate for both groups: a score of 30% means a 30% chance of struggling in Group A or Group B. ${same?'Both groups are flagged at '+tA+'% or higher. ':''}<b>Look at the shaded part of each picture: who gets flagged?</b>`;
   if(same)return `One cutoff for everyone. Fine students get flagged ${p0(b.fpr)} of the time in Group B but only ${p0(a.fpr)} in Group A, while struggling students are missed ${p0(a.fnr)} of the time in A and ${p0(b.fnr)} in B. <b>Group B has more middle scores, so the same rule lands on its fine students more often.</b>`;
@@ -157,14 +164,14 @@ const SIM={
   {lvl:'ap',instant:true,q:'Kleinberg, Mullainathan and Raghavan (2016) proved calibration and equal error rates cannot all hold together. When is the impossibility escaped?',choices:['When the cutoff is 50%','Only when the groups have equal base rates, or the score predicts perfectly','When the groups are the same size'],correct:1,explain:'With equal base rates, or a perfect score (all scores 0% or 100%), every condition can hold. Real risk scores are neither, so a designer has to choose which fairness to give up.'}
  ],
  tour:[
-  {title:'Two groups, one score',text:'Each bar is a slice of students with similar risk scores. Orange students would struggle without help; teal students would be fine. The score is calibrated: in both groups, 30% of the students scored 30% would struggle.',pause:true,setup:sim=>BioLab.setValues(sim,{tA:30,tB:30,bA:15,bB:35,reveal:true}),focus:[0,0,800,250]},
-  {title:'Different base rates',text:'In Group A, 15% of students would struggle. In Group B, 35% would. So Group B has more middle and high scores.',pause:true,focus:[0,0,800,250]},
-  {title:'One rule for everyone',text:'The school flags anyone scoring 30% or more, in both groups. Everything right of the red line gets flagged and sent to study hall.',pause:true},
-  {title:'Fine, but flagged',text:'Group B’s fine students get flagged 45.5% of the time. Group A’s, only 9.7%. Same rule, same accurate score.',pause:true,focus:[0,250,800,200]},
-  {title:'Needed help, missed',text:'The other mistake flips: Group A’s struggling students are missed 61.5% of the time, Group B’s 23.0%.',pause:true,focus:[0,250,800,200]},
-  {title:'Change Group B’s rule',text:'Raise Group B’s cutoff to 50%. Now false flags are 9.7% vs 12.6% and misses 61.5% vs 62.6%. Nearly equal.',pause:true,setup:sim=>BioLab.setValues(sim,{tB:50,reveal:true})},
-  {lvl:'honors',title:'The price',text:'Now a flag means a 41.3% chance of struggling in Group A but 61.5% in Group B, and a student scoring 40% is flagged in A but not in B. Equal error rates cost you equal meaning.',pause:true},
-  {lvl:'honors',title:'The same math in court',text:'COMPAS scores defendants’ risk of re-offending. ProPublica (2016) found non-reoffending Black defendants labeled high risk 45% of the time, white defendants 23%. Northpointe answered that its score was calibrated. Both can be true at once.',pause:true}
+  {title:'Two groups, one score',text:'Each bar is a slice of students with similar risk scores. Orange students would struggle without help; teal students would be fine. The score is calibrated: in both groups, 30% of the students scored 30% would struggle.',pause:true,setup:sim=>{sim.tst=1;BioLab.setValues(sim,{tA:30,tB:30,bA:15,bB:35,reveal:true});},focus:[0,0,800,250]},
+  {title:'Different base rates',text:'In Group A, 15% of students would struggle. In Group B, 35% would. So Group B has more middle and high scores.',pause:true,setup:sim=>{sim.tst=2;},focus:[0,0,800,250]},
+  {title:'One rule for everyone',text:'The school flags anyone scoring 30% or more, in both groups. Everything right of the red line gets flagged and sent to study hall.',pause:true,setup:sim=>{sim.tst=3;}},
+  {title:'Fine, but flagged',text:'Group B’s fine students get flagged 45.5% of the time. Group A’s, only 9.7%. Same rule, same accurate score.',pause:true,setup:sim=>{sim.tst=4;},focus:[0,250,800,200]},
+  {title:'Needed help, missed',text:'The other mistake flips: Group A’s struggling students are missed 61.5% of the time, Group B’s 23.0%.',pause:true,setup:sim=>{sim.tst=5;},focus:[0,250,800,200]},
+  {title:'Change Group B’s rule',text:'Raise Group B’s cutoff to 50%. Now false flags are 9.7% vs 12.6% and misses 61.5% vs 62.6%. Nearly equal.',pause:true,setup:sim=>{sim.tst=6;BioLab.setValues(sim,{tB:50,reveal:true});}},
+  {lvl:'honors',title:'The price',text:'Now a flag means a 41.3% chance of struggling in Group A but 61.5% in Group B, and a student scoring 40% is flagged in A but not in B. Equal error rates cost you equal meaning.',pause:true,setup:sim=>{sim.tst=7;}},
+  {lvl:'honors',title:'The same math in court',text:'COMPAS scores defendants’ risk of re-offending. ProPublica (2016) found non-reoffending Black defendants labeled high risk 45% of the time, white defendants 23%. Northpointe answered that its score was calibrated. Both can be true at once.',pause:true,setup:sim=>{sim.tst=8;}}
  ],
  lab:{bio:'<p><b>Question:</b> How does one cutoff treat two groups whose base rates differ?</p><ol><li>Turn on <b>Show the error rates now</b>.</li><li>Record a trial with Group B’s cutoff at 20%, 30%, 40%, 50% and 60%.</li><li>Graph <b>Trials</b> with the cutoff on x and Group B’s false-flag rate on y.</li></ol><p>Write one sentence: what does raising the cutoff do to each kind of mistake?</p>',
   honors:'<p><b>Question:</b> Can you get equal error rates and equal meaning at the same time?</p><ol><li>Press <b>Use one cutoff for both groups</b>, then <b>Match the false-flag rates</b>, then <b>Make a flag mean the same in both groups</b>.</li><li>Record all four error rates and both flag meanings each time.</li><li>Now set both base rates to 25% and repeat.</li></ol><p>Explain why the base rates decide whether all three can match.</p>',

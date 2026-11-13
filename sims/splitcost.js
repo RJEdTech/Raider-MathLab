@@ -43,12 +43,12 @@ const SIM={
   const N=12,vals=[];for(let n=2;n<=N+1;n++)vals.push(cost(sim,n-1)-cost(sim,n));
   const ax=axes(ctx,box,{xmin:0,xmax:N,ymin:0,ymax:vals[0]*1.15,xl:'The person who joins (2nd, 3rd, …)',yl:'Saved per person ($)',xcats:vals.map((_,i)=>String(i+2))});
   bars(ctx,ax,vals,{colors:[PAL['s2']],d:vals[0]>=100?0:2,labels:true});},
- draw(sim,ctx,vdt,k){const sh=shown(sim),G=sim.gutS,s=SC[sim.p.scen],n=sim.p.n,ns=nstar(sim),v=sim.p.v,T=sim.p.T,F=sim.p.F;
+ draw(sim,ctx,vdt,k){const stg=(sim.tour&&sim.tour.on)?(sim.tst||1):99,sh=shown(sim),G=sim.gutS,s=SC[sim.p.scen],n=sim.p.n,ns=nstar(sim),v=sim.p.v,T=sim.p.T,F=sim.p.F;
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   /* people band */
   const shownN=Math.min(n,80),iw=Math.min(22,(760)/Math.max(shownN,1)),ok=sh&&cost(sim,n)<=T+1e-9;
-  txt(ctx,n+' '+(n===1?U(sim).replace(/s$/,''):U(sim))+(sh?' · '+usd(cost(sim,n))+' each':' · ? each'),20,26*k,{s:14*k,w:700,c:ok?PAL['s3']:PAL['cv-ink']});
-  for(let i=0;i<shownN;i++){const x=20+i*iw+iw/2,r=Math.max(3,iw*0.32);ctx.fillStyle=sh?(ok?PAL['s3']:PAL['s1']):PAL['cv-soft'];ctx.beginPath();ctx.arc(x,44*k,r,0,7);ctx.fill();ctx.beginPath();ctx.arc(x,44*k+r*2.4,r*1.3,Math.PI,0);ctx.fill();}
+  if(stg>=2){txt(ctx,n+' '+(n===1?U(sim).replace(/s$/,''):U(sim))+(sh?' · '+usd(cost(sim,n))+' each':' · ? each'),20,26*k,{s:14*k,w:700,c:ok?PAL['s3']:PAL['cv-ink']});
+  for(let i=0;i<shownN;i++){const x=20+i*iw+iw/2,r=Math.max(3,iw*0.32);ctx.fillStyle=sh?(ok?PAL['s3']:PAL['s1']):PAL['cv-soft'];ctx.beginPath();ctx.arc(x,44*k,r,0,7);ctx.fill();ctx.beginPath();ctx.arc(x,44*k+r*2.4,r*1.3,Math.PI,0);ctx.fill();}}
   /* plot */
   const L0=Math.round(40+34*k),R0=780,T0=Math.round(64*k+40),B0=416-12*k;
   const xmax=Math.max(20,Math.ceil(Math.max(ns||0,n,G&&G.g?G.g.n:0)*1.6/10)*10),ymax=Math.max(T*2,v*2.2,20);
@@ -58,16 +58,21 @@ const SIM={
   const ystep=[5,10,20,25,50,100,200,500].find(c=>(B0-T0)*c/ymax>=24*k)||500;for(let c=0;c<=ymax+1e-9;c+=ystep){ctx.globalAlpha=.5;ctx.beginPath();ctx.moveTo(L0,Y(c));ctx.lineTo(R0,Y(c));ctx.stroke();ctx.globalAlpha=1;txt(ctx,'$'+c,L0-6,Y(c)+4,{s:12*k,c:PAL['cv-soft'],a:'right'});}
   txt(ctx,'Cost per person vs. group size',L0,T0-10,{s:12*k,w:700,c:PAL['cv-soft']});
   /* target */
-  ctx.strokeStyle=PAL['s3'];ctx.lineWidth=2;ctx.setLineDash([8,5]);ctx.beginPath();ctx.moveTo(L0,Y(T));ctx.lineTo(R0,Y(T));ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle=PAL['s3'];ctx.lineWidth=stg===1?4:2;ctx.setLineDash([8,5]);ctx.beginPath();ctx.moveTo(L0,Y(T));ctx.lineTo(R0,Y(T));ctx.stroke();ctx.setLineDash([]);
   htxt(ctx,'Target: '+usd(T),R0-4,Y(T)-6,{s:12*k,w:700,c:PAL['s3'],a:'right'});
-  if(sh){/* asymptotes */
-   ctx.strokeStyle=PAL['s5'];ctx.lineWidth=1.5;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L0,Y(v));ctx.lineTo(R0,Y(v));ctx.stroke();ctx.setLineDash([]);
-   htxt(ctx,(atLeast('honors')?'Horizontal asymptote: ':'Never below ')+usd(v)+' each',R0-4,Y(v)+16*k,{s:12*k,w:700,c:PAL['s5'],a:'right'});
+  if(stg===2){const c=cost(sim,n);ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(X(n),Y(c),7,0,7);ctx.fill();htxt(ctx,usd(F)+' ÷ '+n+' + '+usd(v)+' = '+usd(c)+' each',X(n)+14,Y(c)+5,{s:14*k,w:700,c:PAL['rj']});}
+  if(sh&&stg>=3){/* asymptotes */
+   if(stg>=5){ctx.strokeStyle=PAL['s5'];ctx.lineWidth=stg===5?3:1.5;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L0,Y(v));ctx.lineTo(R0,Y(v));ctx.stroke();ctx.setLineDash([]);
+   htxt(ctx,(atLeast('honors')?'Horizontal asymptote: ':'Never below ')+usd(v)+' each',R0-4,Y(v)+16*k,{s:stg===5?14*k:12*k,w:700,c:PAL['s5'],a:'right'});}
    ctx.strokeStyle=PAL['rj'];ctx.lineWidth=3;ctx.beginPath();let st=false;for(let q=0.3;q<=xmax;q+=0.1){const c=cost(sim,q);if(c>ymax*1.02){st=false;continue;}const x=X(q),y=Y(c);st?ctx.lineTo(x,y):ctx.moveTo(x,y);st=true;}ctx.stroke();
    for(let q=1;q<=xmax;q++){const c=cost(sim,q);if(c<=ymax){ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(X(q),Y(c),xmax>40?1.8:2.6,0,7);ctx.fill();}}
-   if(ns&&ns<=xmax){ctx.fillStyle=PAL['s3'];ctx.beginPath();ctx.arc(X(ns),Y(cost(sim,ns)),7,0,7);ctx.fill();pill(ctx,ns+' '+U(sim)+': '+usd(cost(sim,ns)),clamp(X(ns)+70*k,L0+80*k,R0-80*k),Y(cost(sim,ns))-22*k,PAL['s3'],'#fff',12*Math.min(k,1.5));}}
-  else txt(ctx,'?',X(xmax*0.3),Y(T*1.5),{s:34*k,w:700,c:PAL['rj']});
+   if(ns&&ns<=xmax){ctx.fillStyle=PAL['s3'];ctx.beginPath();ctx.arc(X(ns),Y(cost(sim,ns)),7,0,7);ctx.fill();pill(ctx,ns+' '+U(sim)+': '+usd(cost(sim,ns)),clamp(X(ns)+70*k,L0+80*k,R0-80*k),Y(cost(sim,ns))-22*k,PAL['s3'],'#fff',12*Math.min(k,1.5));}
+   if(stg===3&&ns){ctx.strokeStyle=PAL['s3'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(X(ns),Y(cost(sim,ns)),13,0,7);ctx.stroke();htxt(ctx,'35 + 1200/n = 150  →  n ≈ 10.4  →  round up to 11',L0+20,T0+44*k,{s:14*k,w:700,c:PAL['s3']});}
+   if(stg===4){[[5,6],[11,12]].forEach(([a,b])=>{const ya=Y(cost(sim,a)),yb=Y(cost(sim,b)),xb=X(b);ctx.strokeStyle=PAL['s4'];ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(xb,ya);ctx.lineTo(xb,yb);ctx.stroke();ctx.beginPath();ctx.moveTo(X(a),ya);ctx.lineTo(xb,ya);ctx.stroke();htxt(ctx,(b===6?'The 6th person saves everyone ':'The 12th saves only ')+usd(cost(sim,a)-cost(sim,b)),xb+10,b===6?(ya+yb)/2+5:yb+30*k,{s:14*k,w:700,c:PAL['s4']});});}
+   if(stg===6){const bx=L0+180,by=T0+20;ctx.fillStyle=PAL['cv-bg'];ctx.globalAlpha=.94;ctx.fillRect(bx,by,330,86);ctx.globalAlpha=1;ctx.strokeStyle=PAL['s2'];ctx.lineWidth=2;ctx.strokeRect(bx,by,330,86);txt(ctx,'C(n) = v + F/n',bx+14,by+30,{s:15*k,w:700,c:PAL['s2']});txt(ctx,'C(n) = T  →  n = F/(T − v)',bx+14,by+62,{s:15*k,w:700,c:PAL['s2']});}}
+  else if(!sh)txt(ctx,'?',X(xmax*0.3),Y(T*1.5),{s:34*k,w:700,c:PAL['rj']});
   /* gut */
+  if(stg<99)return;
   const gn=G&&G.g?G.g.n:n,gx=X(gn);ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(gx,T0);ctx.lineTo(gx,B0);ctx.stroke();ctx.setLineDash([]);
   htxt(ctx,(G&&G.g?'Your gut: ':'Your guess: ')+gn,gx+(gx>R0-120?-6:6),T0+16*k,{s:12*k,w:700,c:PAL['s4'],a:gx>R0-120?'right':'left'});},
  narrate(sim){const s=SC[sim.p.scen],v=sim.p.v,T=sim.p.T,F=sim.p.F,n=sim.p.n;
@@ -100,12 +105,12 @@ const SIM={
   {lvl:'ap',instant:true,q:'A business pays $5,000 to set up a product run, then $2 per unit. How many units must it make for the average cost to be $2.50 or less?',choices:['2,000','2,500','10,000','No number works'],correct:2,explain:'2 + 5000/n ≤ 2.50 means 5000/n ≤ 0.50, so n ≥ 10,000. Average cost can never fall below $2, the cost of one more unit.'}
  ],
  tour:[
-  {title:'The trip',text:'A cabin costs $1,200 for the weekend. The group splits it evenly, and each person also pays $35 for food. The goal: $150 or less each.',pause:true,setup:sim=>{sim.peek=true;BioLab.setValues(sim,{scen:'cabin',n:4});}},
-  {title:'A small group',text:'With 4 people, each pays $1,200 ÷ 4 = $300 for the cabin, plus $35: $335 each. Far over the target.',pause:true},
-  {title:'Solve for the group',text:'Set 35 + 1200/n = 150. Then 1200/n = 115 and n = 1200 ÷ 115 ≈ 10.4. You cannot bring 0.4 of a person, so round up: 11 people, at $144.09 each.',pause:true,setup:sim=>BioLab.setValues(sim,{n:11})},
-  {title:'Diminishing returns',text:'Adding the 2nd person saved everyone $600. Adding the 12th saves only $9.09. The bars in the graph below shrink fast.',pause:true},
-  {title:'The floor',text:'Even with 20 people, each pays $95. The cost per person gets closer to $35, the food cost, but never reaches it. That line is the horizontal asymptote.',pause:true,setup:sim=>BioLab.setValues(sim,{n:20})},
-  {lvl:'ap',title:'The algebra',text:'C(n) = (F + v·n)/n = v + F/n. Solving C(n) = T gives n = F/(T − v). If T ≤ v, there is no solution: the target is at or below the asymptote.',pause:true}
+  {title:'The trip',text:'A cabin costs $1,200 for the weekend. The group splits it evenly, and each person also pays $35 for food. The goal: $150 or less each.',pause:true,setup:sim=>{sim.tst=1;sim.peek=true;BioLab.setValues(sim,{scen:'cabin',n:4});}},
+  {title:'A small group',text:'With 4 people, each pays $1,200 ÷ 4 = $300 for the cabin, plus $35: $335 each. Far over the target.',pause:true,setup:sim=>{sim.tst=2;}},
+  {title:'Solve for the group',text:'Set 35 + 1200/n = 150. Then 1200/n = 115 and n = 1200 ÷ 115 ≈ 10.4. You cannot bring 0.4 of a person, so round up: 11 people, at $144.09 each.',pause:true,setup:sim=>{sim.tst=3;BioLab.setValues(sim,{n:11});}},
+  {title:'Diminishing returns',text:'Going from 5 people to 6 saves everyone $40. Going from 11 to 12 saves only $9.09. Each new person helps less, and the bars in the graph below shrink fast.',pause:true,setup:sim=>{sim.tst=4;}},
+  {title:'The floor',text:'Even with 20 people, each pays $95. The cost per person gets closer to $35, the food cost, but never reaches it. That line is the horizontal asymptote.',pause:true,setup:sim=>{sim.tst=5;BioLab.setValues(sim,{n:20});}},
+  {lvl:'ap',title:'The algebra',text:'C(n) = (F + v·n)/n = v + F/n. Solving C(n) = T gives n = F/(T − v). If T ≤ v, there is no solution: the target is at or below the asymptote.',pause:true,setup:sim=>{sim.tst=6;}}
  ],
  lab:{bio:'<p><b>Question:</b> Does each new person save as much as the one before?</p><ol><li>Press <b>Skip the guess</b> if you have not locked in a guess.</li><li>Set the group to 2, 4, 6, 8, 10, 15 and 20. Record a trial each time.</li><li>Graph <b>Trials</b> with group size on x and cost per person on y.</li></ol><p>Write one sentence about the shape of the graph.</p>',
   honors:'<p><b>Question:</b> How do the shared cost and the own cost shape the curve?</p><ol><li>Double the shared cost F and record how the group size needed changes.</li><li>Then raise the own cost v toward the target and record it again.</li></ol><p>Explain with n = F/(T − v) why the group size explodes as the target gets close to v.</p>',
