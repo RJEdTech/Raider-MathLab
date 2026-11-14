@@ -18,7 +18,7 @@ BioLab.COURSES = [
    {n:'Unit 2',t:'Logic and reasoning',ids:['logic','kidneyswap','schoolmatch']},
    {n:'Unit 3',t:'Parallel lines and angles',ids:['parking']},
    {n:'Triangles',t:'Congruence and similarity',ids:['truss','shadow'],note:'Honors: Units 5 and 6.'},
-   {n:'Right triangles',t:'Right-triangle trigonometry',ids:['ramp'],note:'Honors: Unit 8. Geometry: the first spring unit.'},
+   {n:'Right triangles',t:'Right-triangle trigonometry',ids:['ramp','clinometer'],note:'Honors: Unit 8. Geometry: the first spring unit.'},
    {n:'Polygons',t:'Polygons and quadrilaterals',ids:['tiling'],note:'Honors: Unit 9.'},
    {n:'Circles',t:'Circles: arcs, chords and inscribed angles',ids:['gps','tires','shotangle'],note:'Honors: Unit 10.'},
    {n:'Solids',t:'Surface area and volume',ids:['packaging'],note:'Honors: Unit 11.'},
@@ -42,7 +42,7 @@ BioLab.COURSES = [
    {n:'Unit 0',t:'Complex numbers',ids:['rotations']},
    {n:'Unit 1',t:'Function basics: composition and inverses',ids:['checkout','pondday','cipher','photofilter']},
    {n:'Unit 2',t:'Polynomial and rational functions',ids:['coaster','splitcost']},
-   {n:'Unit 3',t:'Triangle trigonometry',ids:['triangulate','ramp']},
+   {n:'Unit 3',t:'Triangle trigonometry',ids:['clinometer','triangulate','ramp']},
    {n:'Unit 4',t:'Trigonometry and the unit circle',ids:['daylight']},
    {n:'Unit 5',t:'Graphing trigonometric functions',ids:['daylight','noisecancel']},
    {n:'Unit 6',t:'Exponents and logarithms',ids:['logscale','creditcard','startearly','mortgageterm','decibels']}
@@ -106,7 +106,7 @@ BioLab.COURSES = [
 ];BioLab.TOPIC_ORDER = {
  1:['formulas','scaleit','debtfit'],2:['rideshare','breakeven','budget','carhouse'],3:['areamodel','freethrow','ticketprice','dish','coaster','openbox'],
  4:['datasize','skidmarks','creditcard','startearly','mortgageterm','caffeine','decibels','passwords','logscale','billions'],5:['splitcost','sharedwork'],6:['checkout','pondday','photofilter','cipher','rotations'],
- 7:['logic'],8:['screens','parking','truss','shadow','ramp','triangulate'],12:['tiling','packaging','sprites'],10:['gps','tires','shotangle'],
+ 7:['logic'],8:['screens','parking','truss','shadow','ramp','clinometer','triangulate'],12:['tiling','packaging','sprites'],10:['gps','tires','shotangle'],
  9:['daylight','noisecancel'],11:['fontcurves','matrices','windvectors','orbits'],
  13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','targetdrop','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
  16:['runpace','battery','camerapan','shortcut','viewcurve'],17:['speedlog','concession','cooling','bottle'],18:['leadpass','sprinkler','caffeinedaily','sincode'],
