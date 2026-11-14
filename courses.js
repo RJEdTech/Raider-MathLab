@@ -23,7 +23,7 @@ BioLab.COURSES = [
    {n:'Circles',t:'Circles: arcs, chords and inscribed angles',ids:['gps','tires','shotangle'],note:'Honors: Unit 10.'},
    {n:'Solids',t:'Surface area and volume',ids:['packaging'],note:'Honors: Unit 11.'},
    {n:'Transformations',t:'Transformations and coordinate geometry',ids:['sprites'],note:'Honors: transformations and Unit 13.'},
-   {n:'Probability',t:'Probability (Honors Geometry)',ids:['lunchcount','rapidtest','makethepros'],note:'Honors Geometry probability unit: two-way tables and Venn diagrams, conditional probability, and multiplying probabilities.'}
+   {n:'Probability',t:'Probability (Honors Geometry)',ids:['targetdrop','lunchcount','rapidtest','makethepros'],note:'Honors Geometry probability unit: geometric probability, two-way tables and Venn diagrams, conditional probability, and multiplying probabilities.'}
   ]},
  {id:'alg2',finals:[{"t": "Algebra 2 fall final review", "units": [0, 1, 2], "note": "Covers Units 1 to 3: parent functions, quadratics and polynomials. Your teacher decides what is on the final, so check the study guide."}, {"t": "Honors Algebra 2/Trig fall final review", "units": [0, 1, 2, 3], "note": "Covers Chapters 1 to 3, through rational exponents and radicals. Your teacher decides what is on the final, so check the study guide."}],name:'Algebra 2',blurb:'Algebra 2 and Honors Algebra 2 / Trigonometry, in the order your class covers it.',
   further:['fontcurves'],
@@ -108,7 +108,7 @@ BioLab.COURSES = [
  4:['datasize','skidmarks','creditcard','startearly','mortgageterm','caffeine','decibels','passwords','logscale','billions'],5:['splitcost','sharedwork'],6:['checkout','pondday','photofilter','cipher','rotations'],
  7:['logic'],8:['screens','parking','truss','shadow','ramp','triangulate'],12:['tiling','packaging','sprites'],10:['gps','tires','shotangle'],
  9:['daylight','noisecancel'],11:['fontcurves','matrices','windvectors','orbits'],
- 13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
+ 13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','targetdrop','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
  16:['runpace','battery','camerapan','shortcut','viewcurve'],17:['speedlog','concession','cooling','bottle'],18:['leadpass','sprinkler','caffeinedaily','sincode'],
  19:['stickernet','aidoptimizer','rankcolleges','carquote','valueadded','hotspot','beatbot','schedule','fairscore','onepercent'],
  20:['kidneyswap','schoolmatch','livessaved','costofliving','livingwage','povertypremium','minutesofwork'],
