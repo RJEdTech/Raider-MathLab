@@ -102,6 +102,16 @@ BioLab.COURSES = [
    {n:'Spring 2',t:'Applications of integrals: area and volume',ids:['concession','bottle']},
    {n:'Spring 3',t:'Parametric equations and polar curves',ids:['leadpass','sprinkler']},
    {n:'Spring 4',t:'Differential equations, slope fields and Euler’s method',ids:['cooling']}
+  ]},
+ {id:'appcalc',finals:[{"t": "Applied Calculus fall final review", "units": [0, 1, 2], "note": "Covers functions and models, exponential and log functions, and limits. Your teacher decides what is on the final, so check the study guide."},{"t": "Applied Calculus spring final review", "units": [3, 4, 5, 6], "note": "Covers derivatives, graphs, optimization and integrals. Your teacher decides what is on the final, so check the study guide."}],name:'Applied Calculus',blurb:'Applied Calculus, in the order your class covers it: functions and models, exponentials and logs, then rates of change, optimization and accumulation.',
+  units:[
+   {n:'Unit 1',t:'Functions and models: linear, quadratic and rational',ids:['rideshare','breakeven','ticketprice','freethrow','splitcost']},
+   {n:'Unit 2',t:'Exponential and logarithmic functions',ids:['creditcard','startearly','caffeine','decibels','logscale']},
+   {n:'Unit 3',t:'Limits and average vs. instantaneous rate of change',ids:['runpace']},
+   {n:'Unit 4',t:'Derivatives and what they mean',ids:['runpace','battery','camerapan']},
+   {n:'Unit 5',t:'Graphs: increasing, decreasing and concavity',ids:['viewcurve','battery']},
+   {n:'Unit 6',t:'Optimization',ids:['shortcut','openbox','packaging','ticketprice','aidoptimizer']},
+   {n:'Unit 7',t:'Accumulation and integrals',ids:['speedlog','concession']}
   ]}
 ];BioLab.TOPIC_ORDER = {
  1:['formulas','scaleit','debtfit'],2:['rideshare','breakeven','budget','carhouse'],3:['areamodel','freethrow','ticketprice','dish','coaster','openbox'],
