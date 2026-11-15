@@ -8,6 +8,116 @@
    name agencies and programs, never parties; no em dashes. */
 window.RAIDER_NEWS = [
  {
+  "id": "nhtsa-traffic-deaths-h1-2026",
+  "week": "2026-11-15",
+  "date": "2026-11-10",
+  "title": "US traffic deaths fell 2.5% in the first half of 2026, even as people drove more",
+  "summary": "The National Highway Traffic Safety Administration (NHTSA) released early estimates showing 425 fewer people died on US roads from January to June 2026 than in the same months of 2025. Americans drove slightly more miles, so the death rate per mile fell to one of its lowest levels on record.",
+  "numbers": [
+   "An estimated 16,750 deaths in January to June 2026, down from 17,175 a year earlier, a 2.5% drop (<a href=\"https://aashtojournal.transportation.org/nhtsa-says-traffic-fatalities-fell-in-first-half-of-2026/\" target=\"_blank\" rel=\"noopener\">AASHTO Journal, reporting NHTSA estimates, Nov 13, 2026</a>).",
+   "1.02 deaths per 100 million vehicle miles traveled, down from 1.05 (<a href=\"https://aashtojournal.transportation.org/nhtsa-says-traffic-fatalities-fell-in-first-half-of-2026/\" target=\"_blank\" rel=\"noopener\">AASHTO Journal, Nov 13, 2026</a>).",
+   "Miles driven rose about 12.9 billion, or 0.8%, based on preliminary Federal Highway Administration data (<a href=\"https://aashtojournal.transportation.org/nhtsa-says-traffic-fatalities-fell-in-first-half-of-2026/\" target=\"_blank\" rel=\"noopener\">AASHTO Journal, Nov 13, 2026</a>).",
+   "35 states and Puerto Rico are projected to have fewer deaths; deaths in April to June fell only 0.2% (<a href=\"https://www.carriermanagement.com/news/2026/11/12/294093.htm\" target=\"_blank\" rel=\"noopener\">Carrier Management, Nov 12, 2026</a>).",
+   "Deaths in January to March 2026 fell 5%, and the half-year rate is the lowest since 2014 (<a href=\"https://www.fox13news.com/news/traffic-deaths-national-highway-traffic-safety-administration\" target=\"_blank\" rel=\"noopener\">Reuters via FOX 13, Nov 11, 2026</a>)."
+  ],
+  "concept": {
+   "title": "A rate needs the right denominator",
+   "html": "A count of deaths can fall just because people drove less. Safety experts divide by <b>exposure</b>: deaths per <b>100 million vehicle miles traveled</b> (VMT). Rate = deaths &divide; miles &times; 100,000,000. If miles go up while deaths go down, the rate falls faster than the count, so the roads really did get safer per mile driven."
+  },
+  "hook": {
+   "prompt": "Use the NHTSA estimates.",
+   "parts": [
+    {
+     "label": "(a) By what percent did deaths fall from 17,175 to 16,750?",
+     "answer": 2.47,
+     "tol": 0.03,
+     "unit": "%"
+    },
+    {
+     "label": "(b) Use deaths and the rate to estimate the miles driven in January to June 2026, in trillions of miles.",
+     "answer": 1.64,
+     "tol": 0.01,
+     "unit": "trillion miles"
+    },
+    {
+     "label": "(c) By what percent did the rate fall from 1.05 to 1.02?",
+     "answer": 2.86,
+     "tol": 0.03,
+     "unit": "%"
+    }
+   ],
+   "worked": "(a) 17,175 &minus; 16,750 = 425. 425 &divide; 17,175 = 0.0247, a <b>2.47%</b> drop (reported as 2.5%). (b) Miles = deaths &divide; rate &times; 100 million = 16,750 &divide; 1.02 &times; 100,000,000 = 1.642 &times; 10<sup>12</sup>, about <b>1.64 trillion miles</b> in six months. (c) (1.05 &minus; 1.02) &divide; 1.05 = 0.0286, a <b>2.86%</b> drop. The rate fell more than the count because miles went up."
+  },
+  "hides": "These are early estimates; final counts come later and often change. The rates are rounded to two decimals, so the miles you can back out of them are rough: 1.02 could be anything from 1.015 to 1.025, which swings the answer to (b) by about 8 billion miles. That is why your answer to (b) does not exactly match the 12.9 billion mile rise. The improvement slowed in the spring, and a national rate hides big differences between states and between drivers, passengers, walkers and cyclists.",
+  "evidence": "Moderate to strong: official federal estimates, read through trade and news reports. The NHTSA release itself could not be opened by this automated run, so its exact date is from news reports (\"released Tuesday\", Nov 10).",
+  "investigate": "NHTSA's <a href=\"https://www-fars.nhtsa.dot.gov/\" target=\"_blank\" rel=\"noopener\">Fatality Analysis Reporting System (FARS)</a> has deaths by state and year. Look up Colorado. Did its deaths per 100 million miles rise or fall over the last five years?",
+  "related": [
+   {
+    "href": "index.html#speedlog",
+    "label": "How far did we drive?"
+   },
+   {
+    "href": "index.html#skidmarks",
+    "label": "How far to stop?"
+   }
+  ]
+ },
+ {
+  "id": "paho-malaria-plan-2026",
+  "week": "2026-11-15",
+  "date": "2026-11-06",
+  "title": "Malaria cases in the Americas are falling, and a new plan aims to halve them by 2030",
+  "summary": "The Pan American Health Organization (PAHO) launched its 2026 to 2030 malaria plan. Cases and deaths are down from a decade ago, five countries have been certified malaria-free since 2018, and most remaining cases are in three countries.",
+  "numbers": [
+   "About 458,000 cases in 2025, 18% fewer than in 2020; 480,000 cases in 2015 (<a href=\"https://www.paho.org/en/news/6-11-2026-new-paho-plan-aims-accelerate-malaria-elimination-americas-over-next-four-years\" target=\"_blank\" rel=\"noopener\">PAHO, Nov 6, 2026</a>).",
+   "Deaths: 169 in 2015 and 115 in 2025 (<a href=\"https://www.paho.org/en/news/6-11-2026-new-paho-plan-aims-accelerate-malaria-elimination-americas-over-next-four-years\" target=\"_blank\" rel=\"noopener\">PAHO, Nov 6, 2026</a>).",
+   "Targets for 2030: incidence 50% lower than in 2024, a year with about 537,000 cases, and 70% lower incidence of <i>P. falciparum</i>, the deadliest malaria parasite (<a href=\"https://www.paho.org/en/news/6-11-2026-new-paho-plan-aims-accelerate-malaria-elimination-americas-over-next-four-years\" target=\"_blank\" rel=\"noopener\">PAHO, Nov 6, 2026</a>).",
+   "Certified malaria-free since 2018: Argentina, Paraguay, El Salvador, Belize and Suriname (<a href=\"https://www.paho.org/en/news/6-11-2026-new-paho-plan-aims-accelerate-malaria-elimination-americas-over-next-four-years\" target=\"_blank\" rel=\"noopener\">PAHO, Nov 6, 2026</a>).",
+   "74% of 2025 cases were in Brazil, Colombia and Venezuela (<a href=\"https://www.paho.org/en/news/6-11-2026-new-paho-plan-aims-accelerate-malaria-elimination-americas-over-next-four-years\" target=\"_blank\" rel=\"noopener\">PAHO, Nov 6, 2026</a>)."
+  ],
+  "concept": {
+   "title": "Recompute the percent yourself",
+   "html": "Percent change = (new &minus; old) &divide; old. It is quick to check, and worth checking: PAHO's own page says deaths fell \"by nearly 20%\" from 169 to 115. Work it out below. A gap like this can come from a typo, or from a different measure (for example, deaths per 100,000 people instead of the raw count). Also note that <b>incidence</b> is a rate (cases per population), so a 50% cut in incidence is close to, but not exactly, a 50% cut in cases."
+  },
+  "hook": {
+   "prompt": "Check PAHO's numbers.",
+   "parts": [
+    {
+     "label": "(a) By what percent did malaria deaths fall from 169 (2015) to 115 (2025)?",
+     "answer": 32.0,
+     "tol": 0.3,
+     "unit": "%"
+    },
+    {
+     "label": "(b) If cases fall 50% from 2024's 537,000, how many cases is that, in thousands?",
+     "answer": 268.5,
+     "tol": 0.5,
+     "unit": "thousand cases"
+    },
+    {
+     "label": "(c) 2025's 458,000 cases are 18% fewer than 2020. About how many cases were there in 2020, in thousands?",
+     "answer": 558.5,
+     "tol": 1.5,
+     "unit": "thousand cases"
+    }
+   ],
+   "worked": "(a) (169 &minus; 115) &divide; 169 = 54 &divide; 169 = 0.320, a <b>32%</b> drop, much more than the \"nearly 20%\" written on PAHO's page. Ask which measure the 20% describes. (b) 537,000 &times; 0.5 = <b>268,500 cases</b>, treating incidence like a case count. (c) 458,000 is 82% of the 2020 value, so 2020 = 458,000 &divide; 0.82 = about <b>558,500 cases</b>. Common mistake: 458,000 &times; 1.18 = 540,440 is wrong, because the 18% is a percent of the 2020 value, not of 2025."
+  },
+  "hides": "Counts depend on testing: more testing can find more cases, which can make progress look slower than it is, and weak testing can hide cases. Cases rose in 2024 before falling again, so one year is not a trend. Most cases are in a few places, so the region's average hides very different situations country by country. This is a plan with targets, not a new achievement.",
+  "evidence": "Strong for the counts: official regional surveillance data from PAHO, the World Health Organization's office for the Americas. The page's \"nearly 20%\" does not match its own counts, and this run could not find which measure it refers to.",
+  "investigate": "PAHO's <a href=\"https://www.paho.org/en/topics/malaria\" target=\"_blank\" rel=\"noopener\">malaria page</a> links to country data. Pick one of the five certified countries and find how many years it took to go from its last local case to certification.",
+  "related": [
+   {
+    "href": "index.html#livessaved",
+    "label": "Lives saved: an estimate, not a count"
+   },
+   {
+    "href": "index.html#yearlygrowth",
+    "label": "What yearly rate did that?"
+   }
+  ]
+ },
+ {
   "id": "flint-rxkids-2026",
   "week": "2026-11-08",
   "date": "2026-11-03",
