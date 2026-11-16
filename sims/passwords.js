@@ -31,6 +31,92 @@ function wrongPairs(sim,ranks){const C=cands(sim);let w=0;for(let i=0;i<4;i++)fo
 const HUMAN={s:'Sunflower2024!',L:14,pat:Math.log2(1e5)+1+Math.log2(100)+Math.log2(10)};
 const LX0=60,LX1=770,LMIN=-6,LMAX=30;
 const LXs=s=>LX0+(clamp(Math.log10(Math.max(s,1e-9)),LMIN,LMAX)-LMIN)/(LMAX-LMIN)*(LX1-LX0);
+/* Math type: `x` is an italic variable, ^{..} a superscript, _{..} a subscript. mt draws it on the canvas; F writes it as HTML for the walkthrough text. */
+const MF='"Cambria Math","STIX Two Math","Times New Roman",serif';
+function mt(ctx,str,x,y,o){o=o||{};const s=o.s||14,w=o.w||400,parts=[];
+ const walk=(t,dy,sc)=>t.split(/(\^\{[^}]*\}|_\{[^}]*\}|`[^`]*`)/).forEach(p=>{if(!p)return;
+  if(p[0]==='^'&&p[1]==='{')walk(p.slice(2,-1),dy-s*sc*0.42,sc*0.72);else if(p[0]==='_'&&p[1]==='{')walk(p.slice(2,-1),dy+s*sc*0.24,sc*0.72);
+  else if(p[0]==='`')parts.push({t:p.slice(1,-1),i:true,dy,sc});else parts.push({t:p,i:false,dy,sc});});
+ walk(str,0,1);const font=p=>p.i?'italic '+w+' '+(s*p.sc*1.15)+'px '+MF:w+' '+(s*p.sc)+'px '+FONT;
+ let W=0;parts.forEach(p=>{ctx.font=font(p);p.w=ctx.measureText(p.t).width;W+=p.w;});if(o.measure)return W;
+ let cx=o.a==='center'?x-W/2:o.a==='right'?x-W:x;ctx.fillStyle=o.c||PAL['cv-ink'];ctx.textAlign='left';ctx.textBaseline='alphabetic';
+ parts.forEach(p=>{ctx.font=font(p);ctx.fillText(p.t,cx,y+p.dy);cx+=p.w;});return W;}
+const F=s=>'<span style="font-family:'+MF.replace(/"/g,"'")+';font-size:1.1em;white-space:nowrap">'+s.replace(/`([^`]*)`/g,'<i>$1</i>').replace(/\^\{([^}]*)\}/g,'<sup>$1</sup>').replace(/_\{([^}]*)\}/g,'<sub>$1</sub>')+'</span>';
+const L2=n=>fmtNum(Math.log2(n),2);
+/* A small graph on the canvas: returns the X and Y maps. */
+function mini(ctx,b,o){const X=x=>b.L+(x-o.x0)/(o.x1-o.x0)*b.W,Y=y=>b.T+b.H-(y-o.y0)/(o.y1-o.y0)*b.H;
+ ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;o.yt.forEach(v=>{ctx.beginPath();ctx.moveTo(b.L,Y(v)+.5);ctx.lineTo(b.L+b.W,Y(v)+.5);ctx.stroke();txt(ctx,String(v),b.L-6,Y(v)+4,{s:11,c:PAL['cv-soft'],a:'right'});});
+ o.xt.forEach(v=>txt(ctx,String(v),X(v),b.T+b.H+14,{s:11,c:PAL['cv-soft'],a:'center'}));
+ ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(b.L,b.T);ctx.lineTo(b.L,b.T+b.H);ctx.lineTo(b.L+b.W,b.T+b.H);ctx.stroke();
+ mt(ctx,o.xl,b.L+b.W/2,b.T+b.H+30,{s:12,c:PAL['cv-soft'],a:'center'});
+ ctx.save();ctx.translate(b.L-30,b.T+b.H/2);ctx.rotate(-Math.PI/2);mt(ctx,o.yl,0,0,{s:12,c:PAL['cv-soft'],a:'center'});ctx.restore();return {X,Y};}
+const dot=(ctx,x,y,r,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();};
+/* The board under the cards on walkthrough steps 2–5 and 9 (desktop). */
+const BOARD={2:1,3:1,4:1,5:1,9:1};
+function board(sim,ctx,stg,y0,k){const C=cands(sim),A=C[0],B=C[1],NA=SETS[A.set].n,NB=SETS[B.set].n;
+ if(stg===2){mt(ctx,'Count: `N` choices in each of `L` spots. The counts multiply: `N` × `N` × … × `N` = `N`^{`L`}',400,y0+14,{s:15*k,w:700,a:'center'});
+  mt(ctx,'`N` = how many symbols each spot may use          `L` = the length (how many spots)',400,y0+36,{s:13*k,c:PAL['cv-soft'],a:'center'});
+  [A,B].forEach((c,r)=>{const N=SETS[c.set].n,top=y0+58+r*74,n=c.L,gap=12,sw=Math.min(44,(500-(n-1)*gap)/n),bh=30;
+   txt(ctx,LET[r],30,top+21,{s:18,w:800});let x=56;
+   for(let q=0;q<n;q++){rr(ctx,x,top,sw,bh,5);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['s2'];ctx.lineWidth=1.5;ctx.stroke();
+    ctx.font='600 '+Math.min(15,sw*0.7)+'px ui-monospace,Menlo,Consolas,monospace';ctx.fillStyle=PAL['cv-ink'];ctx.textAlign='center';ctx.fillText(c.s[q]||'',x+sw/2,top+20);
+    txt(ctx,String(N),x+sw/2,top+bh+13,{s:10,c:PAL['s2'],a:'center',w:700});
+    if(q<n-1)txt(ctx,'×',x+sw+gap/2,top+20,{s:11,c:PAL['cv-soft'],a:'center'});x+=sw+gap;}
+   const ex='= '+N+'^{'+n+'} ≈ '+big(Math.pow(N,n));const w=mt(ctx,ex,x+4,top+21,{s:15,w:700,c:PAL['rj']});ring(ctx,x-4,top-2,w+18,bh+4);});
+  txt(ctx,'Each spot is filled on its own, so the choices multiply (the multiplication principle). Blue number: choices for that spot.',400,y0+222,{s:12*k,c:PAL['cv-soft'],a:'center'});return;}
+ if(stg===3){mt(ctx,'Which counting rule fits? Try 3 symbols {a, b, c} and length 2.',400,y0+14,{s:15*k,w:700,a:'center'});
+  const P=[['Passwords: `N`^{`L`} = 3^{2} = 9','order matters · repeats allowed',()=>true],
+   ['Permutations: 3!/(3 − 2)! = 6','order matters · no repeats',(i,j)=>i!==j],
+   ['Combinations: `C`(3, 2) = 3','order ignored · no repeats',(i,j)=>i<j]],S='abc';
+  P.forEach(([h,sub,on],p)=>{const cx=140+p*260,gx=cx-92;mt(ctx,h,cx,y0+44,{s:14*k,w:700,a:'center',c:p?PAL['cv-ink']:PAL['s3']});txt(ctx,sub,cx,y0+62,{s:12*k,c:PAL['cv-soft'],a:'center'});
+   for(let i=0;i<3;i++)for(let j=0;j<3;j++){const x=gx+j*64,y=y0+74+i*32,ok=on(i,j);rr(ctx,x,y,56,26,6);ctx.fillStyle=ok?(p?PAL['card']:PAL['card']):PAL['cv-bg'];ctx.fill();
+    ctx.strokeStyle=ok?(p?PAL['s2']:PAL['s3']):PAL['line'];ctx.lineWidth=ok?2:1;ctx.stroke();
+    ctx.globalAlpha=ok?1:.35;ctx.font='600 14px ui-monospace,Menlo,Consolas,monospace';ctx.fillStyle=PAL['cv-ink'];ctx.textAlign='center';ctx.fillText(S[i]+S[j],x+28,y+18);ctx.globalAlpha=1;
+    if(!ok){ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+12,y+13);ctx.lineTo(x+44,y+13);ctx.stroke();}}
+   if(p===0)ring(ctx,gx-10,y0+28,204,152);});
+  txt(ctx,'Crossed out: “aa” is not allowed (no repeats).',400,y0+190,{s:12*k,c:PAL['cv-soft'],a:'center'});
+  txt(ctx,'“ba” counts as the same group as “ab”.',660,y0+206,{s:12*k,c:PAL['cv-soft'],a:'center'});
+  txt(ctx,'A password can repeat a symbol and “ab” ≠ “ba”, so count every ordered string.',260,y0+222,{s:12*k,w:700,c:PAL['s3'],a:'center'});return;}
+ if(stg===4){txt(ctx,'What is a bit?',30,y0+14,{s:15*k,w:700});txt(ctx,'One yes/no choice: a 0 or a 1.',30,y0+34,{s:13*k,c:PAL['cv-soft']});
+  [1,2,3].forEach((b,r)=>{const y=y0+52+r*36,n=1<<b,tw=b===3?27:40;mt(ctx,b+(b>1?' bits':' bit')+' → '+n+' = 2^{'+b+'}',30,y+18,{s:13,w:700});
+   for(let q=0;q<n;q++){const x=150+q*(tw+3);rr(ctx,x,y,tw,24,4);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['s5'];ctx.lineWidth=1.2;ctx.stroke();
+    ctx.font='600 '+(b===3?10:12)+'px ui-monospace,Menlo,Consolas,monospace';ctx.fillStyle=PAL['cv-ink'];ctx.textAlign='center';ctx.fillText(q.toString(2).padStart(b,'0'),x+tw/2,y+16);}});
+  mt(ctx,'`b` bits → 2^{`b`} strings: each bit doubles the count.',30,y0+178,{s:13*k,w:700,c:PAL['s5']});
+  txt(ctx,'Base 2 because computers store and test',30,y0+200,{s:12*k,c:PAL['cv-soft']});txt(ctx,'everything as 0s and 1s.',30,y0+216,{s:12*k,c:PAL['cv-soft']});
+  const rx=420;txt(ctx,'Bits = how many doublings make the count',rx,y0+14,{s:15*k,w:700});
+  mt(ctx,'bits = log_{2}(count) = log_{2}(`N`^{`L`}) = `L` · log_{2} `N`',rx,y0+50,{s:16*k,w:700,c:PAL['rj']});
+  mt(ctx,'(power rule:  log(`x`^{`k`}) = `k` · log `x`)',rx,y0+74,{s:12*k,c:PAL['cv-soft']});
+  [A,B].forEach((c,r)=>{const N=SETS[c.set].n;mt(ctx,LET[r]+':  '+c.L+' · log_{2} '+N+' = '+c.L+' · '+L2(N)+' ≈ '+fmtNum(bits(c.L,c.set),1)+' bits',rx,y0+112+r*30,{s:15*k,w:700,c:PAL['s2']});});
+  mt(ctx,'log_{2} `N` = bits one character adds = one block’s width',rx,y0+186,{s:12*k,c:PAL['cv-soft']});
+  ring(ctx,rx-10,y0+28,372,56);return;}
+ if(stg===5){const bL={L:70,T:y0+34,W:290,H:128},bR={L:480,T:y0+34,W:290,H:128};
+  mt(ctx,'Change `L` (keep '+NB+' symbols): a straight line',bL.L+bL.W/2,y0+14,{s:14*k,w:700,a:'center'});
+  const gl=mini(ctx,bL,{x0:0,x1:20,y0:0,y1:100,xt:[0,5,10,15,20],yt:[0,50,100],xl:'length `L`',yl:'bits'});
+  ctx.strokeStyle=PAL['s2'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(gl.X(0),gl.Y(0));ctx.lineTo(gl.X(20),gl.Y(20*Math.log2(NB)));ctx.stroke();
+  const s1=Math.log2(NB),xa=5,xb=6;ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(gl.X(xa),gl.Y(xa*s1));ctx.lineTo(gl.X(xb),gl.Y(xa*s1));ctx.lineTo(gl.X(xb),gl.Y(xb*s1));ctx.stroke();
+  const xc=11,xd=12;ctx.beginPath();ctx.moveTo(gl.X(xc),gl.Y(xc*s1));ctx.lineTo(gl.X(xd),gl.Y(xc*s1));ctx.lineTo(gl.X(xd),gl.Y(xd*s1));ctx.stroke();
+  htxt(ctx,'+'+L2(NB),gl.X(xb)+4,gl.Y(xa*s1+s1/2)+4,{s:11,w:700,c:PAL['rj']});htxt(ctx,'+'+L2(NB),gl.X(xd)+4,gl.Y(xc*s1+s1/2)+4,{s:11,w:700,c:PAL['rj']});
+  if(B.L<=20){dot(ctx,gl.X(B.L),gl.Y(bits(B.L,B.set)),5,PAL['cv-ink']);txt(ctx,'B',gl.X(B.L)-10,gl.Y(bits(B.L,B.set))-6,{s:13,w:800});}
+  mt(ctx,'Same rise every character: log_{2} '+NB+' ≈ '+L2(NB)+' bits each',bL.L+bL.W/2,y0+216,{s:12*k,w:700,c:PAL['rj'],a:'center'});
+  mt(ctx,'Change `N` (keep length '+A.L+'): a log curve',bR.L+bR.W/2,y0+14,{s:14*k,w:700,a:'center'});
+  const ym=Math.ceil(A.L*Math.log2(100)/10)*10,gr=mini(ctx,bR,{x0:0,x1:100,y0:0,y1:ym,xt:[0,25,50,75,100],yt:[0,ym/2,ym],xl:'symbols allowed `N`',yl:'bits'});
+  ctx.strokeStyle=PAL['s5'];ctx.lineWidth=2.5;ctx.beginPath();for(let n=1;n<=100;n+=0.5){const x=gr.X(n),y=gr.Y(A.L*Math.log2(n));n===1?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+  const pts=[10,26,52,94];pts.forEach((n,i)=>{const v=A.L*Math.log2(n);dot(ctx,gr.X(n),gr.Y(v),4,PAL['s5']);
+   if(i){const p=pts[i-1],d=v-A.L*Math.log2(p);htxt(ctx,'+'+fmtNum(d,1),gr.X((n+p)/2),gr.Y(v)-8,{s:11,w:700,c:PAL['rj'],a:'center'});}});
+  if(A.set==='all'){txt(ctx,'A',gr.X(94)-4,gr.Y(bits(A.L,A.set))+18,{s:13,w:800});}
+  txt(ctx,'Each bigger set adds fewer bits: the rises shrink',bR.L+bR.W/2,y0+216,{s:12*k,w:700,c:PAL['rj'],a:'center'});
+  return;}
+ if(stg===9){const lx=40;txt(ctx,'Solve for a missing constant',lx,y0+14,{s:15*k,w:700});
+  txt(ctx,'A site’s random 12-character passwords have 72 bits.',lx,y0+36,{s:13*k,c:PAL['cv-soft']});mt(ctx,'How many symbols `N` does it allow?',lx,y0+54,{s:13*k,c:PAL['cv-soft']});
+  const L=[['72 = 12 · log_{2} `N`','start from bits = `L` · log_{2} `N`'],['log_{2} `N` = 72 ÷ 12 = 6','divide both sides by 12'],['`N` = 2^{6} = 64','rewrite the log as an exponent']];
+  L.forEach(([a,b],i)=>{mt(ctx,a,lx,y0+88+i*36,{s:17*k,w:700,c:i===2?PAL['rj']:PAL['cv-ink']});mt(ctx,b,lx+200,y0+88+i*36,{s:12*k,c:PAL['cv-soft']});});
+  ring(ctx,lx-8,y0+142,190,28);mt(ctx,'Check: 12 · log_{2} 64 = 12 · 6 = 72 ✓',lx,y0+204,{s:13*k,w:700,c:PAL['s3']});
+  const b={L:490,T:y0+34,W:280,H:128};mt(ctx,'Bits per character: log_{2} `N`',b.L+b.W/2,y0+14,{s:14*k,w:700,a:'center'});
+  const g=mini(ctx,b,{x0:0,x1:100,y0:0,y1:8,xt:[0,25,50,75,100],yt:[0,2,4,6,8],xl:'symbols allowed `N`',yl:'bits per char'});
+  ctx.strokeStyle=PAL['s5'];ctx.lineWidth=2.5;ctx.beginPath();for(let n=1;n<=100;n+=0.5){const x=g.X(n),y=g.Y(Math.log2(n));n===1?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+  ctx.strokeStyle=PAL['rj'];ctx.setLineDash([5,4]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(g.X(0),g.Y(6));ctx.lineTo(g.X(64),g.Y(6));ctx.lineTo(g.X(64),g.Y(0));ctx.stroke();ctx.setLineDash([]);
+  dot(ctx,g.X(64),g.Y(6),6,PAL['rj']);htxt(ctx,'6 bits → 64',g.X(64)+8,g.Y(6)+16,{s:12,w:700,c:PAL['rj']});
+  mt(ctx,'Read across from 6, then down: `N` = 64',b.L+b.W/2,y0+214,{s:12*k,c:PAL['cv-soft'],a:'center'});return;}}
 function htxt(ctx,s,x,y,o){ctx.font=(o.w||400)+' '+o.s+'px '+FONT;const w=ctx.measureText(s).width,a=o.a||'left',x0=a==='right'?x-w:a==='center'?x-w/2:x;ctx.fillStyle=PAL['cv-bg'];ctx.globalAlpha=.85;ctx.fillRect(x0-3,y-o.s*0.85,w+6,o.s*1.1);ctx.globalAlpha=1;txt(ctx,s,x,y,o);}
 
 const SIM={
@@ -38,8 +124,8 @@ const SIM={
  card:'Rank four passwords from weakest to strongest by feel, then let logarithms count the guesses each one would take.',
  title:'Which password is actually strong?',
  lede:{bio:'A password is strong when there are so many possibilities that guessing them all would take forever. Each extra character multiplies the possibilities, so length matters more than you might think.',
-  honors:'A random password of L characters from a set of N symbols has N^L possibilities. Its strength in bits is log₂(N^L) = L · log₂ N. Every extra bit doubles the guesses.',
-  ap:'Time to try every possibility is 2^bits ÷ (guess rate). Solving for length is a logarithm problem: L = bits ÷ log₂ N.'},
+  honors:'Let L be the length and N the number of symbols each character may be. A random password has N × N × … × N = N^L possibilities. Its strength in bits, the number of yes/no choices it takes to pin it down, is log₂(N^L) = L · log₂ N. Every extra bit doubles the guesses.',
+  ap:'Time to try every possibility is 2^bits ÷ (guess rate). Bits = L · log₂ N is linear in L but logarithmic in N, and it can be solved for either: L = bits ÷ log₂ N, or N = 2^(bits ÷ L).'},
  scale:{bio:'Times assume an attacker who can test 10 billion guesses a second against a stolen copy of the password data: a worst case defenders plan for.',honors:'Strength in bits. Times assume an attacker who can test 10 billion guesses a second against a stolen copy of the password data: a worst case defenders plan for.'},
  aspect:16/9,timeless:true,trials:true,graph:true,
  controlsTitle:'Pick, then explore',
@@ -57,8 +143,13 @@ const SIM={
   {id:'time',label:'Time to try every one',text:true,noTrial:true,get:sim=>when(secs(bits(sim.p.len,sim.p.set),rate(sim)))},
   {id:'logyr',label:'Time to try every one, log₁₀ of years',unit:'',d:2,lvl:'ap',min:-20,max:null,get:sim=>Math.log10(secs(bits(sim.p.len,sim.p.set),rate(sim))/YR)}
  ],
- graphs:[{id:'len',label:'Bits vs. length for each character set',custom:true}],defaultGraph:'len',
- plot(sim,ctx,box){const ax=axes(ctx,box,{xmin:4,xmax:24,ymin:0,ymax:160,xl:'Length (characters)',yl:'Strength (bits)'});
+ graphs:[{id:'len',label:'Bits vs. length for each character set',custom:true},{id:'sym',label:'Bits vs. number of symbols N, at your length',custom:true}],defaultGraph:'len',
+ plot(sim,ctx,box,id){if(id==='sym'){const L=sim.p.len,ym=Math.ceil(L*Math.log2(100)*1.2/20)*20,ax=axes(ctx,box,{xmin:0,xmax:100,ymin:0,ymax:ym,xl:'Symbols allowed, N',yl:'Strength (bits)'});
+   ctx.strokeStyle=PAL['s5'];ctx.lineWidth=2.5;ctx.beginPath();for(let n=1;n<=100;n+=0.5){const x=ax.X(n),y=ax.Y(L*Math.log2(n));n===1?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+   ['digits','lower','mixed','alnum','all'].forEach((st,i)=>{const n=SETS[st].n,v=L*Math.log2(n);ctx.fillStyle=st===sim.p.set?PAL['rj']:PAL['s5'];ctx.beginPath();ctx.arc(ax.X(n),ax.Y(v),st===sim.p.set?6:4,0,7);ctx.fill();
+    txt(ctx,n+': '+fmtNum(v,1),ax.X(n),ax.Y(v)+(i%2?20:-10),{s:12,w:700,c:st===sim.p.set?PAL['rj']:PAL['s5'],a:'center'});});
+   txt(ctx,L+' characters: bits = '+L+' · log₂ N',ax.X(62),ax.Y(ym*0.16),{s:12,c:PAL['muted'],a:'left'});txt(ctx,'Each bigger set adds less.',ax.X(62),ax.Y(ym*0.16)+16,{s:12,c:PAL['muted'],a:'left'});return;}
+  const ax=axes(ctx,box,{xmin:4,xmax:24,ymin:0,ymax:160,xl:'Length (characters)',yl:'Strength (bits)'});
   ['digits','lower','mixed','all'].forEach((s,i)=>{const col=[PAL['s6'],PAL['s3'],PAL['s2'],PAL['s5']][i];ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax.X(4),ax.Y(bits(4,s)));ctx.lineTo(ax.X(24),ax.Y(bits(24,s)));ctx.stroke();
    txt(ctx,SETS[s].d,ax.X(24)-4,ax.Y(bits(24,s))+(s==='mixed'?16:-6),{s:12,c:col,a:'right',w:700});});
   ctx.strokeStyle=PAL['muted'];ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(ax.X(4),ax.Y(128));ctx.lineTo(ax.X(24),ax.Y(128));ctx.stroke();ctx.setLineDash([]);txt(ctx,'128-bit encryption key',ax.X(4)+6,ax.Y(128)-6,{s:12,c:PAL['muted']});
@@ -78,36 +169,41 @@ const SIM={
    txt(ctx,c.L+' chars · '+SETS[c.set].d,x+14,top+54*k,{s:12*k,c:PAL['cv-soft']});
    if(solved&&!T)txt(ctx,(atLeast('honors')?fmtNum(b,1)+' bits · ':'')+when(secs(b,r))+(atLeast('honors')?'':' to try them all'),x+14,top+76*k,{s:13*k,w:700,c:PAL['s3']});
    if(T&&stg>=2){const N=SETS[c.set].n,ly2=top+76*k;
-    const line=(ph&&stg>=5)?when(secs(b,r))+' to try them all':stg===2?N+supN(c.L)+' ≈ '+big(Math.pow(N,c.L))+' possible':c.L+' × '+fmtNum(Math.log2(N),2)+' = '+fmtNum(b,1)+' bits';
-    txt(ctx,line,x+14,ly2,{s:13*k,w:700,c:(ph&&stg>=5)?PAL['s3']:PAL['s2']});
-    if(stg===2||(ph&&(stg===3||stg===5)))ring(ctx,x+6,ly2-16*k,ph?cw-12:200,22*k);
-    if(stg>=3&&!ph){/* one block per character: its width is that character's bits */
+    const line=(ph&&stg>=6)?when(secs(b,r))+' to try them all':stg<=3?N+supN(c.L)+' ≈ '+big(Math.pow(N,c.L))+' possible':c.L+' × '+fmtNum(Math.log2(N),2)+' = '+fmtNum(b,1)+' bits';
+    txt(ctx,line,x+14,ly2,{s:13*k,w:700,c:(ph&&stg>=6)?PAL['s3']:PAL['s2']});
+    if(stg===2||(ph&&(stg===4||stg===6)))ring(ctx,x+6,ly2-16*k,ph?cw-12:200,22*k);
+    if(stg>=4&&!ph){/* one block per character: its width is that character's bits */
      const bx0=x+190,bw=2.2,by0=top+60,bh=18;ctx.fillStyle=PAL['line'];ctx.fillRect(bx0,by0,80*bw,bh);
      for(let q=0;q<c.L;q++){const w=Math.log2(N)*bw;ctx.fillStyle=PAL['s2'];ctx.fillRect(bx0+q*w,by0,w,bh);ctx.strokeStyle=PAL['card'];ctx.lineWidth=1.5;ctx.strokeRect(bx0+q*w,by0,w,bh);}
      txt(ctx,'one block per character',bx0,by0+bh+10,{s:10,c:PAL['cv-soft']});
-     if(stg===3)ring(ctx,x+6,top+61,cw-12,36);}
-    if(stg===4&&i<2)ring(ctx,x-4,top-4,cw+8,ch+8);}
+     if(stg===4)ring(ctx,x+6,top+61,cw-12,36);}
+    if(stg===5&&i<2)ring(ctx,x-4,top-4,cw+8,ch+8);}
   });
   const bot=ct+2*ch+gy;
-  const phMsg=T&&ph&&stg===6?'“'+HUMAN.s+'”: '+fmtNum(HUMAN.L*Math.log2(94),0)+' bits by the formula, about '+Math.round(HUMAN.pat)+' by its real pattern':T&&ph&&stg===7?'18 random lowercase letters: '+fmtNum(bits(18,'lower'),1)+' bits':'';
-  if(phMsg){txt(ctx,phMsg,400,bot+40,{s:11*k,c:stg===6?PAL['s1']:PAL['rj'],a:'center',w:700});ring(ctx,20,bot+40-16*k,760,24*k);}
-  else txt(ctx,solved?'Orange: your gut. Green: the strongest, by the math.':G&&G.g?'Locked in. Now let the math compare them.':'Which one holds out longest? Pick A, B, C or D.',400,bot+(ph?40:22),{s:(ph?11:12)*k,c:solved?PAL['cv-soft']:PAL['s4'],a:'center',w:700});
+  const PHM={2:'N choices in each of L spots multiply: N × N × … × N = Nᴸ',3:'Repeats allowed and order matters, so count Nᴸ',
+   4:'1 bit = one yes/no choice. Bits = log₂(Nᴸ) = L · log₂ N',5:'Bits grow in a straight line with L, but only like log₂ N with N',
+   7:'“'+HUMAN.s+'”: '+fmtNum(HUMAN.L*Math.log2(94),0)+' bits by the formula, about '+Math.round(HUMAN.pat)+' by its real pattern',8:'18 random lowercase letters: '+fmtNum(bits(18,'lower'),1)+' bits',
+   9:'72 bits in 12 characters: log₂ N = 6, so N = 2⁶ = 64'};
+  const phMsg=T&&ph&&PHM[stg]?PHM[stg]:'';
+  if(phMsg){txt(ctx,phMsg,400,bot+40,{s:11*k,c:stg===7?PAL['s1']:PAL['rj'],a:'center',w:700});ring(ctx,20,bot+40-16*k,760,24*k);}
+  else if(!(T&&BOARD[stg]))txt(ctx,solved?'Orange: your gut. Green: the strongest, by the math.':G&&G.g?'Locked in. Now let the math compare them.':'Which one holds out longest? Pick A, B, C or D.',400,bot+(ph?40:22),{s:(ph?11:12)*k,c:solved?PAL['cv-soft']:PAL['s4'],a:'center',w:700});
   if(ph)return;
+  if(T&&BOARD[stg]){board(sim,ctx,stg,bot+4,Math.min(k,1.1));return;}
   /* time scale */
   const ly=bot+92;
   txt(ctx,'Time to try every possibility (each tick is 10× the last)',LX0,ly-30,{s:13*k,w:700});
   ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(LX0,ly);ctx.lineTo(LX1,ly);ctx.stroke();
   [[1,'1 second'],[YR,'1 year'],[1e6*YR,'1 million years'],[13.8e9*YR,'age of the universe']].forEach(([s,l],i)=>{const x=LXs(s);ctx.strokeStyle=PAL['cv-ink'];ctx.beginPath();ctx.moveTo(x,ly-6);ctx.lineTo(x,ly+6);ctx.stroke();txt(ctx,l,x,ly+(i%2?36:20),{s:12*k,c:PAL['cv-soft'],a:'center'});});
   ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;for(let e=LMIN;e<=LMAX;e+=1){const x=LXs(Math.pow(10,e));ctx.beginPath();ctx.moveTo(x,ly-3);ctx.lineTo(x,ly+3);ctx.stroke();}
-  if(solved||(T&&stg>=5))C.forEach((c,i)=>{const x=LXs(secs(bits(c.L,c.set),r));ctx.fillStyle=PAL['s3'];ctx.beginPath();ctx.arc(x,ly,5,0,7);ctx.fill();txt(ctx,LET[i],x,ly-10,{s:12*k,w:800,c:PAL['s3'],a:'center'});});
-  if(T&&stg===5)ring(ctx,LX0-14,ly-46,LX1-LX0+28,90);
-  if(sim.mode==='guided'&&!(T&&stg>=6))return;
-  if(!(T&&stg===6)){const yx=LXs(secs(bits(sim.p.len,sim.p.set),r));ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.moveTo(yx,ly-3);ctx.lineTo(yx-7,ly-15);ctx.lineTo(yx+7,ly-15);ctx.closePath();ctx.fill();
-   if(T&&stg===7){htxt(ctx,'Red marker: 18 random lowercase letters, '+fmtNum(bits(18,'lower'),1)+' bits',yx,ly+58,{s:12*k,w:700,c:PAL['rj'],a:'center'});ring(ctx,yx-175,ly-22,350,92);}}
+  if(solved||(T&&stg>=6))C.forEach((c,i)=>{const x=LXs(secs(bits(c.L,c.set),r));ctx.fillStyle=PAL['s3'];ctx.beginPath();ctx.arc(x,ly,5,0,7);ctx.fill();txt(ctx,LET[i],x,ly-10,{s:12*k,w:800,c:PAL['s3'],a:'center'});});
+  if(T&&stg===6){ring(ctx,LX0-14,ly-46,LX1-LX0+28,90);mt(ctx,'time = 2^{bits} ÷ (guesses per second)',400,ly+80,{s:14*k,w:700,c:PAL['s3'],a:'center'});}
+  if(sim.mode==='guided'&&!(T&&stg>=7))return;
+  if(!(T&&stg===7)){const yx=LXs(secs(bits(sim.p.len,sim.p.set),r));ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.moveTo(yx,ly-3);ctx.lineTo(yx-7,ly-15);ctx.lineTo(yx+7,ly-15);ctx.closePath();ctx.fill();
+   if(T&&stg===8){htxt(ctx,'Red marker: 18 random lowercase letters, '+fmtNum(bits(18,'lower'),1)+' bits',yx,ly+58,{s:12*k,w:700,c:PAL['rj'],a:'center'});ring(ctx,yx-175,ly-22,350,92);}}
   if(sim.p.human&&atLeast('honors')){const xf=LXs(secs(HUMAN.L*Math.log2(94),r)),xp=LXs(secs(HUMAN.pat,r));ctx.strokeStyle=PAL['s1'];ctx.setLineDash([4,4]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xp,ly+9);ctx.lineTo(xf,ly+9);ctx.stroke();ctx.setLineDash([]);
    ctx.fillStyle=PAL['s1'];[xf,xp].forEach(x=>{ctx.beginPath();ctx.arc(x,ly+9,5,0,7);ctx.fill();});
    htxt(ctx,'“'+HUMAN.s+'” by the formula',Math.min(xf,LX1-100),ly+56,{s:12*k,w:700,c:PAL['s1'],a:'center'});htxt(ctx,'its real pattern',xp,ly+56,{s:12*k,w:700,c:PAL['s1'],a:'center'});
-   if(T&&stg===6)ring(ctx,Math.min(xp,xf)-70,ly-2,Math.abs(xf-xp)+210,70);}
+   if(T&&stg===7)ring(ctx,Math.min(xp,xf)-70,ly-2,Math.abs(xf-xp)+210,70);}
   else if(!T)txt(ctx,'Red marker: the password you build with the sliders',LX0,ly+60,{s:12*k,c:PAL['rj']});},
  narrate(sim){const b=bits(sim.p.len,sim.p.set),N=SETS[sim.p.set].n;
   let s=`Your own password: ${sim.p.len} characters with ${N} choices each is ${N}^${sim.p.len} possibilities, or <b>${fmtNum(b,1)} bits</b>. Trying them all takes <b>${when(secs(b,rate(sim)))}</b>.`;
@@ -138,22 +234,30 @@ const SIM={
   {lvl:'honors',instant:true,q:'How many bits is a random 12-letter lowercase password? (log₂ 26 ≈ 4.70)',choices:['About 26 bits','About 56 bits','About 312 bits','About 4,700 bits'],correct:1,explain:'Bits = L · log₂ N = 12 × 4.70 ≈ 56.4 bits. That is 26¹² ≈ 9.5 × 10¹⁶ possibilities.'},
   {lvl:'honors',instant:true,q:'“Password1!” has 10 characters from a 94-symbol set, so the formula says about 66 bits. Why is it far weaker than that in real life?',choices:['The formula has an error','People pick predictable patterns, and attackers try common words and patterns first','Symbols do not count'],correct:1,explain:'The formula assumes every character is random. A common word with a capital first letter, a digit and a ! at the end is one of the first patterns tried, so it falls almost at once. The formula is an upper limit for human-made passwords.'},
   {lvl:'ap',instant:true,q:'How many random lowercase letters do you need to beat 8 random characters from all 94 symbols? Use L · 4.70 > 8 × 6.555.',choices:['9','10','12','16'],correct:2,explain:'8 × 6.555 ≈ 52.4 bits. L > 52.4 ÷ 4.70 ≈ 11.2, so 12 lowercase letters.'},
+  {lvl:'honors',instant:true,q:'A 4-digit PIN can repeat digits (7737), and 1234 and 4321 are different PINs. Which expression counts the possible PINs?',choices:['10⁴ = 10,000','10! ÷ 6! = 5,040 (a permutation)','C(10, 4) = 210 (a combination)'],correct:0,explain:'Repeats are allowed and order matters, so each of the 4 spots has 10 choices: 10 × 10 × 10 × 10 = 10⁴. A permutation would forbid 7737; a combination would treat 1234 and 4321 as the same.'},
+  {lvl:'ap',instant:true,q:'A site’s random 12-character passwords have 72 bits. How many symbols does it allow?',choices:['6','12','64','72'],correct:2,explain:'72 = 12 · log₂ N, so log₂ N = 6. Rewrite as an exponent: N = 2⁶ = 64.'},
   {lvl:'ap',instant:true,q:'A 128-bit encryption key at 10 billion guesses a second: about how long to try every key?',choices:['About 10⁹ years','About 10¹⁵ years','About 10²¹ years','About 10³⁸ years'],correct:2,explain:'2¹²⁸ ≈ 3.4 × 10³⁸ keys ÷ 10¹⁰ per second ≈ 3.4 × 10²⁸ seconds ≈ 1.1 × 10²¹ years, about 80 billion times the age of the universe.'}
  ],
  tour:[
   {title:'Four passwords',text:'These four were made by a computer picking characters at random. A uses every keyboard symbol but is short. B is long but only lowercase. Which is strongest?',pause:true,setup:sim=>{sim.tst=1;sim.cands=null;BioLab.setValues(sim,{len:12,set:'lower',human:false});}},
-  {title:'Count the possibilities',text:'For each position, count the choices. B has 26 choices in each of 16 spots: 26¹⁶ ≈ 4.4 × 10²² possible passwords. A has 94⁸ ≈ 6.1 × 10¹⁵. Each card now shows its count.',pause:true,setup:sim=>{sim.tst=2;}},
-  {title:'Bits: a log of the count',text:'Bits = log₂ of the count = length × log₂(choices). A: 8 × 6.55 ≈ 52 bits. B: 16 × 4.70 ≈ 75 bits. Each bit doubles the guesses. In the bars, each block is one character, and its width is that character’s bits.',pause:true,setup:sim=>{sim.tst=3;}},
-  {title:'Length beats complexity',text:'Adding a character multiplies the count by the whole set size. Switching to a bigger set only raises log₂ N a little. That is why B beats A: its blocks are thinner, but it has twice as many.',pause:true,setup:sim=>{sim.tst=4;return BioLab.setValues(sim,{len:16,set:'lower'});}},
-  {title:'Time to try them all',text:'Assume a stolen password file and 10 billion guesses a second. A: about 7 days. B: about 138,000 years. Each dot on the scale is one card; every tick is 10 times the last.',pause:true,setup:sim=>{sim.tst=5;}},
-  {lvl:'honors',title:'People are predictable',text:'“Sunflower2024!” is 14 characters, so the formula says 92 bits. But it is a common word, a year and a symbol. Attackers try those patterns first, so it is really closer to 28 bits: a fraction of a second. The dashed line on the scale is that gap.',pause:true,setup:sim=>{sim.tst=6;return BioLab.setValues(sim,{human:true});}},
-  {lvl:'ap',title:'Solve for length',text:'How long must a lowercase password be to reach 80 bits? L = 80 ÷ log₂ 26 ≈ 17.0, so 18 letters to be safely past it. The red marker is 18 lowercase letters.',pause:true,setup:sim=>{sim.tst=7;return BioLab.setValues(sim,{human:false,len:18,set:'lower'});}}
+  {title:'Count the possibilities',text:'Name two numbers first: '+F('`N`')+' = how many symbols each spot may use, and '+F('`L`')+' = the length (how many spots). Each spot is filled on its own, so the choices multiply: '+F('`N` × `N` × … × `N` = `N`^{`L`}')+'. A: '+F('94^{8} ≈ 6.1 × 10^{15}')+'. B: '+F('26^{16} ≈ 4.4 × 10^{22}')+'. The rows below show every spot and its choices.',pause:true,setup:sim=>{sim.tst=2;}},
+  {lvl:'honors',title:'Not a permutation or a combination',text:'Try 3 symbols {a, b, c} and length 2. A password can repeat a symbol (aa), and order matters (ab and ba are different passwords), so every ordered string counts: '+F('3^{2} = 9')+'. A permutation, '+F('`N`! ÷ (`N` − `L`)!')+', forbids repeats: 6. A combination, '+F('`C`(`N`, `L`)')+', also ignores order: 3. Passwords follow the first rule, '+F('`N`^{`L`}')+'.',pause:true,setup:sim=>{sim.tst=3;}},
+  {title:'Bits: a log of the count',text:'A <b>bit</b> is one yes/no choice: a 0 or a 1. With '+F('`b`')+' bits you can write '+F('2^{`b`}')+' different strings, so a password’s bits are the number of doublings that make its count: '+F('bits = log_{2}(`N`^{`L`}) = `L` · log_{2} `N`')+'. We use base 2 because computers store and test everything as 0s and 1s, and each extra bit doubles the guesses. A: '+F('8 · 6.55 ≈ 52.4')+' bits. B: '+F('16 · 4.70 ≈ 75.2')+' bits. On the cards, each block is one character; its width is '+F('log_{2} `N`')+'.',pause:true,setup:sim=>{sim.tst=4;}},
+  {title:'Length beats complexity',text:'The same formula, '+F('bits = `L` · log_{2} `N`')+', behaves two ways. As a function of '+F('`L`')+' it is a line: every character adds the same '+F('log_{2} `N`')+' bits, a constant rate of change. As a function of '+F('`N`')+' it is a log curve: it rises without end, but more and more slowly, so doubling '+F('`N`')+' from 26 to 52 adds just 1 bit per character. That is why B, with thinner blocks but twice as many, beats A.',pause:true,setup:sim=>{sim.tst=5;return BioLab.setValues(sim,{len:16,set:'lower'});}},
+  {title:'Time to try them all',text:'Assume a stolen password file and 10 billion guesses a second: '+F('time = 2^{bits} ÷ 10^{10}')+' seconds. A: about 7 days. B: about 138,000 years. Each dot on the scale is one card; every tick is 10 times the last.',pause:true,setup:sim=>{sim.tst=6;}},
+  {lvl:'honors',title:'People are predictable',text:'“Sunflower2024!” is 14 characters, so the formula says 92 bits. But it is a common word, a year and a symbol. Attackers try those patterns first, so it is really closer to 28 bits: a fraction of a second. The dashed line on the scale is that gap.',pause:true,setup:sim=>{sim.tst=7;return BioLab.setValues(sim,{human:true});}},
+  {lvl:'ap',title:'Solve for length',text:'How long must a lowercase password be to reach 80 bits? Solve '+F('80 = `L` · log_{2} 26')+' for '+F('`L`')+': '+F('`L` = 80 ÷ 4.70 ≈ 17.0')+', so 18 letters to be safely past it. The red marker is 18 lowercase letters.',pause:true,setup:sim=>{sim.tst=8;return BioLab.setValues(sim,{human:false,len:18,set:'lower'});}},
+  {lvl:'ap',title:'Solve for the number of symbols',text:'The same equation can be solved for the other constant. A site’s random 12-character passwords have 72 bits. '+F('72 = 12 · log_{2} `N`')+', so '+F('log_{2} `N` = 6')+'. Rewrite the log as an exponent: '+F('`N` = 2^{6} = 64')+' symbols. On the graph, the line at 6 bits per character meets the '+F('log_{2} `N`')+' curve at 64.',pause:true,setup:sim=>{sim.tst=9;}}
  ],
  lab:{bio:'<p><b>Question:</b> What helps more, a longer password or more kinds of characters?</p><ol><li>Set <b>characters allowed</b> to lowercase. Try lengths 8, 12, 16 and 20 and record each.</li><li>Set the length to 8. Try each character set and record each.</li><li>Graph <b>Trials</b> with length on x and bits on y.</li></ol><p>Write one sentence: which change added more bits?</p>',
-  honors:'<p><b>Question:</b> How many bits does one more character add?</p><ol><li>For each character set, record the bits at 10 and 11 characters.</li><li>Subtract. Compare the difference with log₂ N.</li></ol><p>Explain why a person’s password can score high by the formula and still be weak.</p>',
+  honors:'<p><b>Question:</b> How many bits does one more character add?</p><ol><li>For each character set, record the bits at 10 and 11 characters.</li><li>Subtract. Compare the difference with log₂ N.</li><li>Now hold the length at 8 and step through 10, 26, 52 and 94 symbols. Record the bits each time and the change from one to the next.</li><li>Sketch bits vs. length and bits vs. symbols. Describe the rate of change of each.</li></ol><p>Explain why a person’s password can score high by the formula and still be weak.</p>',
   ap:'<p><b>Question:</b> How long must a password be?</p><ol><li>Pick a goal: 1 million years at 10¹⁰ guesses a second. Find the bits needed with logarithms.</li><li>Find the shortest length for each character set and check it in the tool.</li><li>Change the guess rate to 10³ (a login page that slows guessing) and repeat.</li></ol><p><b>CER:</b> Which defense helps more: a longer password, or slowing the guess rate?</p>'},
  terms:[
-  {t:'Bits of entropy',d:'A measure of unpredictability: log₂ of the number of equally likely possibilities. Each extra bit doubles the guesses needed.'},
+  {t:'Bit',d:'One yes/no choice: a 0 or a 1. Computers store and test everything as bits, which is why password strength is counted in base 2. <i>b</i> bits can write 2<sup><i>b</i></sup> different strings.'},
+  {t:'<i>N</i> and <i>L</i>',d:'<i>N</i> is the number of symbols each character may be (26 for lowercase). <i>L</i> is the length, the number of characters. A random password has <i>N</i><sup><i>L</i></sup> possibilities.'},
+  {t:'Bits of entropy',d:'A measure of unpredictability: log₂ of the number of equally likely possibilities, so log₂(<i>N</i><sup><i>L</i></sup>) = <i>L</i> · log₂ <i>N</i> for a random password. Each extra bit doubles the guesses needed.'},
+  {t:'Multiplication principle',d:'If one choice has <i>a</i> options and the next has <i>b</i>, together they have <i>a</i> × <i>b</i>. A password’s spots are filled one after another, so the choices multiply.'},
+  {t:'Permutation and combination',d:'A permutation counts ordered lists with no repeats; a combination counts groups where order does not matter. Passwords allow repeats and order matters, so they use <i>N</i><sup><i>L</i></sup> instead.',lvl:'honors'},
   {t:'Character set',d:'The symbols a password may use: 10 digits, 26 lowercase letters, 94 keyboard symbols, and so on.'},
   {t:'Logarithm base 2',d:'log₂ x is the power you raise 2 to in order to get x: log₂ 1024 = 10.',lvl:'honors'},
   {t:'Offline attack',d:'Guessing against a stolen copy of password data, where no login page can slow you down. Defenders plan for this worst case.',lvl:'honors'},
