@@ -113,7 +113,7 @@ const SIM={
   return `${n} inside slices add to ${sq(sl.lo)}${atLeast('honors')?` and ${n} outside slices to ${sq(sl.hi)}`:''}. <b>The real area, ${sq(s.A)}, is squeezed between them</b>, and thinner slices close the gap.`;},
  gut:{better:'lower',controls:['guess'],
   ask:{bio:'Drag <b>Your estimate</b> here to the number of square feet you think the blue spray pattern covers. Each grid square is 25 sq ft. Then lock it in.',
-   honors:'Estimate the area inside the polar curve by feel, set <b>Your estimate</b>, then lock it in.'},
+   honors:'Estimate the area the spray covers (the inside of the polar curve) by feel, set Your estimate, then lock it in.'},
   lock(sim){const A=shape(sim).A,g=sim.p.guess;return {v:Math.abs(g-A),A:g,label:sq(g)};},
   solve(sim){const A=shape(sim).A;sim.peek=true;sim.p.n=Math.max(sim.p.n,36);sim.p.guess=Math.round(A/25)*25;return {v:0,A,label:sq(A)};},
   how:{bio:'The math cuts the pattern into thin pie slices. Each slice is almost a wedge of a circle, and a wedge’s area is easy to find. Add up all the wedges, make them thinner, and the total closes in on the real area.',

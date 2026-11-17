@@ -166,7 +166,7 @@ const SIM={
   return base+`${S.cnt} of 100 random reshuffles of the same scores made a gap this big or bigger. <b>${S.cnt<5?'Chance almost never does that.':S.cnt<20?'Chance does that now and then.':'Chance does that all the time.'}</b>`;},
  gut:{better:'lower',controls:['call'],lockLabel:'Lock in my call',
   ask:{bio:'Look at the two rows of scores. Pick one here: did practice testing really help, or could a gap like this be chance, from which students happened to land in which group? Then lock it in.',
-   honors:'Before you look at the shuffles or t: pick one here. Real difference, or chance? Then lock it in.'},
+   honors:'Before you look at the shuffles or the test result (t): pick one here. A real difference, or chance? Then lock it in.'},
   lock(sim){const S=st(sim),g=score(S,sim.p.call);g.label=CALL[sim.p.call];return g;},
   solve(sim){const S=st(sim),c=testReal(S)?'real':'chance';sim.p.call=c;const m=score(S,c);
    m.label=(c==='real'?'“Practice testing really helped”':'“Not enough evidence: the gap could be chance”')+(atLeast('honors')?` (t = ${f2(S.t)}, p = ${pfmt(S.p)})`:` (${S.cnt} of 100 shuffles made a gap this big)`);return m;},

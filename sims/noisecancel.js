@@ -87,7 +87,7 @@ const SIM={
   return `The timing is close. Now <b>match the amplitude</b>: a wave that is too quiet leaves noise behind, and one that is too loud adds its own. Right now the noise is ${f1(d)} dB quieter.`;},
  gut:{better:'higher',
   controls:['ph','amp'],
-  ask:{bio:'The red wave is your anti-noise. Use the two sliders here: slide your wave sideways, then set its height, until the bottom wave, what you hear, is as flat as you can make it. Then lock it in.',honors:'Tune the phase shift and amplitude with the sliders here, by eye, without calculating. Then lock it in.'},
+  ask:{bio:'The red wave is your anti-noise. Use the two sliders here: slide your wave sideways, then set its height, until the bottom wave, what you hear, is as flat as you can make it. Then lock it in.',honors:'Tune the anti-noise by eye with the sliders here: how far to shift it sideways (the phase shift) and how tall to make it (the amplitude). No calculating. Then lock it in.'},
   lock(sim){return {v:cur(sim),ph:sim.p.ph,g:sim.p.amp,key:scKey(sim),f:fq(sim),dl:dl(sim),label:atLeast('honors')?`a ${sim.p.ph}° shift at amplitude ${f2(sim.p.amp)}`:`slid ${sim.p.ph}°, height ${f2(sim.p.amp)}`};},
   solve(sim){const g=bestG(sim);sim.p.ph=180;sim.p.amp=g;return {v:cur(sim),ph:180,g,key:scKey(sim),f:fq(sim),dl:dl(sim),label:atLeast('honors')?`a 180° shift (half a period, ${msTxt(half(sim))}) at amplitude ${f2(g)}`:`slid 180° (half a cycle, ${msTxt(half(sim))}), height ${f2(g)}`};},
   how:{bio:'Slide the anti-noise by half a cycle (180°), so every high of the noise meets a low of the anti-noise, and give it the same height. Then the two waves add to nearly zero.',

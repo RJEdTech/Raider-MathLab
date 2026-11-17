@@ -136,7 +136,7 @@ const SIM={
   return s;},
  gut:{better:'higher',controls:['group','aid'],
   ask:{bio:'Pick a group here. Then drag <b>Scholarship</b> to the award you think brings in the most tuition money from that group. Too small and few enroll; too big and each pays too little. Lock it in.',
-   honors:'Pick a group, then set the scholarship you think maximizes this group’s net tuition revenue. Lock it in before you show the revenue.'},
+   honors:'Pick a group, then set the scholarship you think brings in the most money from that group after the scholarships are paid out (its net tuition revenue). Lock it in before you show the revenue.'},
   lock(sim){const o=score(sim);o.label=`a ${$h(o.aid)} scholarship for ${GR[o.i].name.toLowerCase()}`;return o;},
   solve(sim){const i=gi(sim),b=best(sim,i);sim.p.aid=b;if(sim.st&&sim.st.aids)sim.st.aids[i]=b;sim.p.show=true;return score(sim);},
   hint:'Lock in your award. Then you will work out the revenue it brings in.',

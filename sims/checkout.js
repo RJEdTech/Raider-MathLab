@@ -163,7 +163,7 @@ const SIM={
    hint:'Go straight up from the dashed line. A filled dot counts; an open dot belongs to the other piece.',
    steps(sim){if(sim.p.case==='tix')return ['C(5) = 12 × 5 + 3.','60 + 3 = <b>$63</b>. One number of tickets, one total: a function.'];return ['Rule C says “over 1, up to 2 lb: $7.75” and “over 2, up to 3 lb: $9.25”.','“Up to 2” includes 2, so the $7.75 step has the filled dot at 2.0 lb. “Over 2” leaves 2 out, so the $9.25 step starts with an open dot.','A 2.0 lb box costs <b>$7.75</b>. One input, one output: that is what makes Rule C a function.'];}},
   ask:{bio:'Four people wrote rules for your checkout. Click through Rule A to Rule D here and look at each one’s table and graph. Pick the one you think gives every real order exactly one price, then lock it in.',
-   honors:'Pick the rule here that you think is a function on the right domain, by looking at the tables and graphs, without testing inputs. Then lock it in.'},
+   honors:'Look at each rule’s table and graph, without testing inputs, and pick the one that gives every real order exactly one price and gives no price to orders that make no sense (a function on the right domain). Then lock it in.'},
   lockLabel:'Lock in my rule',
   lock(sim){const T=tally(sim.p.case,sim.p.rule),N=C(sim).orders.length;return {v:T.n,cs:sim.p.case,rule:sim.p.rule,label:`Rule ${sim.p.rule}: ${T.n} of ${N} orders go wrong`};},
   solve(sim){const c=C(sim);sim.p.rule=c.right;const T=tally(sim.p.case,c.right);return {v:T.n,cs:sim.p.case,rule:c.right,label:`Rule ${c.right}: ${T.n} of ${c.orders.length} orders go wrong`};},

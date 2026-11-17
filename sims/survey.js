@@ -127,7 +127,7 @@ ctx.setLineDash([5,4]);ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2;ctx.beginPath()
   return `${METH[m].l}: the 100 results center on ${pc(r.mean)}, not the true ${pc(st.truth)}. <b>That is bias:</b> ${why}. Asking more of the same people does not fix it.`;},
  gut:{better:'lower',controls:['method'],lockLabel:'Lock in my survey',
   ask:{bio:'Which way of asking would tell student council what all 1,600 students really think? Pick one of the methods here, then lock it in. No math yet: go with what seems fair.',
-   honors:'Pick the method you trust most here, then lock it in. Think about bias and about how much one survey bounces around.'},
+   honors:'Pick the method you trust most here, then lock it in. Think about whether a method leans one way every time (bias), and about how much one survey bounces around.'},
   lock(sim){const m=sim.p.method;return {v:results(sim,m).miss,m,label:`${METH[m].l} (${mLabel(sim,m)})`};},
   solve(sim){const m=best(sim);sim.p.method=m;sim.st.cur=0;return {v:results(sim,m).miss,m,label:`${METH[m].l} (${mLabel(sim,m)})`};},
   how:{bio:'Draw names at random from the full roster. Then every student has the same chance to be asked, so no group gets left out or overcounted. The tool ran each method 100 times on the same school and measured how far each result landed from the truth.',

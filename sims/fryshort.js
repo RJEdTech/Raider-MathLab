@@ -169,7 +169,7 @@ const SIM={
   return base+`${S.cnt} of 100 honest restaurants came out this light or lighter. <b>${S.cnt<5?'That almost never happens by luck.':S.cnt<20?'That happens by luck now and then.':'That happens by luck all the time.'}</b>`;},
  gut:{better:'lower',controls:['call'],lockLabel:'Lock in my call',
   ask:{bio:'Look at your 12 dots and the dashed 4.1 oz line. Pick one here: are they shorting us, or is that just normal variation? Go with your gut, then lock it in.',
-   honors:'Before you look at t: pick one here. Shorting, or normal variation? Then lock it in.'},
+   honors:'Before you look at the test result (the t statistic): pick one here. Are they shorting you, or is this normal variation? Then lock it in.'},
   lock(sim){const S=st(sim),g=score(S,sim.p.call);g.label=CALL[sim.p.call];return g;},
   solve(sim){const S=st(sim),c=testShort(S)?'short':'fair';sim.p.call=c;const m=score(S,c);
    m.label=(c==='short'?'“They’re shorting us”':'“Not enough evidence: that could be normal variation”')+(atLeast('honors')?` (t = ${f2(S.t)}, p = ${pfmt(S.p)})`:` (${S.cnt} of 100 honest restaurants look this light)`);return m;},

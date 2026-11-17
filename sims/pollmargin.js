@@ -94,7 +94,7 @@ const SIM={
   const m=moe(sim),lk=c-m>50;
   return `With ${n} students, the ${confOf(sim)}% margin of error is ±${f1(m)} points: we are ${confOf(sim)}% confident the true share is between ${ivl(c,m).replace(' to ',' and ')}. ${lk?'<b>Every plausible value is above 50%, so the poll gives convincing evidence your candidate is ahead.</b>':'<b>The interval includes 50%, so 54% is not a lock.</b>'.replace('54%',c.toFixed(0)+'%')}`;},
  gut:{better:'lower',controls:['moe'],
-  ask:{bio:'News polls say “plus or minus” a few points. How far off could this poll be from the truth? Drag <b>Your plus-or-minus</b> here to your gut answer, then lock it in.',honors:'Set the plus-or-minus by feel for a 95% interval, then lock it in before you see the formula.',ap:'Set the plus-or-minus by feel for the confidence level shown below, then lock it in.'},
+  ask:{bio:'News polls say “plus or minus” a few points. How far off could this poll be from the truth? Drag <b>Your plus-or-minus</b> here to your gut answer, then lock it in.',honors:'Set the plus-or-minus by feel so you would be 95% sure the true share is inside it (a 95% interval), then lock it in before you see the formula.',ap:'Set the plus-or-minus by feel for the confidence level shown below, then lock it in.'},
   lock(sim){return ans(sim,sim.p.moe);},
   solve(sim){const m=moe(sim);sim.p.moe=m;return ans(sim,m);},
   how:{bio:'The math uses the poll size and the result to measure how much polls like this one bounce around. About 95 of every 100 polls land within 2 of those bounces of the truth, so that is the plus-or-minus.',

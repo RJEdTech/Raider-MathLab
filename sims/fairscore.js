@@ -129,7 +129,7 @@ const SIM={
   return `With different cutoffs, the error-rate gap is ${gapNow(sim).toFixed(1)} points (false flags ${p0(a.fpr)} vs ${p0(b.fpr)}, misses ${p0(a.fnr)} vs ${p0(b.fnr)}). ${ap!==null&&bp!==null?`<b>But a flag now means ${p0(ap)} in Group A and ${p0(bp)} in Group B</b>, and two students with the same score can get different treatment.`:'<b>One group has no flags at all now.</b>'}`;},
  gut:{better:'lower',controls:['tB'],lockLabel:'Lock in Group B’s cutoff',
   ask:{bio:'Group A is flagged at a score of 30% or more. Drag Group B’s cutoff here to where you think both groups are treated the same: fine students wrongly flagged at the same rate, and struggling students missed at the same rate. Then lock it in.',
-   honors:'Drag Group B’s cutoff here to equalize both error rates (false positive rate and false negative rate) by eye, then lock it in. Afterward, ask whether a flag still means the same thing.'},
+   honors:'Drag Group B’s cutoff here, by eye, to where both groups have the same two error rates: how often fine students get wrongly flagged (the false positive rate) and how often students who needed help get missed (the false negative rate). Then lock it in. Afterward, ask whether a flag still means the same thing.'},
   lock(sim){const g=gapNow(sim);return {v:g,t:sim.p.tB,label:`flag Group B at ${sim.p.tB}% or higher (error-rate gap ${g.toFixed(1)} points)`};},
   solve(sim){const b=bestB(sim);sim.p.tB=b.t;return {v:gapNow(sim),t:b.t,label:`flag Group B at ${b.t}% or higher (error-rate gap ${gapNow(sim).toFixed(1)} points)`};},
   hint:{bio:'Lock in your cutoff. Then you will work out Group B’s false-flag rate yourself from the counts.'},

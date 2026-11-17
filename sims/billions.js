@@ -280,7 +280,7 @@ const SIM={
   return `${A.s} is ${sci(A.v*1e9,3)} dollars, so log₁₀ = ${Math.log10(A.v*1e9).toFixed(3)}. It is <b>${pct(share(A.v),2)} of the budget</b> but only ${pct(A.v/GDP*100,2)} of GDP.`;},
  gut:{better:'lower',controls:['guess'],
   ask:{bio:'The highlighted line in the picture shows what one part of the federal budget cost in FY2026. About 341.8 million people live in the U.S. What do you think it cost <b>per person, per day</b>? Set <b>Your answer</b> by feel, then lock it in.',
-   honors:'The highlighted line shows one part of the FY2026 federal budget. Before any arithmetic, set <b>Your answer</b> to your gut for its cost in dollars per person per day. Then lock it in.'},
+   honors:'The highlighted line shows what one part of the federal budget cost in the 2026 budget year (FY2026). Before any arithmetic, set Your answer to your gut for its cost in dollars per person per day. Then lock it in.'},
   hint:{bio:'Lock in your gut answer. Then you will divide it out yourself.'},
   calc:{unit:'$',d:2,tol:a=>Math.max(0.01,0.01*a),
    prompt:{bio:sim=>{const A=lineA(sim);return `${A.l} cost <b>${B1(A.v)}</b> in FY2026: $${(A.v*1e9).toLocaleString('en-US')}. About <b>341,800,000</b> people live in the U.S. Divide by the number of people, then by 365 days. What did it cost per person, per day?`;},

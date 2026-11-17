@@ -43,7 +43,7 @@ const f2=v=>fmtNum(v,2),sg=(v,d)=>(v>=0?'+':'−')+Math.abs(v).toFixed(d===undef
 const perStep=(sim,r)=>r*(isG(sim)?SDG:SDL);
 const stepWords=(sim,r)=>isG(sim)?`${f2(perStep(sim,r))} grade levels more per year (${f2(perStep(sim,r)*5)} over grades 3 to 8)`:`${f2(perStep(sim,r))} grade levels higher`;
 const ASK={level:{bio:'How tightly do family resources (income, parents’ schooling, jobs) and a district’s average 3rd-grade test score go together? Drag the slider here: 0 means no link, 1 means a perfect line. The amber dots show what your number looks like. Then lock it in.',
-  honors:'Set the slider here to your gut value of r between family resources and district average 3rd-grade scores, then lock it in.'},
+  honors:'Set the slider here to your gut for how tightly family resources and district average 3rd-grade scores go together: the correlation r, from 0 (no pattern) to 1 (a perfect line). Then lock it in.'},
  growth:{bio:'How tightly do family resources (income, parents’ schooling, jobs) and a district’s growth go together? Growth is how many grade levels students gain per year from 3rd to 8th grade. Drag the slider here: 0 means no link, 1 means a perfect line. The amber dots show what your number looks like. Then lock it in.',
   honors:'Set the slider here to your gut value of r between family resources and growth (grade levels gained per year, grades 3 to 8), then lock it in.'}};
 const pickLv=t=>atLeast('honors')?t.honors:t.bio;

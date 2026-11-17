@@ -157,7 +157,7 @@ const SIM={
   return base+`Your how-far-off score is ${f2(S.x)}, and ${S.cnt} of 100 honest games were this far off or farther. <b>${S.cnt<5?'Luck almost never does that.':S.cnt<20?'Luck does that now and then.':'Luck does that all the time.'}</b>`;},
  gut:{better:'lower',controls:['call'],lockLabel:'Lock in my call',
   ask:{bio:'Compare your bars with the dashed outlines, the counts the posted odds predict. Pick one here: is the game honest about its odds, or rigged? Go with your gut, then lock it in.',
-   honors:'Before you look at χ²: pick one here. Honest, or rigged? Then lock it in.'},
+   honors:'Before you look at the chi-square score (χ²), which measures how far the counts are from the posted odds: pick one here. Honest, or rigged? Then lock it in.'},
   lock(sim){const S=st(sim),g=score(S,sim.p.call);g.label=CALL[sim.p.call];return g;},
   solve(sim){const S=st(sim),c=testRig(S)?'rig':'fair';sim.p.call=c;const m=score(S,c);
    m.label=(c==='rig'?'“These counts do not match the posted odds”':'“Not enough evidence: luck could explain these counts”')+(atLeast('honors')?` (χ² = ${f2(S.x)}, p = ${pfmt(S.p)})`:` (${S.cnt} of 100 honest games were this far off)`);return m;},

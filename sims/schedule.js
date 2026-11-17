@@ -174,7 +174,7 @@ const SIM={
   return `This week’s cheapest schedule happens to have no clopenings. ${rest}`;},
  gut:{better:'lower',controls:['guess'],
   ask:{bio:'Rain is possible on three days, so a posted schedule staffs all three. It rains only on Wednesday. Drag the slider here to what you think posting ahead costs the cafe per week. Then lock it in.',
-   honors:'Before you see any dollars: drag the slider here to your gut price of the posting-ahead constraint, in dollars per week, then lock it in.'},
+   honors:'Before you see any dollars: drag the slider here to your gut for what the post-the-schedule-ahead rule costs the cafe, in dollars per week, then lock it in.'},
   hint:{bio:'Lock in your gut answer. Then you will work out the real price yourself from the extra hours and the wage.'},
   lock(sim){const v=Math.abs(sim.p.guess-postPrice(sim));return {v,guess:sim.p.guess,label:`${$(sim.p.guess)} a week`};},
   solve(sim){const b=postPrice(sim);sim.p.guess=Math.round(b);sim.p.posted=true;return {v:Math.abs(sim.p.guess-b),guess:b,label:`${$(b)} a week`};},

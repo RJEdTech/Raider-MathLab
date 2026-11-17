@@ -165,7 +165,7 @@ const SIM={
   return `In the ${P.l.replace(' area','')}${sim.p.place==='us'?'':' area'}, ${f1(P.q15)} of every 100 children from the bottom fifth reach the top fifth, against 20 if parents’ income did not matter. <b>Where a child grows up changes the odds: from 4.4 to 12.9 among these areas.</b>`;},
  gut:{better:'lower',controls:['guess'],lockLabel:'Lock in my guess',
   ask:{bio:'Picture 100 children whose parents were in the bottom fifth of incomes in the place named on the picture (the whole U.S. to start). Drag the slider here to how many of them you think reach the top fifth as adults. Then lock it in.',
-   honors:'For the place shown, drag the slider here to your gut value of P(child in top fifth | parents in bottom fifth), out of 100. Then lock it in.'},
+   honors:'For the place shown, picture 100 children whose parents were in the bottom fifth of incomes. Drag the slider here to your gut: how many reach the top fifth? (In probability notation, that is P(child in top fifth | parents in bottom fifth).) Then lock it in.'},
   hint:{bio:'Lock in your gut answer. Then you will work out the real chance yourself from counts of children.'},
   lock(sim){return {v:Math.abs(sim.p.guess-pl(sim).q15),guess:sim.p.guess,label:`${Math.round(sim.p.guess)} of 100`};},
   solve(sim){const q=pl(sim).q15;sim.p.guess=q;sim.p.view='kids';sim.p.pq=1;return {v:0,guess:q,label:`${f1(q)} of 100`};},

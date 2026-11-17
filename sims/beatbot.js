@@ -193,7 +193,7 @@ const SIM={
   return `${k} employers share one test and ${7-k} screen on their own: ${8-k} separate chances. <b>${n} of 100 applicants like you get at least one interview.</b>`;},
  gut:{better:'lower',controls:['gd','gs'],lockLabel:'Lock in my two guesses',
   ask:{bio:'Each job’s screen lets through 30% of applicants. You apply to 7 jobs. Drag the two sliders here: your chance of at least one interview if the 7 jobs use 7 different screens, and if all 7 use the same test. Then lock it in.',
-   honors:'Each screen passes 30% of applicants. Before any formula, set both sliders here by feel: P(at least one interview) with 7 independent screens, and with one shared test. Then lock it in.'},
+   honors:'Each screen passes 30% of applicants, and you apply to 7 jobs. Before any formula, set both sliders here by feel: your chance of at least one interview if each job uses its own separate (independent) screen, and if all 7 use one shared test. Then lock it in.'},
   lock(sim){return {v:gutOff(sim,sim.p.gd,sim.p.gs),gd:sim.p.gd,gs:sim.p.gs,label:`${sim.p.gd}% with different screens, ${sim.p.gs}% with the same test`};},
   solve(sim){const d=100*tDiff(sim),s=100*tSame(sim);sim.p.gd=Math.round(d);sim.p.gs=Math.round(s);sim.p.stage='seven';
    return {v:0,d,s,label:`${d.toFixed(1)}% with different screens, ${s.toFixed(1)}% with the same test`};},

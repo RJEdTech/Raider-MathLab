@@ -99,7 +99,7 @@ const SIM={
   return `Of ${n0(c.TP+c.FP)} positives, ${n0(c.TP)} are really sick: ${pct(p)}. <b>The illness is common enough that real cases outnumber false alarms.</b>`;},
  gut:{better:'lower',controls:['guess'],lockLabel:'Lock in my gut answer',
   ask:{bio:'Your test just said positive. Drag the slider here to the chance you think you are really sick, from 0% to 100%. Go with your first feeling, then lock it in.',
-   honors:'Before you build the table: drag the slider here to your gut value of P(sick | positive), then lock it in.'},
+   honors:'Before you build the table: drag the slider here to your gut chance that you are really sick, given that you tested positive. (In probability notation, P(sick | positive).) Then lock it in.'},
   lock(sim){return {v:Math.abs(sim.p.guess-100*post(sim)),guess:sim.p.guess,label:`${Math.round(sim.p.guess)}% chance I am sick`};},
   solve(sim){const p=100*post(sim);sim.p.guess=p;return {v:0,guess:p,label:`${f1(p)}%`};},
   how:{bio:'Picture 10,000 people like you. Find how many are sick and how many of them test positive. Then find how many healthy people get a false positive. Your chance is the real positives divided by all the positives.',

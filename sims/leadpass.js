@@ -126,7 +126,7 @@ const SIM={
   return `The ball is in the air ${f2(t1)} s, so he runs ${f1(u*t1)} m and is at ${f1(recvAt(sim))} m when it comes down at ${f1(land(sim))} m. <b>${g>0?'Too high: more air time carries the ball past him.':'Too flat: the ball comes down before it reaches him.'}</b>`;},
  gut:{better:'lower',controls:['angle'],
   ask:{bio:'Drag <b>Launch angle</b> here to how steeply you would throw so the ball comes down right on your receiver. The red arc is your throw. He keeps running while it flies, so lead him. Then lock it in.',
-   honors:'Set <b>Launch angle</b> by feel so x(T) lands on the receiver, then lock it in. Do not use the math button yet.'},
+   honors:'Set Launch angle by feel so the ball comes down right on the receiver, then lock it in. Do not use the math button yet.'},
   lock(sim){const g=gap(sim);return {v:Math.abs(g),a:sim.p.angle,gap:g,label:`${f1(sim.p.angle)}°, ball comes down ${missWords(g)}`};},
   solve(sim){const s=solveAngle(sim.p.arm,sim.p.run,sim.p.start);sim.p.angle=s.a;sim.peek=true;const g=gap(sim);
    return {v:Math.abs(g),a:s.a,gap:g,reach:s.reach,label:s.reach?`${f1(s.a)}°: ${f2(tof(sim))} s in the air, caught at ${f1(recvAt(sim))} m`:`${f1(s.a)}°, the closest any throw gets: ${f1(Math.abs(g))} m short`};},

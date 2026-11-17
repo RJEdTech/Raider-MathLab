@@ -130,7 +130,7 @@ const SIM={
   return `w = ${fmtC(p.wc,p.wd)} stretches by <b>${fmtNum(wr,2)}×</b> and turns by <b>${neg(f1(wa))}°</b>, so the gripper should land ${f1(zr*wr*CM)} cm from the base. Your pick is ${f0(m)} cm away from that spot.`;},
  gut:{better:'lower',
   controls:['gx','gy'],
-  ask:{bio:'Click the grid where you think the gripper lands after the command, or set the two sliders here. The red crosshair marks your pick. Go by feel, then lock it in.',honors:'Without multiplying it out: where does z·w land? Click the plane or set your pick with the sliders here, then lock it in.'},
+  ask:{bio:'Click the grid where you think the gripper lands after the command, or set the two sliders here. The red crosshair marks your pick. Go by feel, then lock it in.',honors:'Without multiplying it out: where does the gripper land when its point z is multiplied by the number w (the product z·w)? Click the plane or set your pick with the sliders here, then lock it in.'},
   lock(sim){const z=Math.abs(sim.p.gx)<1e-9&&Math.abs(sim.p.gy)<1e-9;return {v:miss(sim),x:sim.p.gx,y:sim.p.gy,key:scKey(sim),label:fmtC(sim.p.gx,sim.p.gy)+(z?', still on the base':'')};},
   solve(sim){const t=target(sim);sim.p.gx=t[0];sim.p.gy=t[1];if(atLeast('honors'))sim.p.show=true;return {v:miss(sim),x:t[0],y:t[1],key:scKey(sim),label:(atLeast('honors')?'z·w = ':'lands at ')+fmtC(t[0],t[1])};},
   how:{bio:'Multiply it out like any two binomials, then use i² = −1. For (3 + i)(1 + i): 3 + 3i + i + i² = 3 + 4i − 1 = 2 + 4i.',
