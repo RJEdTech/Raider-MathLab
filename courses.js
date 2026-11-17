@@ -34,7 +34,7 @@ BioLab.COURSES = [
    {n:'Unit 4',t:'Radicals and rational exponents',ids:['skidmarks','yearlygrowth']},
    {n:'Unit 5',t:'Exponential and logarithmic functions',ids:['creditcard','startearly','mortgageterm','caffeine','decibels','passwords','stickernet','onepercent','povertypremium'],note:'Honors: Chapter 6.'},
    {n:'Unit 6',t:'Rational functions',ids:['splitcost','sharedwork'],note:'Algebra 2 only.'},
-   {n:'Trig',t:'Trigonometry',ids:['daylight','noisecancel'],note:'Honors Algebra 2 / Trig only.'}
+   {n:'Trig',t:'Trigonometry',ids:['unitcircle','daylight','noisecancel'],note:'Honors Algebra 2 / Trig only.'}
   ]},
  {id:'precalc',finals:[{"t": "Precalculus fall final review", "units": [0, 1, 2], "note": "Covers complex numbers, function basics, and polynomial and rational functions. Your teacher decides what is on the final, so check the study guide."}],name:'Precalculus',blurb:'Precalculus, in the order your class covers it.',
   further:['matrices','windvectors','orbits'],
@@ -43,7 +43,7 @@ BioLab.COURSES = [
    {n:'Unit 1',t:'Function basics: composition and inverses',ids:['checkout','pondday','cipher','photofilter']},
    {n:'Unit 2',t:'Polynomial and rational functions',ids:['coaster','splitcost']},
    {n:'Unit 3',t:'Triangle trigonometry',ids:['clinometer','triangulate','ramp']},
-   {n:'Unit 4',t:'Trigonometry and the unit circle',ids:['daylight']},
+   {n:'Unit 4',t:'Trigonometry and the unit circle',ids:['unitcircle','daylight']},
    {n:'Unit 5',t:'Graphing trigonometric functions',ids:['daylight','noisecancel']},
    {n:'Unit 6',t:'Exponents and logarithms',ids:['logscale','creditcard','startearly','mortgageterm','decibels']}
   ]},
@@ -53,7 +53,7 @@ BioLab.COURSES = [
    {n:'Unit 1B',t:'Rational functions',ids:['splitcost','sharedwork']},
    {n:'Unit 2A',t:'Exponential functions',ids:['yearlygrowth','creditcard','startearly','mortgageterm','caffeine','logscale','hotspot','onepercent','lifesim']},
    {n:'Unit 2B',t:'Logarithmic functions and inverses',ids:['decibels','passwords','logscale','mortgageterm','cipher','billions']},
-   {n:'Unit 3A',t:'Trigonometric functions',ids:['daylight','noisecancel']},
+   {n:'Unit 3A',t:'Trigonometric functions',ids:['unitcircle','daylight','noisecancel']},
    {n:'Unit 3B',t:'Polar functions and rotations',ids:['rotations']},
    {n:'Unit 4',t:'Functions involving parameters, vectors and matrices',ids:['matrices','windvectors','orbits','opportunity'],note:'Not on the AP exam.'}
   ]},
@@ -117,7 +117,7 @@ BioLab.COURSES = [
  1:['formulas','scaleit','debtfit'],2:['rideshare','breakeven','budget','carhouse'],3:['areamodel','freethrow','ticketprice','dish','coaster','openbox'],
  4:['datasize','skidmarks','creditcard','startearly','mortgageterm','caffeine','decibels','passwords','logscale','billions'],5:['splitcost','sharedwork'],6:['checkout','pondday','photofilter','cipher','rotations'],
  7:['logic'],8:['screens','parking','truss','shadow','ramp','clinometer','triangulate'],12:['tiling','packaging','sprites'],10:['gps','tires','shotangle'],
- 9:['daylight','noisecancel'],11:['fontcurves','matrices','windvectors','orbits'],
+ 9:['unitcircle','daylight','noisecancel'],11:['fontcurves','matrices','windvectors','orbits'],
  13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','targetdrop','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
  16:['runpace','battery','camerapan','shortcut','viewcurve'],17:['speedlog','concession','cooling','bottle'],18:['leadpass','sprinkler','caffeinedaily','sincode'],
  19:['stickernet','aidoptimizer','rankcolleges','carquote','valueadded','hotspot','beatbot','schedule','fairscore','onepercent'],
