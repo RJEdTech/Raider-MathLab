@@ -23,7 +23,7 @@ warmup:{
    steps:['0.36 ÷ 0.06 = 6.0.','The volunteers were mostly faster players, so the comparison counted their head start as warm-up effect.'],
    lab:{set:{design:'vol',team:30,reveal:true},look:'Read <b>Your plan: average estimate over 100 runs</b>.'},verify:[['avg',0.3585,0.002]]},
   {id:'ptest',kind:'ap',lvl:'ap',
-   q:'One random-half run estimates that the warm-up saves 0.089 s. Reshuffling the 30 players’ groups 500 times, 102 of the reshuffles give a difference at least that large. What is the P-value, and what do you conclude at α = 0.05?',
+   q:'One random-half run estimates that the warm-up saves 0.089 s. Reshuffling the 30 players’ groups 500 times, 102 of the reshuffles give a difference at least that large. What is the P-value (how often chance alone gives a difference at least that large), and what do you conclude at α = 0.05, the usual cutoff?',
    choices:['P ≈ 0.204; this run is not convincing evidence that the warm-up helps','P ≈ 0.204; this run proves the warm-up does nothing','P ≈ 0.796; strong evidence the warm-up helps'],correct:0,
    steps:['P = 102 / 500 = 0.204.','0.204 > 0.05, so a difference this big happens often by chance alone. Fail to reject H₀.','That is not proof of no effect: the effect is small, and one run of 30 players is not precise enough to show it.'],
    lab:{set:{design:'rand',team:30},look:'At Deep dive, open the graph <b>Randomization distribution</b> and read the P-value tile.'},verify:[['pval',0.204,0.001],['est',0.089,0.001]]},

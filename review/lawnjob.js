@@ -32,7 +32,7 @@ lawnjob:{
    steps:['Degrees of freedom: n − 2 = 13, so t* = 2.160.','Margin of error = t* × SE = 2.160 × 0.421 ≈ 0.909.','Interval: 6.036 ± 0.909, from about 5.13 to 6.95 min per 1,000 sq ft. It does not contain 0, so the data give convincing evidence of a positive linear relationship between lawn size and time.'],
    lab:{set:{line:true},look:'At Deep dive, read <b>Slope b</b>, <b>Standard error of the slope</b> and the interval.'},verify:[['slope',6.036,0.001],['seb',0.4208,0.0005]]},
   {id:'tstat',kind:'ap',lvl:'ap',
-   q:'Same output: b = 6.036, SE_b = 0.421, n = 15. Test H₀: β = 0 against Hₐ: β > 0. What is the test statistic, and what do you conclude?',
+   q:'Same output: b = 6.036, SE_b = 0.421, n = 15. Test H₀: β = 0 (no real link: the true slope is 0) against Hₐ: β > 0 (bigger lawns really do take longer). What is the test statistic, and what do you conclude?',
    choices:['t ≈ 14.3; the P-value is tiny, so there is convincing evidence of a positive linear relationship','t ≈ 2.16; fail to reject H₀','t ≈ 0.07; the slope is not significant'],correct:0,
    steps:['t = (b − 0) / SE_b = 6.036 / 0.421 ≈ 14.3, with df = 13.','A t of 14.3 is far beyond any usual critical value (t* = 1.771 for a one-sided test at α = 0.05), so the P-value is essentially 0.','Reject H₀: bigger lawns really do take longer, in a linear way.']}
  ]

@@ -7,7 +7,7 @@ fryshort:{
    steps:['An honest restaurant’s 12-box average lands at least this far under about 15 times in 100, just from scooping luck.','That is not rare, so luck is a reasonable explanation. You do not have convincing evidence of shorting.','That does not prove the restaurant is honest either: it only means these 12 boxes cannot tell.'],
    lab:{set:{},act:'show',look:'Read <b>Average of your 12 boxes</b> and <b>Honest restaurants (of 100) this light or lighter</b>.'},verify:[['avg',4.021,0.001],['light',15,0]]},
   {id:'tdef',kind:'test',lvl:'honors',
-   q:'The 12 boxes in this tool have x̄ = 4.021 oz and s = 0.248 oz. To the nearest 0.01, what is the test statistic t for H₀: μ = 4.1?',
+   q:'The 12 boxes in this tool have x̄ = 4.021 oz and s = 0.248 oz. To the nearest 0.01, what is the test statistic t for testing whether the true mean is 4.1 oz (H₀: μ = 4.1)?',
    num:{ans:-1.11,tol:0.01,unit:''},
    steps:['Standard error: s/√n = 0.248 ÷ √12 = 0.0716 oz.','t = (x̄ − 4.1) ÷ SE = (4.021 − 4.1) ÷ 0.0716 ≈ −1.11.','The average sits about 1.1 standard errors under the listed weight, not far enough to pass −1.80.'],
    lab:{set:{},act:'show',look:'Read <b>Test statistic t</b> and <b>Wobble of a 12-box average</b>.'},verify:[['t',-1.105,0.002],['se',0.0716,0.0002]]},
