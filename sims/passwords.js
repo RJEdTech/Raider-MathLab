@@ -211,7 +211,7 @@ const SIM={
   return s;},
  gut:{better:'higher',lockLabel:'Lock in my pick',
   controls:['pick'],
-  ask:{bio:'Each card is a password a computer made at random. Read the cards, then pick the one you think holds out longest against a guessing computer. Go with your gut, then lock it in.',honors:'Before you work out any bits: which of A to D holds out longest? Pick it here, then lock it in.'},
+  ask:{bio:'Each card is a password a computer made at random. Read the cards, then pick the one you think holds out longest against a guessing computer. Go with your gut, then lock it in.',honors:'Before you work out any strength scores (bits): which of A to D holds out longest? Pick it here, then lock it in.'},
   lock(sim){const C=cands(sim),i=pickI(sim);if(i<0){let w=0;C.forEach((c,j)=>{if(bits(c.L,c.set)<bits(C[w].L,C[w].set))w=j;});return {v:bits(C[w].L,C[w].set),pick:'',i:w,label:'no pick yet'};}
    return {v:bits(C[i].L,C[i].set),pick:LET[i],i,label:`${LET[i]}: ${C[i].L} characters, ${SETS[C[i].set].d}`};},
   solve(sim){const C=cands(sim),i=bestI(sim);sim.p.pick=LET[i];return {v:bits(C[i].L,C[i].set),pick:LET[i],i,label:`${LET[i]}: ${C[i].L} characters, ${SETS[C[i].set].d}`};},

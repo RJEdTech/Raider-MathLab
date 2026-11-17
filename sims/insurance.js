@@ -111,7 +111,7 @@ const SIM={
   return sk<bu?`For someone ${c.l}, skipping costs ${$(sk)} on average over 2 years and the plan ${$(bu)}. <b>Skipping saves about ${$(gap)} on average</b>, but ${pct(hit)} of people like you lose or wreck the phone at least once and pay ${$(REP)}.`
    :`For someone ${c.l}, the plan costs ${$(bu)} on average over 2 years and skipping ${$(sk)}. <b>The plan saves about ${$(gap)} on average</b>, because you are likely to need it.`;},
  gut:{better:'lower',controls:['care','choice'],
-  ask:{bio:'First pick how careful you are with phones. Then pick here: buy the plan or skip it? Go with your gut, then lock it in.',honors:'Pick how careful you are, then buy or skip by feel. Lock it in before you look at the expected values.'},
+  ask:{bio:'First pick how careful you are with phones. Then pick here: buy the plan or skip it? Go with your gut, then lock it in.',honors:'Pick how careful you are, then buy or skip by feel. Lock it in before you look at the long-run average costs (expected values).'},
   lock(sim){return pick(sim,sim.p.choice);},
   solve(sim){const b=better(sim);sim.p.choice=b;return pick(sim,b);},
   how:{bio:'The math lists everything that could happen in 2 years, how likely each one is, and what you would pay. Multiply each cost by its chance and add them up: that is the average cost of the choice, called its expected value. The lower one wins on average.',
