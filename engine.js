@@ -89,6 +89,8 @@ const REVIEWS={};BL.addReview=o=>{Object.assign(REVIEWS,o||{});};
 /* Math card layer (mathcards.js, Nov 16, 2026): per tool {f, v:[[symbol,meaning]], why, beh, solve:[...]}. Math type: `x` italic variable, ^{..} superscript, _{..} subscript.
    Shows the model with every variable named, why this model fits, how the function behaves, and the model solved for each unknown. */
 const MATHC={};BL.addMath=o=>{Object.assign(MATHC,o||{});};
+/* Plain-words layer (skillsplain.js, Nov 17, 2026): per tool {bio,honors,ap} "What you'll learn" line, shown above the course-terms skills line. */
+const PLAIN={};BL.addPlain=o=>{Object.assign(PLAIN,o||{});};
 const mfx=s=>{s=String(s||'').replace(/`([^`]*)`/g,'<i>$1</i>');let p;do{p=s;s=s.replace(/\^\{([^{}]*)\}/g,'<sup>$1</sup>').replace(/_\{([^{}]*)\}/g,'<sub>$1</sub>');}while(s!==p);return s;};BL.mfx=mfx;
 /* Typeset plain powers in displayed text (Nov 16, 2026): x^(t/h) and 2^bits become real superscripts. Runs on text nodes as they appear in a tool's section,
    skipping code, inputs and spreadsheet cells, where ^ is literal syntax. */
@@ -731,7 +733,7 @@ function setLede(el,t){el.textContent='';if(!t||typeof t==='string'){el.textCont
 function applyLevel(sim){const ui=sim.ui,d=sim.def;
   setLede(ui.lede,d.lede);supify(ui.lede);if(ui.uses){const P=d.practical,u=P&&P.uses?(Array.isArray(P.uses)?P.uses:lvText(P.uses)):null;const hk=P&&P.hook?lvText(P.hook):'';ui.uses.hidden=!(hk||(u&&u.length));const ul=u&&u.length?'<details class="ru-d"'+(USES_OPEN?' open':'')+'><summary>'+USES_LABEL+'</summary><ul>'+u.map(x=>'<li>'+x+'</li>').join('')+'</ul></details>':'';
     if(USES_AFTER&&ui.uses2){ui.uses.hidden=!hk;ui.uses.innerHTML=hk?'<p class="ru-q">'+hk+'</p>':'';ui.uses2.hidden=!ul;ui.uses2.innerHTML=ul;}else ui.uses.innerHTML=(hk?'<p class="ru-q">'+hk+'</p>':'')+ul;}if(ui.scale)ui.scale.textContent=lvText(d.scale);
-  if(ui.skills)ui.skills.innerHTML='<b>The math:</b> '+lvText(d.skills);if(ui.mcard){ui.mcard.innerHTML=mathcardHTML(d.math);if(sim.mode!=='guided')ui.mcard.open=true;mathcardVis(sim);}
+  if(ui.skills){const pl=lvText(PLAIN[d.id]);ui.skills.innerHTML=pl?'<span class="sk-plain"><b>What you’ll learn:</b> '+esc(pl)+'</span><span class="sk-course"><b>In your math course:</b> '+lvText(d.skills)+'</span>':'<b>The math:</b> '+lvText(d.skills);}if(ui.mcard){ui.mcard.innerHTML=mathcardHTML(d.math);if(sim.mode!=='guided')ui.mcard.open=true;mathcardVis(sim);}
   if(ui.lab)ui.lab.innerHTML='<p class="lab-h">Investigation</p>'+lvText(d.lab);
   gutRender(sim);
   if(sim.tour&&sim.tour.on)tourExit(sim,'level');
@@ -1084,7 +1086,7 @@ const ENGINE_CSS=`.mathcard{margin:8px 0 10px;padding:8px 14px;background:var(--
 .mathcard i{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.08em}.mathcard p{margin:6px 0}.mc-v{list-style:none;margin:6px 0;padding:0;display:flex;flex-wrap:wrap;gap:2px 18px}
 .tb-vars{margin:8px 0 0;font-size:14px;line-height:1.5;color:var(--fg)}.tb-vars b{color:var(--rj-ink)}.tb-vars span{white-space:nowrap}.tb-vars i{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.08em}
 .mc-s{font-weight:700;margin-right:.15em}.mc-s::after{content:" ="}.mc-so{margin:2px 0 4px;padding-left:1.3em;font-size:1.05em}
-.sim-head .skills{margin:0 0 6px;font-size:14px;line-height:1.4;color:var(--fg)}.sim-head .skills b{color:var(--rj-ink);font-weight:700;margin-right:.2em}
+.sim-head .skills{margin:0 0 6px;font-size:14px;line-height:1.4;color:var(--fg)}.sim-head .skills .sk-plain{display:block;font-size:15px}.sim-head .skills .sk-course{display:block;margin-top:2px;font-size:13px;color:var(--muted)}.sim-head .skills .sk-course b{color:var(--muted)}.sim-head .skills b{color:var(--rj-ink);font-weight:700;margin-right:.2em}
 .calc-q{margin:4px 0 10px;font-size:16px;line-height:1.5}.gs .calc-q{font-size:inherit}.calc .rv-num{margin:0 0 8px}.calc .row{align-items:center}
 .calc .verdict{margin:6px 0 8px}.calc .verdict:focus{outline:0}.calc-steps{margin:6px 0 8px;padding:8px 12px;background:var(--card);border:1px solid var(--line);border-radius:8px;line-height:1.5}
 .calc .rv-steps{margin:6px 0 8px}.calc-ans{margin:6px 0 10px}.gs-calc{margin:0 0 10px}.ch-num{margin:8px 0 10px}.ch-num .vl-in{width:10em}
