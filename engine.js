@@ -91,6 +91,7 @@ const REVIEWS={};BL.addReview=o=>{Object.assign(REVIEWS,o||{});};
 const MATHC={};BL.addMath=o=>{Object.assign(MATHC,o||{});};
 /* Plain-words layer (skillsplain.js, Nov 17, 2026): per tool {bio,honors,ap} "What you'll learn" line, shown above the course-terms skills line. */
 const PLAIN={};BL.addPlain=o=>{Object.assign(PLAIN,o||{});};
+const SKILLS={};BL.addSkills=o=>{Object.assign(SKILLS,o||{});};
 const mfx=s=>{s=String(s||'').replace(/`([^`]*)`/g,'<i>$1</i>');let p;do{p=s;s=s.replace(/\^\{([^{}]*)\}/g,'<sup>$1</sup>').replace(/_\{([^{}]*)\}/g,'<sub>$1</sub>');}while(s!==p);return s;};BL.mfx=mfx;
 /* Typeset plain powers in displayed text (Nov 16, 2026): x^(t/h) and 2^bits become real superscripts. Runs on text nodes as they appear in a tool's section,
    skipping code, inputs and spreadsheet cells, where ^ is literal syntax. */
@@ -1097,7 +1098,7 @@ BL.start=function(){
   engineCss();
   if(EMBED)document.documentElement.classList.add('embed');
   homeEl=document.getElementById('home');simsEl=document.getElementById('sims');jumpEl=document.getElementById('jump');backEl=document.getElementById('back');
-  DEFS.forEach(d=>{applyPractical(d);if(REVIEWS[d.id])d.review=REVIEWS[d.id];if(MATHC[d.id])d.math=MATHC[d.id];sims[d.id]=makeSim(d);});
+  DEFS.forEach(d=>{applyPractical(d);if(!d.skills&&SKILLS[d.id])d.skills=SKILLS[d.id];if(REVIEWS[d.id])d.review=REVIEWS[d.id];if(MATHC[d.id])d.math=MATHC[d.id];sims[d.id]=makeSim(d);});
   unitEl=el('section',{id:'unitpage',class:'unitpage'});unitEl.hidden=true;simsEl.parentNode.insertBefore(unitEl,simsEl);
   readPal();buildHome();
   const lvlBtns=[...document.querySelectorAll('#lvl button')];
