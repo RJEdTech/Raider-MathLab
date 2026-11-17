@@ -124,7 +124,7 @@ const SIM={
   return `After controlling for ${sim.p.ctrl==='ped'?'parents’ schooling':'parents’ schooling and income'}, each doubling goes with ${f3(c*LN2)} SD: <b>${Math.round(100*c/raw)}% of the books-only link is left.</b> The rest was family background showing up through the books.`;},
  gut:{better:'lower',controls:['guess'],
   ask:{bio:'People who grew up with more books read better as adults. Once you compare only people whose parents had the same schooling and income, how much of that link do you think is left? Drag the slider here, then lock it in.',
-   honors:'Set the slider here: what percent of the books coefficient survives controls for family background? Then lock it in.'},
+   honors:'The books coefficient is the slope of the red line: how much reading skill goes with more books. Set the slider here: what percent of that slope do you think survives once you compare only people whose parents had the same schooling and income? Then lock it in.'},
   hint:{bio:'Lock in your gut answer. Then you will work out the share left yourself from the two slopes.'},
   lock(sim){return {v:Math.abs(sim.p.guess-ANS),guess:sim.p.guess,label:`${sim.p.guess}% left`};},
   solve(sim){sim.p.ctrl='both';return {v:0,guess:ANS,label:`${ANS.toFixed(0)}% left`};},
