@@ -1,0 +1,42 @@
+BioLab.addReview({
+logslow:{
+ questions:[
+  {id:'lvl10',kind:'real',lvl:'bio',
+   q:'Each level needs twice the total XP of the one before. Level 5 came after 1 hour of steady play. How many hours until level 10?',
+   num:{ans:32,tol:0.01,unit:'hours'},
+   steps:['Each level doubles the time: level 6 at 2 h, 7 at 4 h, 8 at 8 h, 9 at 16 h.','Level 10 at 32 h.','That is 2^5 = 32: one doubling per level.'],
+   lab:{set:{case:'game',mult:2},act:'show',look:'Read <b>Time to the goal</b>.'},verify:[['goal',32,0.01]]},
+  {id:'laststep',kind:'test',lvl:'bio',
+   q:'In that game, how many hours does the step from level 9 to level 10 take by itself?',
+   num:{ans:16,tol:0.01,unit:'hours'},
+   steps:['Level 9 comes at 16 h and level 10 at 32 h.','32 − 16 = 16 hours.','The last step is half of all the time.'],
+   lab:{set:{case:'game',mult:2},act:'show',look:'Read <b>The last step alone takes</b>.'},verify:[['last',16,0.01]]},
+  {id:'follow',kind:'real',lvl:'bio',
+   q:'You gain followers at a steady pace and reach 100 after 1 week. How many weeks until 10,000?',
+   num:{ans:100,tol:0.01,unit:'weeks'},
+   steps:['10,000 is 100 times 100.','At a steady pace, 100 times the followers takes 100 times the time.','100 weeks, nearly two years.'],
+   lab:{set:{case:'follow'},act:'show',look:'Read <b>Time to the goal</b>.'},verify:[['goal',100,0.01]]},
+  {id:'avgrate',kind:'test',lvl:'honors',
+   q:'For L(t) = 2 + log₁₀ t (t in weeks), what is the average rate of change from t = 10 to t = 100, in milestones per week? Give 4 decimal places.',
+   num:{ans:0.0111,tol:0.0001,unit:''},
+   steps:['L(10) = 3 and L(100) = 4, a change of 1.','The time changes by 100 − 10 = 90 weeks.','1 ÷ 90 ≈ 0.0111 milestones per week.']},
+  {id:'quarter',kind:'test',lvl:'honors',
+   q:'The slope of a log curve at x = 3 is 0.48. About what is the slope at x = 12?',
+   choices:['0.48','0.24','0.12','0.03'],correct:2,
+   steps:['The slope of a log is proportional to 1/x.','12 is 4 times 3, so the slope is 1/4 as big.','0.48 ÷ 4 = 0.12.']},
+  {id:'kx',kind:'test',lvl:'honors',
+   q:'For L(t) = 5 + log₂ t, what is slope × t at any point? Give 3 decimal places.',
+   num:{ans:1.443,tol:0.001,unit:''},
+   steps:['The slope is 1/(t ln 2).','Slope × t = 1/ln 2.','1 ÷ 0.6931 ≈ 1.443.'],
+   lab:{set:{case:'game',mult:2,pt:50},act:'show',look:'Read <b>Slope × time</b> at Closer look.'},verify:[['kx',1.4427,0.001]]},
+  {id:'deriv',kind:'ap',lvl:'ap',
+   q:'f(x) = log₃ x. Which is f′(x)?',
+   choices:['1/(3x)','1/(x ln 3)','ln 3 / x','3/x'],correct:1,
+   steps:['log₃ x = ln x ÷ ln 3.','The rate of change of ln x is 1/x.','So f′(x) = 1/(x ln 3).']},
+  {id:'endbeh',kind:'ap',lvl:'ap',
+   q:'Which describes g(x) = log₂ x as x → ∞?',
+   choices:['g(x) → a horizontal asymptote','g(x) → ∞ and g′(x) → 0','g(x) → 0','g(x) → ∞ and g′(x) → ∞'],correct:1,
+   steps:['g grows without bound: g(2ⁿ) = n for every n.','g′(x) = 1/(x ln 2) → 0.','Increasing forever, more and more slowly, with no ceiling.']}
+ ]
+}
+});

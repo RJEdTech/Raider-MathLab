@@ -45,14 +45,14 @@ BioLab.COURSES = [
    {n:'Unit 3',t:'Triangle trigonometry',ids:['clinometer','triangulate','ramp']},
    {n:'Unit 4',t:'Trigonometry and the unit circle',ids:['unitcircle','daylight']},
    {n:'Unit 5',t:'Graphing trigonometric functions',ids:['daylight','noisecancel']},
-   {n:'Unit 6',t:'Exponents and logarithms',ids:['logscale','creditcard','startearly','mortgageterm','decibels']}
+   {n:'Unit 6',t:'Exponents and logarithms',ids:['logscale','creditcard','startearly','mortgageterm','fuel','logslow','lnbase','decibels']}
   ]},
  {id:'apprecalc',finals:[{"t": "AP Precalculus fall final review", "units": [0, 1, 2, 3], "note": "Covers Units 1A to 2B. Your teacher decides what is on the final, so check the study guide."}],name:'AP Precalculus',blurb:'AP Precalculus, by College Board unit. Unit 4 is taught at RJ but is not on the AP exam.',
   units:[
    {n:'Unit 1A',t:'Polynomial functions',ids:['coaster','openbox']},
    {n:'Unit 1B',t:'Rational functions',ids:['splitcost','sharedwork']},
-   {n:'Unit 2A',t:'Exponential functions',ids:['yearlygrowth','creditcard','startearly','mortgageterm','caffeine','logscale','hotspot','onepercent','lifesim']},
-   {n:'Unit 2B',t:'Logarithmic functions and inverses',ids:['decibels','passwords','logscale','mortgageterm','cipher','billions']},
+   {n:'Unit 2A',t:'Exponential functions',ids:['yearlygrowth','creditcard','startearly','mortgageterm','caffeine','fuel','logscale','hotspot','onepercent','lifesim','lnbase']},
+   {n:'Unit 2B',t:'Logarithmic functions and inverses',ids:['logslow','lnbase','decibels','passwords','logscale','mortgageterm','cipher','billions']},
    {n:'Unit 3A',t:'Trigonometric functions',ids:['unitcircle','daylight','noisecancel']},
    {n:'Unit 3B',t:'Polar functions and rotations',ids:['rotations']},
    {n:'Unit 4',t:'Functions involving parameters, vectors and matrices',ids:['matrices','windvectors','orbits','opportunity'],note:'Not on the AP exam.'}

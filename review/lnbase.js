@@ -1,0 +1,40 @@
+BioLab.addReview({
+lnbase:{
+ questions:[
+  {id:'meas2',kind:'test',lvl:'bio',
+   q:'Measure the steepness of 2ˣ at x = 0 with h = 0.001: (2^0.001 − 1) ÷ 0.001. Round to 3 decimal places.',
+   num:{ans:0.693,tol:0.002,unit:''},
+   steps:['2^0.001 ≈ 1.000693.','Rise 0.000693 over a run of 0.001.','0.000693 ÷ 0.001 ≈ 0.693, which is ln 2.'],
+   lab:{set:{b:2},act:'show',look:'Read <b>Steepness of bˣ at x = 0</b>.'},verify:[['steep',0.6934,0.001]]},
+  {id:'which',kind:'real',lvl:'bio',
+   q:'Base 2.7 has steepness 0.994 at (0, 1) and base 2.8 has 1.030. What does that tell you about e?',
+   choices:['e is between 2.7 and 2.8','e is less than 2.7','e is more than 2.8','e is exactly 2.75'],correct:0,
+   steps:['e is the base with steepness exactly 1.','0.994 < 1 < 1.030.','So e is between 2.7 and 2.8 (it is about 2.718).']},
+  {id:'height',kind:'test',lvl:'bio',
+   q:'3ˣ has steepness 1.099 at x = 0. At x = 2 its height is 9. About how steep is it there? Round to 1 decimal place.',
+   num:{ans:9.9,tol:0.1,unit:''},
+   steps:['Slope = steepness at 0 × height.','1.099 × 9 ≈ 9.89.','About 9.9: rate of change proportional to the amount.']},
+  {id:'log10',kind:'test',lvl:'honors',
+   q:'What is the slope of log₁₀ x at x = 5? Round to 4 decimal places.',
+   num:{ans:0.0869,tol:0.0001,unit:''},
+   steps:['Slope = 1/(x ln 10).','ln 10 ≈ 2.3026.','1/(5 × 2.3026) ≈ 0.0869.']},
+  {id:'add',kind:'test',lvl:'honors',
+   q:'ln 2 ≈ 0.693 and ln 5 ≈ 1.609. Without a calculator, what is the steepness of 10ˣ at x = 0?',
+   choices:['0.693 × 1.609 ≈ 1.115','0.693 + 1.609 = 2.302','1.609 − 0.693 = 0.916','10 × 0.693 = 6.93'],correct:1,
+   steps:['10 = 2 × 5, so 10ˣ = 2ˣ · 5ˣ.','Multiplying bases adds steepness: ln 10 = ln 2 + ln 5.','0.693 + 1.609 = 2.302.']},
+  {id:'mirrored',kind:'test',lvl:'honors',
+   q:'Base 2.5: what is the slope of log₂.₅ x at x = 1? Round to 3 decimal places.',
+   num:{ans:1.091,tol:0.002,unit:''},
+   steps:['2.5ˣ has steepness ln 2.5 ≈ 0.916 at (0, 1).','The mirror point (1, 0) has the reciprocal slope.','1 ÷ 0.916 ≈ 1.091.'],
+   lab:{set:{b:2.5,view:'mirror'},act:'show',look:'Read <b>Slope of log_b x at x = 1</b>.'},verify:[['inv',1.0913,0.001]]},
+  {id:'deriv',kind:'ap',lvl:'ap',
+   q:'Which pair is correct for b > 0, b ≠ 1?',
+   choices:['d/dx bˣ = x bˣ⁻¹ and d/dx log_b x = 1/x','d/dx bˣ = bˣ ln b and d/dx log_b x = 1/(x ln b)','d/dx bˣ = bˣ and d/dx log_b x = ln b / x','d/dx bˣ = bˣ / ln b and d/dx log_b x = x ln b'],correct:1,
+   steps:['bˣ⁺ʰ − bˣ = bˣ(bʰ − 1), and (bʰ − 1)/h → ln b.','So d/dx bˣ = bˣ ln b.','The inverse swaps rise and run: at height x the slope is 1/(x ln b).']},
+  {id:'dbl',kind:'real',lvl:'ap',
+   q:'A video’s views grow by a factor of 1.25 each day. How many days until the views double? Round to 2 decimal places.',
+   num:{ans:3.11,tol:0.01,unit:'days'},
+   steps:['1.25ᵗ = 2, so t = ln 2 ÷ ln 1.25.','0.6931 ÷ 0.2231 ≈ 3.106.','About 3.11 days. The rule of 70 (70 ÷ 25 = 2.8) is rougher at high rates.']}
+ ]
+}
+});

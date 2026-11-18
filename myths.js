@@ -540,3 +540,22 @@ vapegraph:[
  {k:'gone',s:'Teen vaping is over: almost no high schoolers vape now.',fact:false,why:'About 7.1% of high schoolers vaped in 2025, roughly 1 in 14.'}
 ]
 });
+/* Nov 18, 2026: precalc log and exponential tools for Colin Downs. */
+BioLab.addMyths({
+logslow:[
+ {k:'ceiling',s:'A logarithm eventually levels off at a maximum value.',fact:false,why:'It climbs forever with no horizontal asymptote. Only its rate of change goes to 0.'},
+ {k:'double',s:'If each game level needs twice the XP, the 10th level after level 5 takes 32 times as long to reach as level 5 did.',fact:true,why:'Level 5 at 1 hour, level 10 at 2⁵ = 32 hours.'},
+ {k:'equal',s:'Going from 1,000 to 10,000 followers takes about as long as going from 100 to 1,000 at a steady pace.',fact:false,why:'At a steady pace it takes 10 times as long. The milestones look equal only on a log scale.'}
+],
+lnbase:[
+ {k:'pick',s:'Mathematicians chose e ≈ 2.718 because it was a nice round number to work with.',fact:false,why:'It is the base whose curve climbs exactly as fast as its height. Nature, not convenience, picked it.'},
+ {k:'prop',s:'For any exponential bˣ, the slope at a point is proportional to the height there.',fact:true,why:'bˣ⁺ʰ − bˣ = bˣ(bʰ − 1), so the slope is ln b × bˣ.'},
+ {k:'power',s:'The rate of change of 2ˣ is x · 2ˣ⁻¹, like the power rule.',fact:false,why:'The power rule is for xⁿ. For 2ˣ the slope is 2ˣ ln 2.'}
+],
+fuel:[
+ {k:'gone',s:'Your body clears the same amount of nicotine every hour until it is gone.',fact:false,why:'It clears about the same fraction per hour (a half-life near 2 hours), so the amount falls by halves.'},
+ {k:'peak',s:'The level in your blood is highest at the moment inflow equals outflow.',fact:true,why:'Before that it rises and after that it falls.'},
+ {k:'candy',s:'A candy bar right before a test keeps your blood sugar high through the whole test.',fact:false,why:'It spikes within about 30 minutes, then falls; a balanced meal gives a lower, steadier curve.'}
+]
+});
+
