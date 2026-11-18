@@ -22,12 +22,12 @@ const bName=sim=>sim.p.case==='follow'?'10':String(B(sim));
 function clearGut(sim){sim.peek=false;if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
 
 const SIM={
- id:'logslow',hash:'logslow',apUnit:4,order:7.2,tab:'Why logs slow down',kind:'Simulation',
+ id:'logslow',hash:'logslow',apUnit:4,order:7.2,tab:'Why each level takes longer',kind:'Simulation',
  skills:{bio:'Logarithmic growth and average rate of change · Precalculus Unit 6, AP Precalculus 2B',honors:'Logarithmic functions: rate of change proportional to 1/x · Precalculus Unit 6, AP Precalculus 2B',ap:'Rate of change of log_b x is 1/(x ln b) · AP Precalculus 2B, preview of AP Calculus'},
  prereq:['logscale'],next:['lnbase','decibels'],
  card:'Guess how long the next game level or follower milestone takes at a steady pace, then see why every step up takes longer than the last.',
- title:'Why does a log slow down?',
- lede:{bio:'In many games, each level needs twice the XP of the level before. Play at a steady pace and every new level takes twice as long. Your level is counting doublings, and that makes it a logarithm.',
+ title:'Why does each level take longer?',
+ lede:{bio:'In many games, each level needs twice the XP of the level before. Play at a steady pace and every new level takes twice as long as the last. Your level is counting how many times your time has doubled. Counting doublings is exactly what a logarithm (log for short) does, so your level grows like a log: always up, but slower and slower.',
   honors:'Level L(t) = L₁ + log₂ t, with t in hours. Every +1 in level needs one more doubling of time. The rise stays 1 while the run doubles, so the slope keeps shrinking. It shrinks like 1/t: slope × t never changes.',
   ap:'For L(t) = L₁ + log_b t, the rate of change is 1/(t ln b). The 1/t comes from the run growing with t. The 1/ln b comes from the base: base 2 gives 1/ln 2 ≈ 1.443, base 10 gives 1/ln 10 ≈ 0.434. The function increases forever with no horizontal asymptote, but its rate of change goes to 0.'},
  scale:'One player or one account at a steady pace: the same XP per hour, or the same new followers per week.',
