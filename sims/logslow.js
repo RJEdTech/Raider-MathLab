@@ -19,13 +19,16 @@ const cpend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
 const shown=sim=>!!(sim.peek||(sim.gutS&&sim.gutS.g))&&!cpend(sim);
 const tf=(sim,t)=>fmtNum(t,t<10?1:0).replace(/\.0$/,'')+' '+(Math.abs(t-1)<1e-9?C(sim).u1:C(sim).u);
 const bName=sim=>sim.p.case==='follow'?'10':String(B(sim));
-function clearGut(sim){sim.peek=false;if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
+function clearGut(sim){if(!(sim.tour&&sim.tour.on))sim.peek=false;if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
 
 const SIM={
+ learn:{goals:{bio:['Write it: find the time to any level by doubling, 1 → 2 → 4 → 8 …','See it: read the staircase, where every rise is the same and every run gets longer','Tell it: explain in two sentences why each level takes longer than the last'],
+  honors:['Write it: L(t) = 5 + log₂ t, and solve it for t','See it: read the staircase and the curve through its corners, and why slope × time never changes','Solve it two ways: with a table of doublings and with a logarithm','Tell it: explain why your level never stops rising but keeps slowing down'],
+  ap:['Write it: L(t) = L₁ + log_b t and L′(t) = 1/(t ln b)','See it: compare the curves for different bases on one graph','Solve it two ways: average rate from the staircase and the exact rate from the derivative','Tell it: explain where the 1/t and the 1/ln b each come from']}},
  id:'logslow',hash:'logslow',apUnit:4,order:7.2,tab:'Why each level takes longer',kind:'Simulation',
  skills:{bio:'Logarithmic growth and average rate of change · Precalculus Unit 6, AP Precalculus 2B',honors:'Logarithmic functions: rate of change proportional to 1/x · Precalculus Unit 6, AP Precalculus 2B',ap:'Rate of change of log_b x is 1/(x ln b) · AP Precalculus 2B, preview of AP Calculus'},
  prereq:['logscale'],next:['lnbase','decibels'],
- card:'Guess how long the next game level or follower milestone takes at a steady pace, then see why every step up takes longer than the last.',
+ card:'Guess how long it takes to reach level 10 or 10,000 followers at a steady pace, then see why each level takes longer than the last.',
  title:'Why does each level take longer?',
  lede:{bio:'In many games, each level needs twice the XP of the level before. Play at a steady pace and every new level takes twice as long as the last. Your level is counting how many times your time has doubled. Counting doublings is exactly what a logarithm (log for short) does, so your level grows like a log: always up, but slower and slower.',
   honors:'Level L(t) = L₁ + log₂ t, with t in hours. Every +1 in level needs one more doubling of time. The rise stays 1 while the run doubles, so the slope keeps shrinking. It shrinks like 1/t: slope × t never changes.',
@@ -37,6 +40,7 @@ const SIM={
   {id:'case',label:'What are you climbing?',type:'seg',def:'game',noGut:true,onChange:clearGut,options:[{v:'game',l:'Game levels'},{v:'follow',l:'Followers'}]},
   {id:'guess',label:'Your guess: time to the goal',type:'range',min:0,max:250,step:1,def:0,unit:'',help:'Hours for game levels, weeks for followers.'},
   {id:'pt',label:'Check the slope this far along',type:'range',min:1,max:100,step:1,def:25,unit:'%',lvl:'honors',noGut:true},
+  {id:'cmp',label:'Compare all: ×1.5, ×2, ×3 and ×10 per step',type:'toggle',def:false,lvl:'honors',noGut:true},
   {id:'mult',label:'Game: XP needed grows by this each level',type:'seg',def:2,lvl:'ap',noGut:true,onChange:clearGut,options:[{v:1.5,l:'× 1.5'},{v:2,l:'× 2'},{v:3,l:'× 3'}]}
  ],
  actions:[{id:'show',label:'Skip the guess and show the staircase',run(sim){sim.peek=true;sim.infoDirty=true;}}],
@@ -44,7 +48,7 @@ const SIM={
  metrics:[
   {id:'goal',label:'Time to the goal',unit:'',d:1,min:0,max:null,get:sim=>shown(sim)?goal(sim):null},
   {id:'last',label:'The last step alone takes',unit:'',d:1,min:0,max:null,get:sim=>shown(sim)?lastStep(sim):null},
-  {id:'first',label:'Steps up per time unit, first step',unit:'',d:2,lvl:'honors',min:0,max:null,get:sim=>shown(sim)?1/(T(sim,C(sim).L1+1)-T(sim,C(sim).L1)):null},
+  {id:'first',label:'Speed of the first step (steps per hour or week)',unit:'',d:2,lvl:'honors',min:0,max:null,get:sim=>shown(sim)?1/(T(sim,C(sim).L1+1)-T(sim,C(sim).L1)):null},
   {id:'slope',label:'Slope at the check point',unit:'per unit',d:3,lvl:'honors',min:0,max:null,get:sim=>shown(sim)?slope(sim,ptT(sim)):null},
   {id:'kx',label:'Slope × time (never changes)',unit:'',d:3,lvl:'honors',min:0,max:3,get:sim=>shown(sim)?slope(sim,ptT(sim))*ptT(sim):null},
   {id:'lnb',label:'1 ÷ ln b',unit:'',d:3,lvl:'ap',min:0,max:3,get:sim=>1/Math.log(B(sim))}
@@ -71,6 +75,11 @@ const SIM={
    txt(ctx,'Goal: '+c.lab(c.Lt)+'.   When?',L0+60*kk,Y(c.Lt)+26*kk,{s:15*kk,w:800,c:PAL['rj']});
    if(!cpend(sim))txt(ctx,'?',X(200),Y(c.Lt)+6,{s:34*kk,w:800,c:PAL['rj'],a:'center'});
   }else{
+   if(atLeast('honors')&&sim.p.cmp&&stg===99){const bs=[[1.5,PAL['s6']],[2,PAL['s5']],[3,PAL['s2']],[10,PAL['s1']]],xm=xmax;
+    bs.forEach(([bb,col],i)=>{ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();let f=true;for(let j=0;j<=400;j++){const t=Math.max(0.05,xm*j/400),L=c.L1+Math.log(t)/Math.log(bb);if(L<ymin||L>ymax){f=true;continue;}f?ctx.moveTo(X(t),Y(L)):ctx.lineTo(X(t),Y(L));f=false;}ctx.stroke();
+     const te=Math.min(xm*0.97,Math.pow(bb,ymax-0.35-c.L1)),Le=c.L1+Math.log(te)/Math.log(bb);txt(ctx,'× '+bb+': slope × t = '+fmtNum(1/Math.log(bb),3),X(te)+(te<xm*0.6?8:-4),Y(Le)+(te<xm*0.6?4:-8),{s:12*kk,w:800,c:col,a:te<xm*0.6?'left':'right'});});
+    txt(ctx,'Smaller multiplier: more steps fit, so the curve climbs faster',R0-4,B0-14,{s:12*kk,w:700,c:PAL['cv-soft'],a:'right'});
+   }else{
    /* curve */
    if(stg>=4){ctx.strokeStyle=PAL['s5'];ctx.lineWidth=2.5;ctx.beginPath();let first=true;for(let i=0;i<=400;i++){const t=Math.max(1/b,xmax*i/400);const L=c.L1+Math.log(t)/Math.log(b);if(L<ymin)continue;const x=X(t),y=Y(Math.min(L,ymax));first?ctx.moveTo(x,y):ctx.lineTo(x,y);first=false;}ctx.stroke();}
    /* staircase */
@@ -89,14 +98,15 @@ const SIM={
     ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(X(t),Y(L),6,0,7);ctx.fill();
     pill(ctx,'slope '+fmtNum(m,3)+' per '+c.u1+' × '+fmtNum(t,1)+' '+c.u+' = '+fmtNum(m*t,3),L0+190*kk,T0+16*kk,PAL['s4'],'#fff',12*kk);}
    if(stg===8){pill(ctx,'1 ÷ ln '+bName(sim)+' = '+fmtNum(1/Math.log(b),3),L0+140*kk,T0+60*kk,PAL['s5'],'#fff',14*kk);}
+   }
   }
   /* gut */
   if(G&&G.g||sim.p.guess>0){const gt=G&&G.g?G.g.t:sim.p.guess,x=X(Math.min(gt,xmax));ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x,T0);ctx.lineTo(x,B0);ctx.stroke();ctx.setLineDash([]);
    txt(ctx,(G&&G.g?'Your gut: ':'Your guess: ')+tf(sim,gt),x+(x>R0-150?-6:6),T0+14*kk,{s:12*kk,w:800,c:PAL['s4'],a:x>R0-150?'right':'left'});}
  },
  narrate(sim){const c=C(sim),b=B(sim);
-  if(cpend(sim))return 'Work it out: each step up takes '+bName(sim)+' times as long as the step before.';
-  if(!shown(sim))return `At a steady pace, ${c.lab(c.L1)} took ${tf(sim,1)} and ${c.lab(c.L1+1)} took ${tf(sim,b)}. <b>Each step up needs ${bName(sim)} times the total</b>. Lock in your guess for ${c.lab(c.Lt)}.`;
+  if(cpend(sim))return 'Work it out: your total time is multiplied by '+bName(sim)+' for every '+C(sim).word+'.';
+  if(!shown(sim))return `At a steady pace, you reached ${c.lab(c.L1)} after ${tf(sim,1)} and ${c.lab(c.L1+1)} after ${tf(sim,b)}. <b>Your total time ${b===2?'doubles':'is multiplied by '+bName(sim)} for every ${c.word}.</b> Lock in your guess for ${c.lab(c.Lt)}.`;
   const g=goal(sim);
   if(atLeast('honors'))return `Every step up is a rise of 1, but the run keeps multiplying by ${bName(sim)}. At ${fmtNum(ptT(sim),1)} ${c.u} the slope is ${fmtNum(slope(sim,ptT(sim)),3)} per ${c.u1}; <b>slope × time is always ${fmtNum(1/Math.log(b),3)}</b>, which is 1 ÷ ln ${bName(sim)}.`;
   return `The steps take ${[0,1,2,3].map(i=>tf(sim,T(sim,c.L1+i+1)-T(sim,c.L1+i))).join(', ')}… Same rise each time, longer and longer runs. <b>${c.lab(c.Lt)} comes at ${tf(sim,g)}.</b>`;},
@@ -110,11 +120,11 @@ const SIM={
    ap:'L(t) = L₁ + log_b t, so t = b^(L − L₁) and L′(t) = 1/(t ln b).'},
   formula(sim){const c=C(sim);return `t = ${bName(sim)}^(${c.Lt} − ${c.L1}) = ${bName(sim)}^${c.Lt-c.L1} = ${fmtNum(goal(sim),goal(sim)<10?2:0)} ${c.u}`;},
   calc:{unit:'',d:3,tol:a=>Math.max(0.01,Math.abs(a)*0.02),
-   prompt:{bio:sim=>{const c=C(sim);return `${c.lab(c.L1)} took <b>${tf(sim,1)}</b>. Each step up takes <b>${bName(sim)} times</b> as long as the last one in total. How many ${c.u} until <b>${c.lab(c.Lt)}</b>?`;},
+   prompt:{bio:sim=>{const c=C(sim);return `You reached <b>${c.lab(c.L1)}</b> after <b>${tf(sim,1)}</b>. Your total time ${sim.p.case==='follow'?'is 10 times as long':'doubles'} for every ${c.word} after that. How many ${c.u} until <b>${c.lab(c.Lt)}</b>?`;},
     honors:sim=>{const c=C(sim),a=T(sim,c.Lt-1),g=goal(sim);return `${c.lab(c.Lt-1)} comes at ${tf(sim,a)} and ${c.lab(c.Lt)} at ${tf(sim,g)}. What is the <b>average rate of change</b> over that last step, in steps up per ${c.u1}?`;},
     ap:sim=>{const c=C(sim),t=goal(sim)/4;return `L(t) = ${c.L1} + log_${bName(sim)} t. Use L′(t) = 1/(t ln b) to find how fast you are climbing at t = ${fmtNum(t,2)} ${c.u}, in steps up per ${c.u1}.`;}},
    answer:sim=>{const c=C(sim),g=goal(sim);if(atLeast('ap')){const t=g/4;return 1/(t*Math.log(B(sim)));}if(atLeast('honors'))return 1/(g-T(sim,c.Lt-1));return g;},
-   hint:{bio:'Write out the times step by step, multiplying each time.',honors:'Average rate = change in level ÷ change in time = 1 ÷ (length of the last step).',ap:'ln 2 ≈ 0.693 and ln 10 ≈ 2.303.'},
+   hint:{bio:'List the times one level at a step: 1, then 2, then 4…',honors:'Average rate = change in level ÷ change in time = 1 ÷ (length of the last step).',ap:'ln 2 ≈ 0.693 and ln 10 ≈ 2.303.'},
    steps(sim){const c=C(sim),b=B(sim),g=goal(sim);
     if(atLeast('ap')){const t=g/4;return [`L′(t) = 1/(t ln ${bName(sim)}).`,`At t = ${fmtNum(t,2)}: 1/(${fmtNum(t,2)} × ${fmtNum(Math.log(b),3)}) ≈ <b>${fmtNum(1/(t*Math.log(b)),3)}</b> steps up per ${c.u1}.`,`Check: slope × t = 1/ln ${bName(sim)} ≈ ${fmtNum(1/Math.log(b),3)} at every point.`];}
     if(atLeast('honors')){const a=T(sim,c.Lt-1);return [`Change in level: ${c.Lt} − ${c.Lt-1} = 1 step.`,`Change in time: ${fmtNum(g,2)} − ${fmtNum(a,2)} = ${fmtNum(g-a,2)} ${c.u}.`,`Average rate: 1 ÷ ${fmtNum(g-a,2)} ≈ <b>${fmtNum(1/(g-a),3)}</b> steps per ${c.u1}. The first step ran at ${fmtNum(1/(b-1),3)}.`];}
@@ -139,15 +149,17 @@ const SIM={
  ],
  tour:[
   {title:'The rule',text:'Each level needs <b>twice the total XP</b> of the level before. At a steady pace, that means twice the time. Level 5 came at 1 hour, level 6 at 2 hours.',pause:true,setup:sim=>{sim.tst=1;sim.peek=true;BioLab.setValues(sim,{case:'game',mult:2,pt:25,guess:0});}},
-  {title:'Climb the staircase',text:'Orange runs are time, green rises are one level. The runs are <b>1, 2, 4, 8, 16 hours</b>. Level 10 comes at <b>32 hours</b>.',pause:true,setup:sim=>{sim.tst=2;}},
-  {title:'Same rise, longer run',text:'Slope = rise ÷ run. Every rise is 1, but the runs double, so the slopes go 1, 1/2, 1/4, 1/8, 1/16. The last level alone takes <b>16 hours, half of all the time</b>.',pause:true,setup:sim=>{sim.tst=3;}},
-  {title:'Slower, but never stopping',text:'The purple curve is L(t) = 5 + log₂ t. It bends flatter and flatter, but it never levels off: level 20 would come at 32,768 hours. <b>A log keeps climbing forever.</b>',pause:true,setup:sim=>{sim.tst=4;}},
+  {title:'Climb the staircase',text:'Each red line is the time one level takes; each green line is +1 level. The red lines are <b>1, 2, 4, 8 and 16 hours</b> long, so level 10 comes at <b>32 hours</b>.',pause:true,setup:sim=>{sim.tst=2;}},
+  {title:'Same rise, longer run',text:{bio:'Every level is the same +1, but each one takes twice as long as the one before. So you gain levels more and more slowly: 1 level per hour at first, 1 level per 16 hours at the end. The last level alone takes <b>16 hours, half of all the time</b>.',honors:'Slope = rise ÷ run. Every rise is 1, but the runs double, so the slopes go 1, 1/2, 1/4, 1/8, 1/16. The last level alone takes <b>16 hours, half of all the time</b>.'},pause:true,setup:sim=>{sim.tst=3;}},
+  {title:'Slower, but never stopping',text:{bio:'The purple curve runs through the corners of the staircase. It gets flatter and flatter, but it never goes flat: level 20 would still come, at 32,768 hours. <b>Your level keeps going up forever, just more and more slowly.</b> That shape is what math calls a logarithm.',honors:'The purple curve is L(t) = 5 + log₂ t. It bends flatter and flatter, but it never levels off: level 20 would come at 32,768 hours. <b>A log keeps climbing forever.</b>'},pause:true,setup:sim=>{sim.tst=4;}},
   {lvl:'honors',title:'Slope × time stays the same',text:'The dashed line touches the curve at the yellow point. Move the check point and the slope changes, but <b>slope × time is always 1.443</b>. So the slope is 1.443 ÷ t: proportional to 1/t.',pause:true,setup:sim=>{sim.tst=5;BioLab.setValues(sim,{pt:25});}},
   {lvl:'honors',title:'Followers work the same way',text:'At a steady pace, 100 followers took 1 week. 1,000 takes 10 weeks and 10,000 takes <b>100 weeks</b>: each milestone is 10 times the last. Now slope × time is <b>0.434</b>.',pause:true,setup:sim=>{sim.tst=6;BioLab.setValues(sim,{case:'follow',pt:25});}},
   {lvl:'ap',title:'Where 1.443 and 0.434 come from',text:'1.443 = 1 ÷ ln 2 and 0.434 = 1 ÷ ln 10. For any base, L′(t) = 1/(t ln b). The <b>1/t</b> comes from the runs growing with t; the <b>1/ln b</b> comes from the base. The tool “Where does 1/ln b come from?” shows why.',pause:true,setup:sim=>{sim.tst=8;BioLab.setValues(sim,{case:'game',mult:2});}},
-  {title:'Stop and wonder',text:'John Napier published logarithms in 1614 so astronomers could turn hard multiplying into easy adding. Four centuries later, a game designer who never says “logarithm” builds one into every level bar. <b>Counting multiplications is so useful that it shows up wherever growth multiplies.</b>',pause:true,setup:sim=>{sim.tst=4;BioLab.setValues(sim,{case:'game'});}}
+  {lvl:'honors',title:'Solve it two ways',text:{honors:'<b>With a table:</b> double the time for each level: 1, 2, 4, 8, 16, 32 hours. <b>With a log:</b> 10 = 5 + log₂ t, so log₂ t = 5 and t = 2⁵ = 32 hours. Two methods, one answer: the log is the shortcut for “how many doublings?”',ap:'<b>Average rate from the staircase:</b> from 8 to 16 hours you gain 1 level, so 1 ÷ 8 = 0.125 levels per hour. <b>Exact rate from the derivative:</b> L′(8) = 1/(8 ln 2) ≈ 0.180, and L′(16) ≈ 0.090. The average over the step sits between the rates at its two ends, as it should.'},pause:true,setup:sim=>{sim.tst=5;BioLab.setValues(sim,{case:'game',mult:2,pt:25});}},
+  {title:'Stop and wonder',text:'John Napier published logarithms in 1614 so astronomers could turn hard multiplying into easy adding. More than 400 years later, a game designer who never says “logarithm” builds one into every level bar. <b>Whenever something grows by multiplying, counting the multiplications gives you a logarithm.</b>',pause:true,setup:sim=>{sim.tst=4;BioLab.setValues(sim,{case:'game'});}},
+  {title:'Tell the story',text:'Now tell it in your own words. Finish this: <i>“In my game, level 5 took 1 hour but level 10 took 32 hours, because …”</i> Say what doubles, what stays the same, and why your level never stops going up. When you can write the math, see it in the staircase and tell the story, you know it.',pause:true,setup:sim=>{sim.tst=4;BioLab.setValues(sim,{case:'game'});}}
  ],
- lab:{bio:'<p><b>Question:</b> How does the time for each level change?</p><ol><li>Press <b>Skip the guess</b> if you have not locked in a guess.</li><li>Record the run for each level from 5 to 10.</li><li>Divide each run by the one before it.</li></ol><p>Write one sentence: what stays the same, the runs or their ratio?</p>',
+ lab:{bio:'<p><b>Question:</b> How does the time for each level change?</p><ol><li>Press <b>Skip the guess</b> if you have not locked in a guess.</li><li>Record the run for each level from 5 to 10.</li><li>Divide each run by the one before it.</li></ol><p>Write one sentence: what stays the same, the runs or their ratio?</p><p><b>Tell the story:</b> in three sentences, explain to a friend who plays the game why level 10 takes so long.</p>',
   honors:'<p><b>Question:</b> How does the slope depend on time?</p><ol><li>Set the check point to 10%, 20%, 40% and 80% and record the slope each time.</li><li>Multiply each slope by its time.</li><li>Switch to Followers and repeat.</li></ol><p>Explain why doubling the time halves the slope.</p>',
   ap:'<p><b>Question:</b> How does the base change the rate of change?</p><ol><li>For XP growth × 1.5, × 2 and × 3, record slope × time.</li><li>Compare each with 1 ÷ ln b.</li></ol><p><b>CER:</b> Use L(t) = L₁ + log_b t to show L′(t) = 1/(t ln b), and explain each factor in words.</p>'},
  terms:[

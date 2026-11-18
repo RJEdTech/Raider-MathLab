@@ -9,7 +9,7 @@ const meas=(b,h)=>(Math.pow(b,h)-1)/h;
 const cpend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
 const shown=sim=>!!(sim.peek||(sim.gutS&&sim.gutS.g))&&!cpend(sim);
 const f2=v=>fmtNum(v,2),f3=v=>fmtNum(v,3);
-function clearGut(sim){sim.peek=false;if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
+function clearGut(sim){if(!(sim.tour&&sim.tour.on))sim.peek=false;if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
 
 function drawGrow(sim,ctx,k,stg){const b=sim.p.b,kk=Math.min(k,1.5),sh=shown(sim);
  const L0=Math.round(50+20*kk),R0=780,T0=24,B0=400,xmin=-2.2,xmax=2.2,ymin=-0.4,ymax=5.5;
@@ -32,7 +32,7 @@ function drawGrow(sim,ctx,k,stg){const b=sim.p.b,kk=Math.min(k,1.5),sh=shown(sim
   if(stg===5){[0.8,1.4].forEach(x=>{const y=Math.pow(b,x);ctx.strokeStyle=PAL['s6'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(x-0.5),Y(y-0.5*m*y));ctx.lineTo(X(x+0.5),Y(y+0.5*m*y));ctx.stroke();ctx.fillStyle=PAL['s6'];ctx.beginPath();ctx.arc(X(x),Y(y),5,0,7);ctx.fill();
    txt(ctx,'height '+f2(y)+' → slope '+f2(m*y),X(x)+10,Y(y)+16*kk,{s:12*kk,w:800,c:PAL['s6']});});}
   pill(ctx,'steepness at x = 0: '+f3(meas(b,H(sim))),X(-1.15),Y(4.7),PAL['s4'],'#fff',13*kk);}
- else if(!cpend(sim))txt(ctx,'Make the red curve just touch the dashed line at (0, 1)',X(-1.1),Y(4.9),{s:13*kk,w:700,c:PAL['cv-ink'],a:'center'});
+ else if(!cpend(sim))txt(ctx,'Make the red curve just touch the dashed line at (0, 1)',R0-6,T0+16*kk,{s:13*kk,w:700,c:PAL['cv-ink'],a:'right'});
  if(!sh&&!(stg>=4))line(1,PAL['cv-soft'],[6,6],2);
  ctx.fillStyle=PAL['cv-ink'];ctx.beginPath();ctx.arc(X(0),Y(1),5,0,7);ctx.fill();txt(ctx,'(0, 1)',X(0)-8,Y(1)-10,{s:12*kk,w:700,a:'right'});
  if(sh&&(stg===99||stg>=4))txt(ctx,'green dots: base e ≈ 2.718',X(-1.15),Y(4.7)+26*kk,{s:12*kk,w:700,c:PAL['s3'],a:'center'});}
@@ -52,13 +52,24 @@ function drawMirror(sim,ctx,k){const b=sim.p.b,kk=Math.min(k,1.5),m=Math.log(b);
  txt(ctx,'log_b x: slope 1 ÷ ln b = '+f3(1/m)+' at (1, 0)',X(1.2),Y(-1.25),{s:13*kk,w:800,c:PAL['s5']});
  txt(ctx,'mirror line y = x',X(4.3),Y(4.3)+18*kk,{s:12*kk,w:700,c:PAL['cv-soft'],a:'center'});}
 
+function drawAll(sim,ctx,k){const kk=Math.min(k,1.5),L0=Math.round(50+20*kk),R0=780,T0=24,B0=400,xmin=-2.2,xmax=2.2,ymin=-0.4,ymax=5.5;
+ const X=x=>L0+(x-xmin)/(xmax-xmin)*(R0-L0),Y=y=>B0-(y-ymin)/(ymax-ymin)*(B0-T0);
+ ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(L0,Y(0));ctx.lineTo(R0,Y(0));ctx.moveTo(X(0),T0);ctx.lineTo(X(0),B0);ctx.stroke();
+ [[2,PAL['s2'],'2'],[Math.E,PAL['s3'],'e'],[3,PAL['s5'],'3'],[10,PAL['s1'],'10']].forEach(([b,c,n],i)=>{ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.beginPath();let f=true;for(let j=0;j<=300;j++){const x=xmin+(xmax-xmin)*j/300,y=Math.pow(b,x);if(y>ymax+0.3){f=true;continue;}f?ctx.moveTo(X(x),Y(y)):ctx.lineTo(X(x),Y(y));f=false;}ctx.stroke();
+  const m=Math.log(b);ctx.setLineDash([5,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(-1.2),Y(1-1.2*m));ctx.lineTo(X(0.9),Y(1+0.9*m));ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,n+'ˣ: steepness '+fmtNum(m,3)+(n==='e'?' (exactly 1)':''),X(-2.1),T0+18*kk+i*22*kk,{s:13*kk,w:800,c});});
+ ctx.fillStyle=PAL['cv-ink'];ctx.beginPath();ctx.arc(X(0),Y(1),5,0,7);ctx.fill();txt(ctx,'All cross at (0, 1). Only the steepness there differs.',R0-6,B0-12,{s:12*kk,w:700,c:PAL['cv-soft'],a:'right'});}
+
 const SIM={
- id:'lnbase',hash:'lnbase',apUnit:4,order:7.3,tab:'Where 1/ln b comes from',kind:'Simulation',
+ learn:{goals:{bio:['Write it: measure how steep a curve is with one tiny step: rise ÷ step','See it: find the base whose curve just touches the slope-1 line at (0, 1)','Tell it: explain in two sentences why e is special'],
+  honors:['Write it: steepness of bˣ at 0 = (bʰ − 1) ÷ h → ln b','See it: compare 2ˣ, eˣ, 3ˣ and 10ˣ, then mirror one across y = x','Solve it two ways: measure with a tiny step, then check with the ln button','Tell it: explain why a log’s slope is 1 ÷ ln b at x = 1'],
+  ap:['Write it: d/dx bˣ = bˣ ln b and d/dx log_b x = 1/(x ln b)','See it: the mirror swaps rise and run','Solve it two ways: the mirror and the derivative rule give the same slope','Tell it: explain where the 1/x and the 1/ln b each come from']}},
+ id:'lnbase',hash:'lnbase',apUnit:4,order:7.3,tab:'Why e is on your calculator',kind:'Simulation',
  skills:{bio:'Exponential functions and rate of change · Precalculus Unit 6, AP Precalculus 2A',honors:'Natural base e, ln b, and inverse functions · AP Precalculus 2A–2B',ap:'Rates of change of bˣ and log_b x: ln b and 1/(x ln b) · AP Precalculus 2B, preview of AP Calculus'},
  prereq:['logslow'],next:['caffeine','yearlygrowth'],
- card:'Hunt for the one base whose curve climbs exactly as fast as its height, and find out why every log’s slope has a 1/ln b in it.',
- title:'Where does 1/ln b come from?',
- lede:{bio:'Your calculator has an “ln” button and Excel has EXP and LN. They all use a strange number, e ≈ 2.718, that nobody would pick by hand. Find it yourself: one base makes the curve climb exactly as fast as its height.',
+ card:'Find the one number that makes a growth curve climb exactly as fast as its height. It is the e behind the ln button, and it explains every log’s slope.',
+ title:'Why does your calculator have an “ln” button?',
+ lede:{bio:'Your calculator has an “ln” button, and Excel has EXP and LN. All of them are built on a strange number, e ≈ 2.718, that nobody would pick by hand. Here you find it yourself. Slide the base of the curve y = bˣ: one base makes the curve climb exactly as fast as its height.',
   honors:'Measure how steep bˣ is at x = 0 with one tiny step h: (bʰ − 1) ÷ h. Every base has its own steepness, and that number is ln b. Because bˣ⁺ʰ − bˣ = bˣ(bʰ − 1), the slope anywhere is ln b × height. Mirror the graph across y = x and every slope flips to its reciprocal: log_b x has slope 1/(x ln b).',
   ap:'The steepness number turns multiplying bases into adding: (bc)ˣ = bˣcˣ, so steep(bc) = steep(b) + steep(c). A function that turns × into + is a logarithm, and the base where it equals 1 is e. So d/dx bˣ = bˣ ln b and d/dx log_b x = 1/(x ln b).'},
  scale:'A math picture: one curve near the point (0, 1), where every exponential bˣ crosses the y-axis.',
@@ -67,6 +78,7 @@ const SIM={
  controls:[
   {id:'b',label:'Base b',type:'range',min:1.2,max:6,step:0.01,def:1.6,unit:''},
   {id:'view',label:'Picture',type:'seg',def:'grow',lvl:'honors',noGut:true,options:[{v:'grow',l:'bˣ near (0, 1)'},{v:'mirror',l:'Mirror: bˣ and log_b x'}]},
+  {id:'cmp',label:'Compare all: 2ˣ, eˣ, 3ˣ and 10ˣ',type:'toggle',def:false,noGut:true},
   {id:'h',label:'Tiny step h for measuring',type:'seg',def:0.001,lvl:'honors',noGut:true,options:[{v:0.1,l:'0.1'},{v:0.01,l:'0.01'},{v:0.001,l:'0.001'}]}
  ],
  actions:[{id:'show',label:'Skip the guess and show the steepness',run(sim){sim.peek=true;sim.infoDirty=true;}},{id:'e',label:'Snap to e',lvl:'honors',run(sim){sim.peek=true;BioLab.setValues(sim,{b:Math.round(Math.E*100)/100});}}],
@@ -78,7 +90,7 @@ const SIM={
   {id:'dbl',label:'Time for bˣ to double',unit:'',d:3,lvl:'ap',min:0,max:4,get:sim=>shown(sim)?Math.LN2/Math.log(sim.p.b):null}
  ],
  draw(sim,ctx,vdt,k){const stg=(sim.tour&&sim.tour.on)?(sim.tst||1):99;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
-  if(sim.p.view==='mirror'&&atLeast('honors')&&shown(sim))drawMirror(sim,ctx,k);else drawGrow(sim,ctx,k,stg);},
+  if(sim.p.view==='mirror'&&atLeast('honors')&&shown(sim))drawMirror(sim,ctx,k);else if(sim.p.cmp&&shown(sim)&&stg===99)drawAll(sim,ctx,k);else drawGrow(sim,ctx,k,stg);},
  narrate(sim){const b=sim.p.b;
   if(cpend(sim))return 'Work out the steepness from one tiny step. Then compare it with 1.';
   if(!shown(sim))return `The dashed line climbs 1 for every 1 across, the same as its height at (0, 1). <b>Slide the base until the red curve just touches it there</b>, then lock in your guess.`;
@@ -121,16 +133,18 @@ const SIM={
   {lvl:'ap',instant:true,q:'Which is d/dx of 5ˣ?',choices:['x · 5ˣ⁻¹','5ˣ','5ˣ ln 5','5ˣ ÷ ln 5'],correct:2,explain:'Slope = height × steepness at 0 = 5ˣ ln 5. The power rule does not apply when x is in the exponent.'}
  ],
  tour:[
-  {title:'One tiny step',text:'How steep is 2ˣ at (0, 1)? Step a little to the right and see how much it rises: <b>(2ʰ − 1) ÷ h</b>. With h = 0.001 you get <b>0.693</b>. The purple triangle shows one step, drawn big so you can see it.',pause:true,setup:sim=>{sim.tst=1;sim.peek=true;BioLab.setValues(sim,{b:2,view:'grow',h:0.001});}},
-  {title:'Every base has its own number',text:'Base 3 gives <b>1.099</b>. Base 10 would give 2.303. Every exponential has a built-in steepness at (0, 1). That number is called <b>ln b</b>.',pause:true,setup:sim=>{sim.tst=2;BioLab.setValues(sim,{b:3});}},
+  {title:'One tiny step',text:{bio:'How steep is y = 2ˣ where it crosses (0, 1)? Step a tiny bit to the right, 0.001, and see how much the curve rises. Rise ÷ step = <b>0.693</b>. The purple triangle shows one step, drawn big so you can see it.',honors:'How steep is 2ˣ at (0, 1)? Step a little to the right and see how much it rises: <b>(2ʰ − 1) ÷ h</b>. With h = 0.001 you get <b>0.693</b>. The purple triangle shows one step, drawn big so you can see it.'},pause:true,setup:sim=>{sim.tst=1;sim.peek=true;BioLab.setValues(sim,{b:2,view:'grow',h:0.001});}},
+  {title:'Every base has its own number',text:'Base 3 gives <b>1.099</b>. Base 10 would give 2.303. Every base has its own steepness at (0, 1), and that number is what the ln button gives you: ln 2 = 0.693, ln 3 = 1.099. We write it <b>ln b</b>.',pause:true,setup:sim=>{sim.tst=2;BioLab.setValues(sim,{b:3});}},
   {lvl:'honors',title:'Multiplying bases adds steepness',text:'4ˣ = 2²ˣ runs twice as fast as 2ˣ, so its steepness is <b>0.693 + 0.693 = 1.386</b>. 8ˣ gives 3 × 0.693 = 2.079. A function that turns multiplying into adding is a logarithm.',pause:true,setup:sim=>{sim.tst=3;BioLab.setValues(sim,{b:4});}},
   {title:'The base with steepness 1',text:'Between 2 (0.693) and 3 (1.099) is a base whose curve climbs <b>exactly 1</b> at (0, 1), touching the dashed line. That base is <b>e ≈ 2.718</b>, and ln e = 1.',pause:true,setup:sim=>{sim.tst=4;BioLab.setValues(sim,{b:2.72});}},
-  {title:'Why rate follows amount',text:'Over any tiny step, bˣ⁺ʰ − bˣ = <b>bˣ(bʰ − 1)</b>. The height factors out. So the slope anywhere is ln b × height: twice as tall, twice as steep. <b>Growth by multiplying always does this.</b>',pause:true,setup:sim=>{sim.tst=5;BioLab.setValues(sim,{b:2});}},
+  {title:'Why rate follows amount',text:{bio:'Each tiny step multiplies the height by the same amount. So where the curve is twice as tall, the same step adds twice as much: <b>twice as tall, twice as steep</b>. The steepness anywhere is ln b × the height. Anything that grows by multiplying does this.',honors:'Over any tiny step, bˣ⁺ʰ − bˣ = <b>bˣ(bʰ − 1)</b>. The height factors out. So the slope anywhere is ln b × height: twice as tall, twice as steep. <b>Growth by multiplying always does this.</b>'},pause:true,setup:sim=>{sim.tst=5;BioLab.setValues(sim,{b:2});}},
   {lvl:'honors',title:'Flip it across y = x',text:'log_b x is bˣ mirrored across y = x. The mirror swaps rise and run, so every slope flips to its reciprocal: <b>1 ÷ ln b at (1, 0)</b>, and 1/(x ln b) at x. That is where the 1/ln b in every log’s slope comes from.',pause:true,setup:sim=>{sim.tst=6;BioLab.setValues(sim,{b:2,view:'mirror'});}},
   {lvl:'ap',title:'The rule of 70',text:'Doubling time: bᵗ = 2, so t = ln 2 ÷ ln b. For r% growth, ln(1 + r/100) ≈ r/100, so t ≈ <b>69.3 ÷ r</b>. Bankers’ “rule of 70” (or 72) is ln 2 in disguise.',pause:true,setup:sim=>{sim.tst=7;BioLab.setValues(sim,{b:2,view:'grow'});}},
-  {title:'Stop and wonder',text:'Jacob Bernoulli found e in 1683 by asking what happens to interest compounded more and more often. The same number runs caffeine leaving your blood, a pizza cooling and atoms decaying. None of them “knows” e. <b>Each changes in proportion to how much there is, and e is the base where that proportion is exactly 1.</b>',pause:true,setup:sim=>{sim.tst=4;BioLab.setValues(sim,{b:2.72,view:'grow'});}}
+  {lvl:'honors',title:'Solve it two ways',text:{honors:'<b>Measure it:</b> (2^0.001 − 1) ÷ 0.001 ≈ 0.6934. <b>Look it up:</b> press ln 2 on your calculator: 0.6931. A tiny step and a log give the same number, which is why the button is called the <i>natural</i> log.',ap:'Slope of log₂ x at x = 4, two ways. <b>The mirror:</b> at height 4, 2ʸ climbs 4 × ln 2 ≈ 2.773, so the log climbs 1 ÷ 2.773 ≈ 0.361. <b>The derivative rule:</b> 1/(x ln 2) = 1/(4 × 0.693) ≈ 0.361. Same answer, two routes.'},pause:true,setup:sim=>{sim.tst=1;BioLab.setValues(sim,{b:2,view:'grow',h:0.001});}},
+  {title:'Stop and wonder',text:'Jacob Bernoulli found e in 1683 by asking what happens to interest compounded more and more often. The same number runs caffeine leaving your blood, a pizza cooling and atoms decaying. None of them “knows” e. <b>Each changes in proportion to how much there is, and e is the base where that proportion is exactly 1.</b>',pause:true,setup:sim=>{sim.tst=4;BioLab.setValues(sim,{b:2.72,view:'grow'});}},
+  {title:'Tell the story',text:'Tell it in your own words. Finish this: <i>“Every growth curve crosses (0, 1), but e is special because …”</i> Use the words <b>steepness</b> and <b>height</b>. When you can write the steepness as a number, see it as the curve touching the line, and tell why it matters, you know it.',pause:true,setup:sim=>{sim.tst=4;BioLab.setValues(sim,{b:2.72,view:'grow'});}}
  ],
- lab:{bio:'<p><b>Question:</b> Which base has steepness 1?</p><ol><li>Press <b>Skip the guess</b>.</li><li>Set the base to 2, 2.5, 2.7, 2.8 and 3. Record the steepness each time.</li><li>Between which two bases does the steepness pass 1?</li></ol><p>Write one sentence: how close can you get to 1?</p>',
+ lab:{bio:'<p><b>Question:</b> Which base has steepness 1?</p><ol><li>Press <b>Skip the guess</b>.</li><li>Set the base to 2, 2.5, 2.7, 2.8 and 3. Record the steepness each time.</li><li>Between which two bases does the steepness pass 1?</li></ol><p>Write one sentence: how close can you get to 1?</p><p><b>Tell the story:</b> turn on <b>Compare all</b> and explain in three sentences how 2ˣ, eˣ and 10ˣ are alike and how they differ.</p>',
   honors:'<p><b>Question:</b> Does the tiny step matter?</p><ol><li>For base 2, record the steepness with h = 0.1, 0.01 and 0.001.</li><li>Compare each with ln 2 ≈ 0.6931.</li><li>Switch to the mirror and record 1 ÷ ln b for bases 2, e and 10.</li></ol><p>Explain why a smaller step gives a better answer.</p>',
   ap:'<p><b>Question:</b> Why is the slope of log_b x equal to 1/(x ln b)?</p><ol><li>Show that bˣ⁺ʰ − bˣ = bˣ(bʰ − 1).</li><li>Use the mirror to turn the slope of bʸ at height x into the slope of log_b x.</li></ol><p><b>CER:</b> Explain where the 1/x and the 1/ln b each come from.</p>'},
  terms:[

@@ -23,24 +23,27 @@ const cpend=sim=>!!(BioLab.calcPending&&BioLab.calcPending(sim));
 const shown=sim=>!!(sim.peek||(sim.gutS&&sim.gutS.g))&&!cpend(sim);
 const lvl=(f,v)=>f.gl?fmtNum(f.base+v,0)+' mg/dL':fmtNum(v,1)+' ng/mL';
 const plus=(f,v)=>f.gl?'+'+fmtNum(v,1)+' mg/dL':fmtNum(v,2)+' ng/mL';
-function clearGut(sim){sim.peek=false;if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
+function clearGut(sim){if(!(sim.tour&&sim.tour.on))sim.peek=false;if(sim.gutS&&(sim.gutS.g||sim.gutS.m)){sim.gutS.g=null;sim.gutS.m=null;if(BioLab.gutRender)BioLab.gutRender(sim);}}
 const viewT=sim=>(sim.tour&&sim.tour.on&&sim.tv!=null)?sim.tv:(shown(sim)?sim.p.test:0);
 
 function tanks(sim,ctx,k,t){const f=F(sim),{ka,ke}=ks(f),kk=Math.min(k,1.4),S=Math.exp(-ka*t),Bm=g(f,t),Bmax=g(f,tpk(f));
  const inR=ka*S,outR=ke*Bm,mx=ka,x0=28,w=170;
  const tank=(y,h,fill,c,label)=>{ctx.fillStyle=PAL['card'];ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.fillRect(x0,y,w,h);ctx.fillStyle=c;ctx.globalAlpha=.85;ctx.fillRect(x0+2,y+h-(h-4)*fill-2,w-4,(h-4)*fill);ctx.globalAlpha=1;ctx.strokeRect(x0,y,w,h);txt(ctx,label,x0+w/2,y-8,{s:13*kk,w:800,a:'center'});};
  tank(58,90,S,f.gl?'#c98a3a':'#8a8f98',f.tank1);
- tank(228,84,clamp(0.9*Bm/Bmax,0,1),f.gl?'#d2574a':'#7d63b8','Blood');
+ tank(240,80,clamp(0.9*Bm/Bmax,0,1),f.gl?'#d2574a':'#7d63b8','Blood');
  const arrow=(y1,y2,r,label,c)=>{const wd=3+34*r/mx;ctx.fillStyle=c;ctx.globalAlpha=.9;ctx.fillRect(x0+w/2-wd/2,y1,wd,y2-y1-10);ctx.beginPath();ctx.moveTo(x0+w/2-wd/2-8,y2-10);ctx.lineTo(x0+w/2+wd/2+8,y2-10);ctx.lineTo(x0+w/2,y2);ctx.closePath();ctx.fill();ctx.globalAlpha=1;
   txt(ctx,label,x0+w/2+wd/2+12,(y1+y2)/2+4,{s:12*kk,w:700,c});};
  const honors=atLeast('honors');
  arrow(150,212,inR,honors?'in '+fmtNum(100*inR,2)+'%/min':'in',PAL['s2']);
- arrow(314,374,outR,honors?'out '+fmtNum(100*outR,2)+'%/min':'out',PAL['s1']);
- txt(ctx,f.out,x0+w/2,392,{s:12*kk,w:700,c:PAL['cv-soft'],a:'center'});
+ arrow(322,380,outR,honors?'out '+fmtNum(100*outR,2)+'%/min':'out',PAL['s1']);
+ txt(ctx,f.out,x0+w/2,398,{s:12*kk,w:700,c:PAL['cv-soft'],a:'center'});
  txt(ctx,'at '+Math.round(t)+' min',x0+w/2,20,{s:12*kk,w:800,c:PAL['cv-soft'],a:'center'});
- if(Math.abs(inR-outR)<0.06*mx&&t>5)pill(ctx,'in = out: the peak',x0+w/2+40,182,PAL['s4'],'#fff',12*kk);}
+ if(Math.abs(t-tpk(f))<6)pill(ctx,'in = out: the peak',x0+w/2+40,182,PAL['s4'],'#fff',12*kk);}
 
 const SIM={
+ learn:{goals:{bio:['Write it: estimate what is left after a peak by counting half-lives','See it: watch two tanks and find the peak, where in = out','Tell it: explain to a friend why a balanced meal is steadier fuel than a candy bar'],
+  honors:['Write it: C(t) = A(e^(−k₁t) − e^(−k₂t)) and evaluate it at test time','See it: compare all three choices on one graph, as shares of their peaks','Solve it two ways: read the graph, then compute C(t)','Tell it: explain why the slower tank sets the tail'],
+  ap:['Write it: C′(t) = 0 gives t* = ln(k₂/k₁) ÷ (k₂ − k₁)','See it: the tanks show in = out at the peak','Solve it two ways: find the peak from the tanks and from the derivative and logs','Tell it: explain why one exponential fits late but not early']}},
  id:'fuel',hash:'fuel',apUnit:4,order:4.5,tab:'Fuel before a test or game',kind:'Simulation',
  skills:{bio:'Exponential decay and half-life · Precalculus Unit 6, AP Precalculus 2A',honors:'Combining exponential functions: a difference of two exponentials · AP Precalculus 2A',ap:'Modeling with exponentials: rate proportional to amount, maxima, and solving with logarithms · AP Precalculus 2A–2B'},
  prereq:['caffeine'],next:['lnbase','caffeinedaily'],
@@ -56,7 +59,7 @@ const SIM={
   {id:'food',label:'What do you have?',type:'seg',def:'candy',noGut:true,onChange:clearGut,options:[{v:'candy',l:'Candy bar'},{v:'meal',l:'Balanced meal'},{v:'pouch',l:'Nicotine pouch'}]},
   {id:'test',label:'The test or game starts this long after',type:'range',min:30,max:240,step:15,def:90,unit:' min',noGut:true,onChange:clearGut},
   {id:'guess',label:'Your guess: share of the peak still there',type:'range',min:0,max:100,step:1,def:50,unit:'%'},
-  {id:'all',label:'Show candy and meal together',type:'toggle',def:false,lvl:'honors',noGut:true}
+  {id:'all',label:'Compare all three (share of each peak)',type:'toggle',def:false,noGut:true}
  ],
  actions:[{id:'show',label:'Skip the guess and show the curve',run(sim){sim.peek=true;sim.infoDirty=true;}}],
  init(){return {};},step(){},
@@ -72,31 +75,33 @@ const SIM={
   ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   tanks(sim,ctx,k,t);
   const L0=Math.round(270+22*kk),R0=780,T0=40,B0=392;
-  const ymin=f.gl?80:0,ymax=f.gl?150:8;
+  const pc=!!(sim.p.all&&sh&&!(sim.tour&&sim.tour.on&&sim.tst!==9));
+  const ymin=pc?0:(f.gl?80:0),ymax=pc?105:(f.gl?150:8);
   const X=x=>L0+x/240*(R0-L0),Y=v=>B0-(v-ymin)/(ymax-ymin)*(B0-T0);
   ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;
   for(let x=0;x<=240;x+=30){ctx.globalAlpha=.4;ctx.beginPath();ctx.moveTo(X(x),T0);ctx.lineTo(X(x),B0);ctx.stroke();ctx.globalAlpha=1;txt(ctx,String(x),X(x),B0+18*kk,{s:12*kk,c:PAL['cv-soft'],a:'center'});}
-  const ys=f.gl?10:1;for(let v=ymin;v<=ymax;v+=ys){if(f.gl&&(v-ymin)%20)continue;ctx.globalAlpha=.4;ctx.beginPath();ctx.moveTo(L0,Y(v));ctx.lineTo(R0,Y(v));ctx.stroke();ctx.globalAlpha=1;txt(ctx,String(v),L0-8,Y(v)+4,{s:12*kk,c:PAL['cv-soft'],a:'right'});}
+  const ys=pc?20:(f.gl?10:1);for(let v=ymin;v<=ymax;v+=ys){if(!pc&&f.gl&&(v-ymin)%20)continue;ctx.globalAlpha=.4;ctx.beginPath();ctx.moveTo(L0,Y(v));ctx.lineTo(R0,Y(v));ctx.stroke();ctx.globalAlpha=1;txt(ctx,String(v),L0-8,Y(v)+4,{s:12*kk,c:PAL['cv-soft'],a:'right'});}
   txt(ctx,'Minutes after',R0,B0+36*kk,{s:12*kk,w:700,c:PAL['cv-soft'],a:'right'});
-  txt(ctx,(f.gl?'Blood sugar (mg/dL)':'Blood nicotine (ng/mL)'),L0,T0-14,{s:12*kk,w:700,c:PAL['cv-soft']});
+  txt(ctx,pc?'Share of each one’s own peak (%)':(f.gl?'Blood sugar (mg/dL)':'Blood nicotine (ng/mL)'),L0,T0-14,{s:12*kk,w:700,c:PAL['cv-soft']});
   ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(L0,T0);ctx.lineTo(L0,B0);ctx.lineTo(R0,B0);ctx.stroke();
-  if(f.gl){ctx.strokeStyle=PAL['cv-soft'];ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L0,Y(90));ctx.lineTo(R0,Y(90));ctx.moveTo(L0,Y(140));ctx.lineTo(R0,Y(140));ctx.stroke();ctx.setLineDash([]);
+  if(f.gl&&!pc){ctx.strokeStyle=PAL['cv-soft'];ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L0,Y(90));ctx.lineTo(R0,Y(90));ctx.moveTo(L0,Y(140));ctx.lineTo(R0,Y(140));ctx.stroke();ctx.setLineDash([]);
    txt(ctx,'before eating',R0-4,Y(90)+15*kk,{s:12*kk,c:PAL['cv-soft'],a:'right'});txt(ctx,'140: usual top after a meal',R0-4,Y(140)-6,{s:12*kk,c:PAL['cv-soft'],a:'right'});}
   /* test time */
   const tx=X(sim.p.test);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx,T0);ctx.lineTo(tx,B0);ctx.stroke();txt(ctx,'Test starts',tx+(tx>R0-90?-6:6),T0+12*kk,{s:12*kk,w:800,a:tx>R0-90?'right':'left'});
   const curve=(ff,c,w,lim,dash)=>{ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();for(let x=0;x<=lim+1e-9;x+=1){const px=X(x),py=Y(ff.base+extra(ff,x));x?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();ctx.setLineDash([]);};
   if(sh){const lim=(sim.tour&&sim.tour.on&&sim.tv!=null)?Math.max(sim.tv,0):240;
-   if(atLeast('honors')&&sim.p.all&&f.gl){curve(FOODS.candy,PAL['s1'],2.5,240);curve(FOODS.meal,PAL['s3'],2.5,240);
-    txt(ctx,'Candy bar',X(tpk(FOODS.candy))+10,Y(90+45)-4,{s:12*kk,w:800,c:PAL['s1']});txt(ctx,'Balanced meal',X(110),Y(90+FOODS.meal.peak*0.85)-10,{s:12*kk,w:800,c:PAL['s3']});}
+   if(pc){[['candy',PAL['s1']],['meal',PAL['s3']],['pouch',PAL['s5']]].forEach(([id,col])=>{const ff=FOODS[id];ctx.strokeStyle=col;ctx.lineWidth=id===sim.p.food?3.5:2.2;ctx.beginPath();for(let x=0;x<=240;x++){const px=X(x),py=Y(pctLeft(ff,x));x?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();
+     const v=pctLeft(ff,sim.p.test);ctx.fillStyle=col;ctx.beginPath();ctx.arc(tx,Y(v),5,0,7);ctx.fill();txt(ctx,ff.name+': '+Math.round(v)+'%',tx+10,Y(v)+4,{s:12*kk,w:800,c:col});});
+    txt(ctx,'Same rule for all three; only the two drain speeds differ.',R0-4,T0+30*kk,{s:12*kk,w:700,c:PAL['cv-soft'],a:'right'});}
    else curve(f,PAL['rj'],3,lim);
    if(stg===5){curve(FOODS.candy,PAL['s1'],2,240,[6,5]);curve(FOODS.meal,PAL['s3'],3,240);}
-   const p=tpk(f);if(lim>=p){ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(X(p),Y(f.base+f.peak),6,0,7);ctx.fill();pill(ctx,'peak '+lvl(f,f.peak)+' at '+Math.round(p)+' min',X(p)+66*kk,Y(f.base+f.peak)-18*kk,PAL['s4'],'#fff',12*kk);}
-   if(!(sim.tour&&sim.tour.on&&sim.tv!=null)){const v=extra(f,sim.p.test);ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(tx,Y(f.base+v),7,0,7);ctx.fill();
+   const p=tpk(f);if(!pc&&lim>=p){ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(X(p),Y(f.base+f.peak),6,0,7);ctx.fill();pill(ctx,'peak '+lvl(f,f.peak)+' at '+Math.round(p)+' min',X(p)+66*kk,Y(f.base+f.peak)-18*kk,PAL['s4'],'#fff',12*kk);}
+   if(!pc&&!(sim.tour&&sim.tour.on&&sim.tv!=null)){const v=extra(f,sim.p.test);ctx.fillStyle=PAL['rj'];ctx.beginPath();ctx.arc(tx,Y(f.base+v),7,0,7);ctx.fill();
     pill(ctx,Math.round(pctLeft(f,sim.p.test))+'% of the peak',Math.min(tx+70*kk,R0-70*kk),Y(f.base+v)+(v>f.peak*0.7?34:-24)*kk,PAL['rj'],'#fff',13*kk);}
-   if(stg===8||(stg===99&&atLeast('ap'))){const p2=tpk(f);ctx.strokeStyle=PAL['s4'];ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(p2),Y(f.base+f.peak));ctx.lineTo(X(p2),B0);ctx.stroke();ctx.setLineDash([]);txt(ctx,'t* = '+fmtNum(p2,1)+' min',X(p2)+6,B0-8,{s:12*kk,w:800,c:PAL['s4']});}
+   if(!pc&&(stg===8||(stg===99&&atLeast('ap')))){const p2=tpk(f);ctx.strokeStyle=PAL['s4'];ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(p2),Y(f.base+f.peak));ctx.lineTo(X(p2),B0);ctx.stroke();ctx.setLineDash([]);txt(ctx,'t* = '+fmtNum(p2,1)+' min',X(p2)+6,B0-8,{s:12*kk,w:800,c:PAL['s4']});}
   }else if(!cpend(sim)){txt(ctx,'?',tx+16,Y(f.base+f.peak*0.6),{s:34*kk,w:800,c:PAL['rj']});txt(ctx,'Peak: '+lvl(f,f.peak)+(f.gl?' (+'+f.peak+')':''),L0+12,T0+34*kk,{s:13*kk,w:700,c:PAL['s4']});}
   /* gut */
-  const gv=G&&G.g?G.g.p:sim.p.guess,gy=Y(f.base+f.peak*gv/100);ctx.strokeStyle=PAL['s4'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(tx,gy,9,0,7);ctx.stroke();
+  const gv=G&&G.g?G.g.p:sim.p.guess,gy=pc?Y(gv):Y(f.base+f.peak*gv/100);ctx.strokeStyle=PAL['s4'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(tx,gy,9,0,7);ctx.stroke();
   txt(ctx,(G&&G.g?'Your gut: ':'Your guess: ')+Math.round(gv)+'%',tx-14,gy+5,{s:12*kk,w:800,c:PAL['s4'],a:'right'});
  },
  narrate(sim){const f=F(sim),t=sim.p.test;
@@ -149,10 +154,13 @@ const SIM={
   {title:'A nicotine pouch',text:'Nicotine from a pouch peaks in about 35 minutes, then clears with a half-life of about 2 hours. For someone who uses it regularly, <b>the falling level is when withdrawal can show up</b>: restlessness, irritability, trouble focusing.',pause:true,setup:sim=>{sim.tst=6;BioLab.setValues(sim,{food:'pouch',test:180});}},
   {lvl:'honors',title:'A difference of two exponentials',text:'The blood level is C(t) = A(e^(−k₁t) − e^(−k₂t)). At t = 0 the two cancel; the faster one dies out first, so the slower one (k₁) is left in the tail.',pause:true,setup:sim=>{sim.tst=7;BioLab.setValues(sim,{food:'candy',test:90});}},
   {lvl:'ap',title:'Find the peak',text:'C′(t) = 0 when k₁e^(−k₁t) = k₂e^(−k₂t). Take logs: <b>t* = ln(k₂/k₁) ÷ (k₂ − k₁)</b>. For the candy bar, ln 2 ÷ 0.0231 ≈ 30 minutes.',pause:true,setup:sim=>{sim.tst=8;}},
-  {title:'Stop and wonder',text:'No sugar molecule and no nicotine molecule knows the half-life. Each one just has the same small chance of being taken out each minute. Billions of them together trace this smooth curve, the same law radioactive atoms follow. It even fits attention: if every viewer has the same chance of leaving each minute, the most leave in the first minute, when the most are watching. MrBeast’s company guide says exactly that about the first minute of a video.',pause:true,setup:sim=>{sim.tst=4;BioLab.setValues(sim,{food:'candy',test:90});}}
+  {title:'Compare all three',text:'Same two-tank rule, three different drain speeds. As a share of each one’s own peak, at the test: candy bar <b>44%</b>, balanced meal <b>84%</b>, nicotine pouch <b>79%</b>, and the pouch keeps falling for hours after the test.',pause:true,setup:sim=>{sim.tst=9;sim.tv=null;BioLab.setValues(sim,{food:'candy',test:90,all:true});}},
+  {lvl:'honors',title:'Solve it two ways',text:{honors:'Candy bar at 90 minutes. <b>Read the graph:</b> the curve crosses the test line near 110 mg/dL, about 20 above where you started. <b>Compute it:</b> C(90) = 180(e^(−2.079) − e^(−4.159)) = 180(0.125 − 0.016) ≈ 19.7 mg/dL. The picture and the formula agree.',ap:'When is the peak? <b>From the tanks:</b> step through time until the in and out arrows match: about 30 minutes. <b>From the derivative and logs:</b> C′(t) = 0 gives t* = ln(k₂/k₁) ÷ (k₂ − k₁) = ln 2 ÷ 0.0231 ≈ 30.0 minutes. Same peak, two routes.'},pause:true,setup:sim=>{sim.tst=8;sim.tv=null;BioLab.setValues(sim,{food:'candy',test:90,all:false});}},
+  {title:'Stop and wonder',text:'No sugar molecule and no nicotine molecule knows the half-life. Each one just has the same small chance of being taken out each minute. Billions of them together trace this smooth curve, the same law radioactive atoms follow. It even fits attention: if every viewer has the same chance of leaving each minute, the most leave in the first minute, when the most are watching. MrBeast’s company guide says exactly that about the first minute of a video.',pause:true,setup:sim=>{sim.tst=4;BioLab.setValues(sim,{food:'candy',test:90,all:false});}},
+  {title:'Tell the story',text:'Tell it in your own words. Finish this: <i>“Before my test I ate a candy bar. At first my blood sugar rose because … It peaked when … By the test …”</i> Then tell the balanced-meal version. When you can write the numbers, see the two tanks and tell the story, you know it.',pause:true,setup:sim=>{sim.tst=4;BioLab.setValues(sim,{food:'candy',test:90,all:false});}}
  ],
- lab:{bio:'<p><b>Question:</b> Which choice leaves the steadiest fuel at test time?</p><ol><li>Press <b>Skip the guess</b>.</li><li>For each of the three choices, set the test to 60, 120 and 180 minutes and record the share of the peak.</li><li>Make a table: choice, time, share of the peak.</li></ol><p>Write two sentences: which choice changes the least between 60 and 180 minutes, and why?</p>',
-  honors:'<p><b>Question:</b> Why does the meal’s tail follow the stomach?</p><ol><li>Turn on <b>Show candy and meal together</b>.</li><li>Record both levels every 30 minutes from 30 to 240.</li><li>For each, divide each value after 120 minutes by the one before.</li></ol><p>Explain which half-time the ratios match for each food, and why.</p>',
+ lab:{bio:'<p><b>Question:</b> Which choice leaves the steadiest fuel at test time?</p><ol><li>Press <b>Skip the guess</b>.</li><li>For each of the three choices, set the test to 60, 120 and 180 minutes and record the share of the peak.</li><li>Make a table: choice, time, share of the peak.</li></ol><p>Write two sentences: which choice changes the least between 60 and 180 minutes, and why?</p><p><b>Tell the story:</b> turn on <b>Compare all three</b> and write what happens in your blood from breakfast to the end of a 3-hour test for each choice.</p>',
+  honors:'<p><b>Question:</b> Why does the meal’s tail follow the stomach?</p><ol><li>Turn on <b>Compare all three</b>.</li><li>Record both levels every 30 minutes from 30 to 240.</li><li>For each, divide each value after 120 minutes by the one before.</li></ol><p>Explain which half-time the ratios match for each food, and why.</p>',
   ap:'<p><b>Question:</b> When is the peak, and when is the level back to 10% of it?</p><ol><li>Derive t* = ln(k₂/k₁)/(k₂ − k₁) from C′(t) = 0.</li><li>For the pouch, estimate when C(t) = 0.1 C(t*) using C(t) ≈ Ae^(−k₁t), then check it on the graph.</li></ol><p><b>CER:</b> Explain why the one-exponential estimate is good late and poor early.</p>'},
  terms:[
   {t:'Half-life',d:'The time for half of something to be gone. Nicotine in the blood: about 2 hours.'},
