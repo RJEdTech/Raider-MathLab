@@ -64,7 +64,7 @@ BioLab.COURSES = [
    {n:'Chapter 2',t:'Modeling one-variable data: percentiles, z-scores and the normal model',ids:['testchoice','hoodies','rankcolleges'],note:'Probability & Statistics (fall).'},
    {n:'Chapter 3',t:'Analyzing two-variable data: scatterplots and regression',ids:['lawnjob','zipscores','bookshome'],note:'Probability & Statistics (fall).'},
    {n:'Chapter 5',t:'Probability',ids:['lunchcount','rapidtest','opportunity','beatbot','makethepros','fairscore','lifesim'],note:'Probability & Statistics (fall).'},
-   {n:'Chapter 4',t:'Collecting data: sampling and experiments',ids:['survey','warmup'],note:'Inferential Statistics (spring).'},
+   {n:'Chapter 4',t:'Collecting data: sampling and experiments',ids:['survey','warmup','vapegraph'],note:'Inferential Statistics (spring).'},
    {n:'Chapter 6',t:'Random variables: expected value and the binomial',ids:['insurance','rsvp','povertypremium'],note:'Inferential Statistics (spring).'},
    {n:'Chapter 7',t:'Sampling distributions',ids:['slump','wordgap','valueadded','carquote'],note:'Inferential Statistics (spring).'}
   ]},
@@ -72,7 +72,7 @@ BioLab.COURSES = [
   units:[
    {n:'Unit 1',t:'Exploring one-variable data',ids:['busroute','babysit','testchoice','hoodies']},
    {n:'Unit 2',t:'Exploring two-variable data',ids:['lunchcount','lawnjob','zipscores','bookshome']},
-   {n:'Unit 3',t:'Collecting data',ids:['survey','warmup','bookshome']},
+   {n:'Unit 3',t:'Collecting data',ids:['survey','warmup','bookshome','vapegraph']},
    {n:'Unit 4',t:'Probability, random variables and probability distributions',ids:['lunchcount','rapidtest','insurance','rsvp','opportunity','beatbot','makethepros','fairscore','lifesim']},
    {n:'Unit 5',t:'Sampling distributions',ids:['slump','wordgap','valueadded']},
    {n:'Unit 6',t:'Inference for categorical data: proportions',ids:['pollmargin']},
@@ -118,7 +118,7 @@ BioLab.COURSES = [
  4:['datasize','skidmarks','creditcard','startearly','mortgageterm','caffeine','decibels','passwords','logscale','billions'],5:['splitcost','sharedwork'],6:['checkout','pondday','photofilter','cipher','rotations'],
  7:['logic'],8:['screens','parking','truss','shadow','ramp','clinometer','triangulate'],12:['tiling','packaging','sprites'],10:['gps','tires','shotangle'],
  9:['unitcircle','daylight','noisecancel'],11:['fontcurves','matrices','windvectors','orbits'],
- 13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','targetdrop','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
+ 13:['busroute','babysit','testchoice','hoodies','lawnjob'],14:['survey','warmup','vapegraph','targetdrop','lunchcount','rapidtest','insurance','rsvp'],15:['slump','pollmargin','fryshort','studymethod','lootdrop'],
  16:['runpace','battery','camerapan','shortcut','viewcurve'],17:['speedlog','concession','cooling','bottle'],18:['leadpass','sprinkler','caffeinedaily','sincode'],
  19:['stickernet','aidoptimizer','rankcolleges','carquote','valueadded','hotspot','beatbot','schedule','fairscore','onepercent'],
  20:['kidneyswap','schoolmatch','livessaved','costofliving','livingwage','povertypremium','minutesofwork'],

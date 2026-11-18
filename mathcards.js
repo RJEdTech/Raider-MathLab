@@ -591,3 +591,11 @@ taxworld:{f:'tax wedge = (labor cost − take-home pay) ÷ labor cost',
  beh:'The same tax looks smaller as a share of a bigger base: denominators change percents.',
  solve:['Take-home = labor cost × (1 − wedge)']},
 });
+
+BioLab.addMath({
+vapegraph:{f:'percent change = (new − old) ÷ old × 100',
+ v:[['old','the starting year’s rate'],['new','the ending year’s rate']],
+ why:'Dividing by the start measures change relative to where you began; subtracting alone gives percentage points.',
+ beh:'The same point change is a bigger percent change when the start is small.',
+ solve:['Percentage points = new − old','New = old × (1 + change ÷ 100)']}
+});

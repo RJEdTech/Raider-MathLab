@@ -531,3 +531,12 @@ stickernet:[
  {k:'grant',s:'Grants don’t have to be repaid, but loans do.',fact:true,why:'Compare the grant part of an aid offer, not just the total.'}
 ]
 });
+
+/* From Raider HealthLab (Nov 18, 2026): the JUUL graph moved here. */
+BioLab.addMyths({
+vapegraph:[
+ {k:'pts',s:'Going from 11.7% to 27.5% is a 15.8% increase.',fact:false,why:'It is 15.8 percentage points, a 135% increase.'},
+ {k:'before',s:'Teen vaping was already rising before JUUL launched.',fact:true,why:'It went from 1.5% in 2011 to 13.4% in 2014; JUUL launched in 2015.'},
+ {k:'gone',s:'Teen vaping is over: almost no high schoolers vape now.',fact:false,why:'About 7.1% of high schoolers vaped in 2025, roughly 1 in 14.'}
+]
+});
