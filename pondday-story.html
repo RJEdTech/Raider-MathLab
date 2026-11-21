@@ -219,7 +219,7 @@ button,input,select,textarea{font:inherit;color:inherit}
       <div class="eq" id="eq" hidden></div>
       <div class="chat" id="chat" hidden></div>
     </div>
-    <aside class="panel" id="panel" aria-live="polite"></aside>
+    <aside class="side"><div class="sh-bar" id="shbar"></div><div class="panel" id="panel" aria-live="polite"></div><div class="sh-help" id="shhelp" role="region" aria-label="Help with this step" hidden></div></aside>
   </div>
 
   <p class="turn">Built for a laptop or a projector. On a phone, turn it sideways for a bigger picture.</p>
@@ -250,6 +250,7 @@ button,input,select,textarea{font:inherit;color:inherit}
   <p class="foot">RJ Ed Tech · Raider MathLab · Simplified model for instruction · &copy; 2026 Jason Beyer, RJ Ed Tech · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></p>
 </main>
 
+<script src="story-help.js?v=202611211900"></script>
 <script>
 (function(){
 'use strict';
@@ -582,6 +583,7 @@ function go(i){
   if(i===B.story){buildStory();}
   ticks();chapters();ui();render();
   if(i===B.line)runLine();
+  if(window.StoryHelp)StoryHelp.step();
   if(i===B.story&&from!==i)setTimeout(()=>{try{storyEl.scrollIntoView({behavior:RM?'auto':'smooth',block:'nearest'});}catch(e){}},300);
 }
 async function runLine(){S.morph=0;S.coreMorph=0;S.coreFade=0;S.dotsOn=0;render();
@@ -771,6 +773,7 @@ function fit(){
 window.addEventListener('resize',fit);
 
 /* ---------- start ---------- */
+if(window.StoryHelp)StoryHelp.init({id:'pondday',title:'Pond day',beat:()=>S.beat,go,help:[{"ask": "Press the red button to drill the first hole. You will do it four times, once each evening.", "another": "Think of each core as a ruler you pull out of the ice. Its height is how thick the ice is that evening."}, {"ask": "Nothing to do yet. Your friends want to skate Saturday, and new ice should be 4 inches thick before people walk on it.", "another": "You have four measurements and a deadline 4 days away. The question for the whole page: will the ice reach 4 inches by Saturday?"}, {"ask": "Watch the cores move onto the graph. Each one stands on its own date.", "another": "The graph is just the cores lined up by date. The dot on top of each core is its thickness. Left to right is time; up is thicker."}, {"ask": "Draw your best guess of where the ice goes after Tuesday. There is no wrong answer yet.", "another": "Put your pointer on Tuesday’s dot and drag to the right, past Saturday. If you think it climbs the same amount each night, draw it straight; if you think it slows down, bend it flatter. Or tap one of the three buttons."}, {"ask": "Tap each of the three buttons and watch what each person noticed about the same four dots.", "another": "Look at how much the ice grew each night: 1.30, then 0.54, then 0.41, then 0.35 inches. Do those steps stay the same, or shrink?"}, {"ask": "Choose the way of seeing it that is closest to your own drawing.", "another": "If you drew a straight line, that is the ruler. If you drew it bending flatter, that is the stairs or the blanket."}, {"ask": "Find the basic curve whose steps shrink the way the ice’s steps do.", "another": "Each button draws a shape with its steps beside the ice’s steps. A line has equal steps and a parabola’s steps grow. You want steps that start big and then get smaller."}, {"ask": "Drag the red handle so the curve starts on Dec 4, the day the pond froze.", "another": "The plain curve starts at day 0. The ice started on Dec 4. Sliding it 4 to the right is why the equation says x − 4: Dec 8 is only day 4 of ice."}, {"ask": "Drag the orange handle up until the curve passes through the first dot.", "another": "After 1 day the plain curve is only 1 high, but the ice was 1.3 inches. Multiplying every height by 1.3 stretches the whole curve, so all four dots fit at once."}, {"ask": "Work out 1.3 × √(12 − 4) and type the answer, or press Show me.", "another": "Do it in the same order you moved the curve: first the slide (12 − 4 = 8 days of ice), then the root (√8 ≈ 2.83), then the stretch (2.83 × 1.3 ≈ 3.68)."}, {"ask": "Press the red button three times to work backward from 4 inches to a date.", "another": "Going backward means undoing the last move first, like taking off your shoes before your socks: divide by 1.3, then square it, then add 4."}, {"ask": "Fill each gap below in your own words, then copy your story for Canvas.", "another": "Tell it the way you would explain it to a friend: what the ice did, which shape matched, how you slid and stretched it, and when it is safe."}]});
 build();go(0);fit();
 if(/github\.io$/.test(location.hostname)){const s=document.createElement('script');s.async=true;s.src='//gc.zgo.at/count.js';s.setAttribute('data-goatcounter','https://rjedtech.goatcounter.com/count');document.head.appendChild(s);}
 window.__pond={S,go,B,render};

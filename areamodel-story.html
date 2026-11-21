@@ -239,7 +239,7 @@ button,input,select,textarea{font:inherit;color:inherit}
       <div class="eq" id="eq" hidden></div>
       <div class="chat" id="chat" hidden></div>
     </div>
-    <aside class="panel" id="panel" aria-live="polite"></aside>
+    <aside class="side"><div class="sh-bar" id="shbar"></div><div class="panel" id="panel" aria-live="polite"></div><div class="sh-help" id="shhelp" role="region" aria-label="Help with this step" hidden></div></aside>
   </div>
   <p class="turn">Built for a laptop or a projector. On a phone, turn it sideways for a bigger picture.</p>
   <section class="story" id="story" hidden></section>
@@ -267,6 +267,7 @@ button,input,select,textarea{font:inherit;color:inherit}
   </details>
   <p class="foot">RJ Ed Tech · Raider MathLab · &copy; 2026 Jason Beyer, RJ Ed Tech · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></p>
 </main>
+<script src="story-help.js?v=202611211900"></script>
 <script>
 (function(){
 'use strict';
@@ -478,6 +479,7 @@ function go(i){i=clamp(i,0,BEATS.length-1);GEN++;const from=S.beat;S.beat=i;S.re
   if(i===B.last)chatEl.innerHTML=`<p class="them"><small>Dance committee</small>Last year’s floor was way too small. Go 3 panels bigger each way?</p><p class="you">On it. How many more panels do I order?</p>`;
   if(i===B.story)buildStory();
   chapters();ui();render();
+  if(window.StoryHelp)StoryHelp.step();
   if(i===B.bigger&&S.guess==null){S.grow=0;animate(1100,t=>{S.grow=t;});}else if(i===B.bigger)S.grow=1,render();
   if(i===B.story&&from!==i)setTimeout(()=>{try{storyEl.scrollIntoView({behavior:RM?'auto':'smooth',block:'nearest'});}catch(e){}},300);}
 async function placeOrder(n){GEN++;const g=GEN;S.guess=n;S.grow=1;S.guessT=0;S.busy=true;ui();
@@ -640,6 +642,7 @@ function fit(){
   const sw=stage.clientWidth||w;K=clamp(880/sw,1,2.2);compact=K>1.55;svg.style.setProperty('--k',K.toFixed(2));render();}
 window.addEventListener('resize',fit);
 
+if(window.StoryHelp)StoryHelp.init({id:'areamodel',title:'The dance floor',beat:()=>S.beat,go,help:[{"ask": "Nothing to do yet. The committee wants the floor 3 panels bigger each way.", "another": "The floor is made of square panels, 12 across and 12 down. Your job is to order the new panels."}, {"ask": "Type how many more panels you think you need, then press Place my order.", "another": "Picture the new 15-by-15 floor. Only the part outside the old 12-by-12 square is new. Your order has to fill that L-shaped gap."}, {"ask": "Color the gap in big chunks so you can count it fast, or type your count.", "another": "Try one long strip down the right side first: how many panels wide and how many tall? Then a strip along the bottom, then the corner that is left."}, {"ask": "Tap each button to see four other ways people counted the same gap.", "another": "Every one of them gets 81. They just cut the gap differently: into strips, by taking the old floor away, or into rings."}, {"ask": "Choose the coloring closest to yours.", "another": "If you counted strips and a corner, pick that one. If you did something else, choose Mine was different."}, {"ask": "Drag the two handles to finish the three tasks in the checklist.", "another": "x is the old floor’s side and a is how much it grows. Each blue strip is a by x, so it holds a·x panels. The orange corner is a by a."}, {"ask": "Tap the pieces of the floor that x² + 9 leaves out.", "another": "x² is the old floor and 9 is the corner. What else is new on the floor? Look at the two long blue strips."}, {"ask": "Drag the six strips onto the right side or the bottom to make a square, then fill the hole.", "another": "A square is the same length both ways, so split the strips evenly: 3 on the right and 3 on the bottom. The empty corner is then 3 by 3."}, {"ask": "Plan the square for 10 strips: how many on each side, and how many corner panels?", "another": "Split the 10 strips evenly: 5 and 5. The corner is then 5 by 5. Half of 10, then squared."}, {"ask": "Slide to pull the cube apart, then count the blue slabs and the orange rods.", "another": "The cube is the square floor built up into 3-D. Blue slabs are x by x by a; orange rods are x by a by a. Count each color."}, {"ask": "Fill each gap below in your own words, then copy your story for Canvas.", "another": "Tell it the way you would explain it to a friend: your guess, how you counted the gap, which piece people forget, and how you completed the square."}]});
 build();go(0);fit();
 if(/github\.io$/.test(location.hostname)){const s=document.createElement('script');s.async=true;s.src='//gc.zgo.at/count.js';s.setAttribute('data-goatcounter','https://rjedtech.goatcounter.com/count');document.head.appendChild(s);}
 window.__floor={S,go,B,render,ui};
