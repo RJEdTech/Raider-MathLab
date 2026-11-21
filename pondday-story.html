@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pond Day Story</title>
+<style>
+:root{
+  /* Layout: one 16:9 picture that fills the screen, a narrow story column beside it.
+     The picture carries the lesson; everything around it stays quiet. */
+  --bg:#f3f3f1; --card:#ffffff; --card2:#f7f7f5; --fg:#1c1c1f; --muted:#5d5d63; --line:#d8d8d3;
+  --rj:#C11430; --rj-ink:#a8102a; --focus:#1f6feb; --good:#1b7339;
+  --paper:#fbfbf9; --grid:#e6e6e0; --axis:#6b6b72; --future:#eceeeb;
+  --curve:#C11430; --slide:#1b5fc4; --stretch:#b45309; --guess:#a8178f; --ghost:#85858d;
+  --dot:#12344d; --dotfill:#bfe3f2; --strip:#e9eef7;
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --math:"Cambria Math","STIX Two Math","Latin Modern Math",Cambria,Georgia,serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#15161a; --card:#1d1f24; --card2:#24272d; --fg:#ececef; --muted:#a2a2aa; --line:#353840;
+    --rj-ink:#ed516a; --focus:#6ea8ff; --good:#5cc27f;
+    --paper:#191b20; --grid:#2b2e35; --axis:#9a9aa2; --future:#22262c;
+    --curve:#ed516a; --slide:#6ea8ff; --stretch:#f2a94c; --guess:#ec74da; --ghost:#8d8d96;
+    --dot:#d6ebf4; --dotfill:#2a6f8f; --strip:#1f2a3b;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#15161a; --card:#1d1f24; --card2:#24272d; --fg:#ececef; --muted:#a2a2aa; --line:#353840;
+  --rj-ink:#ed516a; --focus:#6ea8ff; --good:#5cc27f;
+  --paper:#191b20; --grid:#2b2e35; --axis:#9a9aa2; --future:#22262c;
+  --curve:#ed516a; --slide:#6ea8ff; --stretch:#f2a94c; --guess:#ec74da; --ghost:#8d8d96;
+  --dot:#d6ebf4; --dotfill:#2a6f8f; --strip:#1f2a3b;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.45 var(--font);-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+.mast{background:#2b2b2b;border-bottom:5px solid var(--rj);color:#fff}
+.mast-in{max-width:1560px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:13px}
+.rjmark{height:34px;width:auto;display:block}
+.mast h1{font-size:19px;line-height:1.1;margin:0;font-weight:700}
+.mast .tag{margin:3px 0 0;color:#b8b8b8;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+
+.wrap{max-width:1560px;margin:0 auto;padding:12px 20px 40px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 24px;margin-bottom:10px}
+.eyebrow{margin:0;color:var(--rj-ink);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.head h2{margin:2px 0 0;font-size:24px;line-height:1.15;text-wrap:balance}
+.chs{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px}
+.chs button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 11px 4px 5px;font-size:13.5px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px}
+.chs button .n{display:inline-grid;place-items:center;width:21px;height:21px;border-radius:50%;background:var(--card2);border:1px solid var(--line);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.chs button.done{color:var(--fg)}
+.chs button.done .n{background:var(--fg);color:var(--card);border-color:var(--fg)}
+.chs button.on{border-color:var(--rj);color:var(--fg);font-weight:700}
+.chs button.on .n{background:var(--rj);border-color:var(--rj);color:#fff}
+
+.lay{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+.stage{position:relative;container-type:inline-size;aspect-ratio:16/9;width:100%;justify-self:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+#svg{display:block;width:100%;height:100%;font-family:var(--font);user-select:none;-webkit-user-select:none}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;min-height:300px}
+.kicker{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rj-ink)}
+.cap{margin:0;font-size:21px;line-height:1.25;font-weight:700;text-wrap:balance}
+.sub{margin:0;font-size:16px;color:var(--fg)}
+.sub q{quotes:"\201C" "\201D";font-style:italic}
+.sub .term{font-weight:700}
+.muted{color:var(--muted)}
+.room{margin:0;font-size:14px;color:var(--muted);border-top:1px dashed var(--line);padding-top:9px}
+.room b{color:var(--fg)}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.nav{display:flex;gap:8px;margin-top:auto;padding-top:6px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:9px 14px;font-weight:600;cursor:pointer;min-height:42px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--rj);border-color:var(--rj);color:#fff}
+.btn.primary:hover{background:#a8102a}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.sm{padding:6px 11px;min-height:36px;font-size:14.5px;font-weight:500}
+.btn.pick{display:flex;align-items:center;gap:8px;text-align:left}
+.btn.pick.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
+.btn.pick .ck{color:var(--good);font-weight:700}
+.btn.shape{flex-direction:column;gap:2px;padding:7px 9px;font-size:13.5px;font-weight:500;min-width:88px;align-items:center}
+.btn.shape svg{width:54px;height:34px;display:block}
+.btn.shape svg path{fill:none;stroke:var(--fg);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.btn.shape.bad{opacity:.55}
+.btn.shape.good{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.ans{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ans input{width:104px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--card2);font-size:18px;font-variant-numeric:tabular-nums}
+.fb{margin:0;font-weight:600}
+.fb.ok{color:var(--good)} .fb.no{color:var(--rj-ink)}
+.chips{display:flex;flex-direction:column;gap:5px;margin:0;padding:0;list-style:none;font-size:15px;font-variant-numeric:tabular-nums}
+.chips li{display:flex;align-items:center;gap:8px}
+.chips i{width:12px;height:12px;border-radius:50%;flex:none}
+.chips b{margin-left:auto}
+
+.eq{position:absolute;right:2.2%;top:3.4%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.5em .9em .45em;box-shadow:0 2px 10px rgba(0,0,0,.08);font-size:clamp(15px,2.05cqw,32px);max-width:44%}
+.eq .f{font-family:var(--math);font-size:1.5em;line-height:1.3;white-space:nowrap;font-variant-numeric:tabular-nums}
+.eq .f i{font-style:italic}
+.eq .f b{font-weight:700;font-style:normal}
+.eq .ph{color:var(--slide)} .eq .pa{color:var(--stretch)} .eq .pk{color:var(--guess)}
+.eq .rad{position:relative;display:inline-block;padding-left:.62em;margin-left:.1em}
+.eq .rs{position:absolute;left:0;top:0;width:.66em;height:100%;overflow:visible}
+.eq .ri{display:inline-block;border-top:.07em solid currentColor;padding:.05em .14em 0 .1em;line-height:1.12}
+.eq .lg{display:flex;flex-wrap:wrap;gap:.2em .9em;font-size:.56em;font-weight:600;margin-top:.15em}
+.eq .lg span{display:flex;align-items:center;gap:.4em}
+.eq .lg i{width:.75em;height:.75em;border-radius:2px;display:block}
+
+.chat{position:absolute;left:24%;top:5%;width:38%;display:flex;flex-direction:column;gap:.5em;font-size:clamp(13px,1.55cqw,22px)}
+.chat p{margin:0;padding:.5em .8em;border-radius:1.1em;max-width:88%;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.chat .them{background:#e9e9ee;color:#1c1c1f;align-self:flex-start;border-bottom-left-radius:.3em}
+.chat .you{background:#1b6fe0;color:#fff;align-self:flex-end;border-bottom-right-radius:.3em}
+.chat small{display:block;font-size:.72em;opacity:.7;font-weight:600}
+
+/* picture */
+.paper{fill:var(--paper)}
+.grid line{stroke:var(--grid);stroke-width:1}
+.axis{stroke:var(--axis);stroke-width:2;fill:none}
+.future{fill:var(--future)}
+.t{fill:var(--fg)} .tm{fill:var(--muted)} .tb{font-weight:700}
+.f12{font-size:calc(12px*var(--k))} .f13{font-size:calc(13px*var(--k))} .f14{font-size:calc(14px*var(--k))}
+.f15{font-size:calc(15px*var(--k))} .f16{font-size:calc(16px*var(--k))} .f18{font-size:calc(18px*var(--k))}
+.f20{font-size:calc(20px*var(--k))} .f24{font-size:calc(24px*var(--k))}
+.num{font-variant-numeric:tabular-nums}
+.need{stroke:var(--fg);stroke-width:2;stroke-dasharray:9 7;fill:none}
+.curve{fill:none;stroke:var(--curve);stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round}
+.ghostc{fill:none;stroke:var(--ghost);stroke-width:2.5;stroke-dasharray:3 7;stroke-linecap:round}
+.user{fill:none;stroke:var(--guess);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.user.dim{stroke-width:3;stroke-dasharray:2 8}
+.rulerl{fill:none;stroke:var(--fg);stroke-width:2.5;stroke-dasharray:10 6}
+.c-slide{stroke:var(--slide);fill:var(--slide)} .c-stretch{stroke:var(--stretch);fill:var(--stretch)}
+.c-curve{stroke:var(--curve);fill:var(--curve)} .c-guess{stroke:var(--guess);fill:var(--guess)} .c-fg{stroke:var(--fg);fill:var(--fg)}
+.c-good{stroke:var(--good);fill:var(--good)} .c-ghost{stroke:var(--ghost);fill:var(--ghost)}
+.nofill{fill:none} .nostroke{stroke:none}
+.halo{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+.dot{fill:var(--dotfill);stroke:var(--dot);stroke-width:3}
+.strip{fill:var(--strip);stroke:var(--slide);stroke-width:1.5}
+.core{fill:#cfeaf6;stroke:#5fa3c2;stroke-width:2}
+.boxbg{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+.handle{cursor:grab;touch-action:none}
+.handle:active{cursor:grabbing}
+.handle .hit{fill:transparent}
+.handle .knob{stroke:#fff;stroke-width:3}
+.handle .gl{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.handle .pulse{fill:none;stroke-width:3;opacity:.55;transform-box:fill-box;transform-origin:center;animation:pulse 1.6s ease-out infinite}
+.handle.used .pulse{display:none}
+.handle:focus-visible{outline:none}
+.handle:focus-visible .knob{stroke:var(--focus);stroke-width:5}
+@keyframes pulse{from{transform:scale(.7);opacity:.7}to{transform:scale(1.9);opacity:0}}
+#drawPad{fill:transparent;touch-action:none;cursor:crosshair}
+@media (prefers-reduced-motion: reduce){.handle .pulse{animation:none}}
+
+.story{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.story h3{margin:0 0 4px;font-size:20px}
+.story .lead{margin:0 0 12px;color:var(--muted)}
+.frames{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.frame{border:1px solid var(--line);border-radius:10px;background:var(--card2);padding:10px;display:flex;flex-direction:column;gap:8px}
+.frame svg{width:100%;height:auto;display:block;background:var(--paper);border-radius:6px;border:1px solid var(--line)}
+.frame p{margin:0;font-size:16px;line-height:1.9}
+.frame .no{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rj-ink);line-height:1.2}
+.frame select,.frame input{border:0;border-bottom:2px solid var(--muted);background:transparent;padding:1px 4px;border-radius:4px 4px 0 0;max-width:100%}
+.frame select{padding-right:2px}
+.frame input[type=text]{width:100%}
+.frame input.n{width:4.2em;text-align:center;font-variant-numeric:tabular-nums}
+.frame .okk{border-bottom-color:var(--good)}
+.last{margin:12px 0 0;font-size:16px;line-height:1.9}
+.last input{border:0;border-bottom:2px solid var(--muted);background:transparent;padding:1px 4px;width:min(100%,30em)}
+.last select{border:0;border-bottom:2px solid var(--muted);background:transparent;padding:1px 4px}
+.srow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+#copyOut{width:100%;min-height:150px;margin-top:10px;border:1px solid var(--line);border-radius:8px;background:var(--card2);padding:10px;font-size:15px}
+
+.turn{display:none;margin:8px 0 0;font-size:14px;color:var(--muted)}
+.teach{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.teach summary{font-weight:700;cursor:pointer}
+.teach h4{margin:14px 0 4px;font-size:16px}
+.teach p,.teach li{max-width:72ch}
+.teach ul{margin:4px 0;padding-left:20px}
+.foot{margin:16px 0 0;color:var(--muted);font-size:13.5px;text-align:center}
+.foot a{color:inherit}
+
+@media (max-width:1020px){
+  .lay{grid-template-columns:1fr}
+  .panel{min-height:0}
+  .frames{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .wrap{padding:10px 16px 32px}
+  .head h2{font-size:20px}
+  .chs button{padding:3px} .chs button .l{display:none}
+  .cap{font-size:19px}
+  .frames{grid-template-columns:1fr}
+  .eq{right:1.5%;top:2.5%;font-size:clamp(9px,2.7cqw,20px);padding:.35em .6em;max-width:60%}
+  .turn{display:block!important}
+  .chat{left:20%;width:62%;font-size:13px}
+}
+</style>
+</head>
+<body>
+<header class="mast"><div class="mast-in">
+  <img class="rjmark" alt="RJ" src="data:image/png;base64,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">
+  <div><h1>Raider MathLab</h1><p class="tag">Story version · prototype</p></div>
+</div></header>
+
+<main class="wrap">
+  <div class="head">
+    <div>
+      <p class="eyebrow">Parent functions and transformations · Algebra 2 Unit 1 · Precalculus Unit 1</p>
+      <h2>Pond day: will the ice hold by Saturday?</h2>
+    </div>
+    <ol class="chs" id="chs" aria-label="Chapters"></ol>
+  </div>
+
+  <div class="lay" id="lay">
+    <div class="stage" id="stage">
+      <svg id="svg" viewBox="0 0 1200 675" style="--k:1" role="img" aria-label="A pond freezing over, then a graph of ice thickness by date with a curve you slide and stretch to fit four measurements."></svg>
+      <div class="eq" id="eq" hidden></div>
+      <div class="chat" id="chat" hidden></div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+
+  <p class="turn">Built for a laptop or a projector. On a phone, turn it sideways for a bigger picture.</p>
+  <section class="story" id="story" hidden></section>
+
+  <details class="teach">
+    <summary>For teachers: what this page is</summary>
+    <h4>One idea, shown</h4>
+    <p>This is a prototype of a different way to build a MathLab tool. It covers one skill: writing a transformed parent function, <i>y</i> = <i>a</i>&middot;&radic;(<i>x</i> &minus; <i>h</i>), from data and using it to predict. It is meant to sit beside your lesson, before or after it. It does not replace the lesson.</p>
+    <h4>What students do</h4>
+    <ul>
+      <li><b>See it their own way first.</b> They draw a prediction before any math, then look at three other ways of seeing the same four dots.</li>
+      <li><b>Cause the change.</b> They drag the curve to slide it and stretch it. The equation rewrites itself while they drag, in matching colors.</li>
+      <li><b>Watch the formula make the picture.</b> Evaluating the equation is three visible moves: slide, root, stretch. Solving it backward undoes the same three moves in reverse order.</li>
+      <li><b>Tell the story.</b> They finish by writing the story of the math and can copy it into Canvas.</li>
+    </ul>
+    <h4>Ways to use it</h4>
+    <ul>
+      <li><b>Projected:</b> use the chapter buttons to jump. The "In class" lines are short prompts for the room.</li>
+      <li><b>On laptops:</b> about 10 minutes, alone or in pairs.</li>
+      <li><b>Homework:</b> students paste their story into a Canvas text entry.</li>
+    </ul>
+    <h4>The model, and its limits</h4>
+    <p>New ice forms on the underside of the sheet, and heat has to leave through the ice already there. Under steady cold with no snow cover, thickness grows in proportion to the square root of time (Stefan's law of ice growth, 1891). The measurements here are made up to follow that law exactly, with a factor of 1.3 inches per square-root day. Real ponds are messier: warm spells, snow, currents and springs all change it.</p>
+    <p>Four inches of new, clear ice is the usual minimum for walking that state natural-resource agencies publish. It is a guideline for a math problem, not safety advice. Real ice is never guaranteed safe.</p>
+    <p>The current version of this tool, with its review questions, is at <a href="https://rjedtech.github.io/Raider-MathLab/#pondday">rjedtech.github.io/Raider-MathLab/#pondday</a>.</p>
+  </details>
+  <p class="foot">RJ Ed Tech · Raider MathLab · Simplified model for instruction · &copy; 2026 Jason Beyer, RJ Ed Tech · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></p>
+</main>
+
+<script>
+(function(){
+'use strict';
+/* ---------- helpers ---------- */
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const svg=$('svg'),stage=$('stage'),panel=$('panel'),eqEl=$('eq'),chatEl=$('chat'),storyEl=$('story');
+function E(tag,at,par){const n=document.createElementNS(NS,tag);if(at)for(const k in at)n.setAttribute(k,at[k]);if(par)par.appendChild(n);return n;}
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t;
+const easeIO=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,easeOut=t=>1-Math.pow(1-t,3);
+const f1=n=>(Math.round(n*10)/10).toFixed(1),f2=n=>(Math.round(n*100)/100).toFixed(2);
+const trim=n=>String(+(+n).toFixed(2));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tx=(x,y,s,cls,anchor)=>`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" class="${cls||'t f15'}"${anchor?` text-anchor="${anchor}"`:''}>${s}</text>`;
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- the model ---------- */
+const PX0=110,UX=65,PY0=560,UY=80,DMAX=16.4,VMAX=6;
+const X=d=>PX0+d*UX,Y=v=>PY0-v*UY,Dinv=x=>(x-PX0)/UX,Vinv=y=>(PY0-y)/UY;
+const A=1.3,H=4,SAT=12,TODAY=8;
+const DATA=[[5,1.3],[6,1.84],[7,2.25],[8,2.6]];
+const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],DOWL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const ice=d=>d<=H?0:A*Math.sqrt(d-H);
+const SATV=A*Math.sqrt(SAT-H);            /* 3.677 */
+const CROSS=H+Math.pow(4/A,2);            /* 13.467 */
+const G={line:x=>x,abs:x=>Math.abs(x),quad:x=>x*x,cubic:x=>x*x*x,sqrt:x=>x<0?NaN:Math.sqrt(x)};
+const SHAPES=[['line','Line'],['abs','Absolute value'],['quad','Parabola'],['cubic','Cubic'],['sqrt','Square root']];
+const RULER_SLOPE=DATA[3][1]-DATA[2][1];  /* 0.35 */
+const rulerAt=d=>DATA[3][1]+RULER_SLOPE*(d-TODAY);
+
+/* ---------- state ---------- */
+const S={beat:0,reached:0,morph:0,day:4,light:0,cores:0,coreT:[1,1,1,1],coreMorph:0,coreFade:0,dotsOn:0,
+  pts:[],drawDone:false,view:null,seen:{},insetBig:0,pick:null,
+  shape:null,shapeIn:1,stairs:0,h:0,k:0,a:1,slideDone:false,stretchDone:false,
+  probe:0,probeT:0,calcOK:false,boxT:0,back:0,backT:0,scrub:null,busy:false,tried:0};
+const BEATS=[
+  {id:'night',ch:0},{id:'ask',ch:0},{id:'line',ch:0},
+  {id:'draw',ch:1},{id:'others',ch:1},{id:'pick',ch:1},
+  {id:'shape',ch:2},{id:'slide',ch:3},{id:'stretch',ch:4},
+  {id:'calc',ch:5},{id:'back',ch:5},{id:'story',ch:6}];
+const CH=['The pond','How do you see it?','Find the shape','Slide it','Stretch it','Ask the equation','Tell the story'];
+const B={};BEATS.forEach((b,i)=>B[b.id]=i);
+let GEN=0;
+function animate(ms,fn,ease){const g=GEN;ease=ease||easeIO;return new Promise(res=>{
+  if(RM||ms<=0){fn(1);render();return res(true);}
+  const t0=performance.now();
+  (function f(now){if(g!==GEN)return res(false);const t=clamp(((now||performance.now())-t0)/ms,0,1);fn(ease(t));render();if(t<1)requestAnimationFrame(f);else res(true);})(t0);});}
+const wait=ms=>animate(ms,()=>{});
+
+/* ---------- static picture ---------- */
+let K=1,compact=false;
+function rnd(seed){let s=seed;return()=>((s=(s*1664525+1013904223)%4294967296)/4294967296);}
+function build(){
+  let trees1='M0 300 L0 262',trees2='M0 300 L0 276';
+  let r=rnd(7);for(let x=0;x<1200;x+=16){const h=16+r()*34;trees1+=` L${x+8} ${262-h} L${x+16} 262`;}
+  trees1+=' L1200 300Z';
+  r=rnd(21);for(let x=0;x<1200;x+=22){const h=14+r()*26;trees2+=` L${x+11} ${278-h} L${x+22} 278`;}
+  trees2+=' L1200 300Z';
+  let stars='';r=rnd(3);for(let i=0;i<70;i++){const x=r()*1200,y=r()*215,s=.6+r()*1.5;stars+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${s.toFixed(1)}" fill="#fff" opacity="${(.35+r()*.6).toFixed(2)}"/>`;}
+  let ruler='';for(let i=0;i<=6;i++){ruler+=`<line x1="624" x2="${i?642:648}" y1="${330+i*56}" y2="${330+i*56}" stroke="#4a3d1a" stroke-width="2.5"/>`;if(i)ruler+=`<text x="656" y="${330+i*56+8}" class="f24 tb" fill="#fff" stroke="#0b2a3f" stroke-width="3.5" paint-order="stroke">${i}</text>`;if(i<6)ruler+=`<line x1="624" x2="636" y1="${330+i*56+28}" y2="${330+i*56+28}" stroke="#4a3d1a" stroke-width="1.5"/>`;}
+  let grid='';for(let d=0;d<=16;d++)grid+=`<line x1="${X(d)}" x2="${X(d)}" y1="${Y(VMAX)}" y2="${PY0}"/>`;
+  for(let v=1;v<=VMAX;v++)grid+=`<line x1="${PX0}" x2="${X(DMAX)}" y1="${Y(v)}" y2="${Y(v)}"/>`;
+  svg.innerHTML=`
+<defs>
+  <clipPath id="plotClip"><rect x="${PX0}" y="${Y(VMAX)-4}" width="${X(DMAX)-PX0+2}" height="${PY0-Y(VMAX)+6}"/></clipPath>
+  <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a0f2a"/><stop offset=".55" stop-color="#1c2a5e"/><stop offset=".86" stop-color="#4a5a92"/><stop offset="1" stop-color="#d69a7c"/></linearGradient>
+  <linearGradient id="gWater" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#11486a"/><stop offset="1" stop-color="#05182a"/></linearGradient>
+  <linearGradient id="gIce" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eaf7fd"/><stop offset="1" stop-color="#a6d5ea"/></linearGradient>
+  <linearGradient id="gTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9d9ea"/><stop offset="1" stop-color="#e4f3fa"/></linearGradient>
+  <marker id="mUp" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ee7d00"/></marker>
+</defs>
+<rect class="paper" width="1200" height="675"/>
+<g id="gGraph">
+  <rect id="future" class="future" x="${X(TODAY)}" y="${Y(VMAX)}" width="${X(DMAX)-X(TODAY)}" height="${PY0-Y(VMAX)}"/>
+  <g class="grid">${grid}</g>
+  <rect id="satCol" x="${X(SAT)-13}" y="${Y(VMAX)}" width="26" height="${PY0-Y(VMAX)}" fill="var(--guess)" opacity=".07"/>
+  <path class="axis" d="M${PX0} ${Y(VMAX)-6}V${PY0}H${X(DMAX)+6}"/>
+  <g id="ticks"></g>
+  <g id="needG"></g>
+</g>
+<g id="gStrip"></g>
+<g id="gCurves" clip-path="url(#plotClip)">
+  <path id="ghostHome" class="ghostc"/><path id="ghostShift" class="ghostc"/>
+  <g id="stairsL"></g><g id="stairsR"></g><g id="rulerSteps"></g>
+  <path id="rulerLine" class="rulerl"/><path id="userLine" class="user"/>
+  <g id="gaps"></g>
+  <path id="curve" class="curve" pathLength="1"/>
+</g>
+<g id="ghostTags"></g><g id="slideArrow"></g><g id="probe"></g><g id="backG"></g>
+<g id="dots"></g><g id="marks"></g><g id="satBox"></g>
+<rect id="drawPad" x="${X(TODAY)-20}" y="${Y(VMAX)}" width="${X(DMAX)-X(TODAY)+20}" height="${PY0-Y(VMAX)}"/>
+<g id="handles"></g>
+<g id="insetG"></g>
+<svg id="pond" x="0" y="0" width="1200" height="675" viewBox="0 0 1200 675" preserveAspectRatio="xMidYMid slice">
+  <rect width="1200" height="302" fill="url(#gSky)"/>
+  <rect id="pLight" width="1200" height="302" fill="#9fd0f5" opacity="0"/>
+  ${stars}
+  <circle cx="985" cy="86" r="40" fill="#f6f0d4" opacity=".12"/><circle cx="985" cy="86" r="25" fill="#f6f0d4"/>
+  <path d="M0 300V250Q220 205 430 242T820 232T1200 240V300Z" fill="#232f56"/>
+  <path d="${trees1}" fill="#141d38"/><path d="${trees2}" fill="#0b1226"/>
+  <g transform="translate(150,216)"><path d="M-10 26L52 -14L114 26Z" fill="#0b1226"/><rect x="0" y="26" width="104" height="54" fill="#101831"/><rect x="62" y="40" width="24" height="22" fill="#ffd27a"/><rect x="18" y="46" width="20" height="34" fill="#060a18"/><rect x="74" y="-6" width="12" height="22" fill="#0b1226"/><path d="M80 -10q-12 -16 2 -30q12 -14 -2 -30" fill="none" stroke="#c9d3ee" stroke-width="5" stroke-linecap="round" opacity=".22"/></g>
+  <path d="M0 304V286Q160 276 320 288T700 284T1200 288V304Z" fill="#dbe8f2"/>
+  <rect y="300" width="1200" height="30" fill="url(#gTop)"/>
+  <path d="M90 316h150M330 309h210M700 320h130M900 311h190" stroke="#fff" stroke-width="2" opacity=".7" stroke-linecap="round"/>
+  <rect y="330" width="1200" height="345" fill="url(#gWater)"/>
+  <rect id="pIce" y="330" width="1200" height="1" fill="url(#gIce)"/>
+  <g id="pLayers"></g>
+  <line x1="0" x2="1200" y1="330" y2="330" stroke="#fff" stroke-width="3"/>
+  <line id="pBottom" x1="0" x2="1200" y1="330" y2="330" stroke="#7fbcd6" stroke-width="2"/>
+  <rect id="pHole" x="590" y="322" width="16" height="0" fill="#0b2a3f"/>
+  <rect x="622" y="330" width="26" height="340" fill="#e9dcae" stroke="#4a3d1a" stroke-width="2"/>${ruler}
+  <line x1="380" x2="900" y1="${330+4*56}" y2="${330+4*56}" stroke="#ff7d8f" stroke-width="3" stroke-dasharray="10 8"/>
+  <text x="700" y="${330+4*56-10}" class="f20 tb" fill="#ff9aa8">need 4 in</text>
+  <path id="pArrow1" d="" fill="none" stroke="#ee7d00" stroke-linecap="round" marker-end="url(#mUp)"/>
+  <path id="pArrow2" d="" fill="none" stroke="#ee7d00" stroke-linecap="round" marker-end="url(#mUp)"/>
+  <text id="pHeat" x="448" y="0" class="f18 tb" fill="#b4560a">heat out</text>
+  <text x="448" y="322" class="f18 tb" fill="#1b3a57">cold air</text>
+  <text id="pIceT" x="448" y="0" class="f18 tb" fill="#1d4a66">ice</text>
+  <text x="448" y="660" class="f18 tb" fill="#9cc9e2">water</text>
+  <text id="pDate" x="36" y="58" class="f24 tb" fill="#fff"></text>
+  <text id="pDate2" x="36" y="88" class="f16" fill="#cfd8f2"></text>
+</svg>
+<g id="cores"></g>`;
+  /* handles (persistent so they keep focus and pointer capture) */
+  const hg=$('handles');
+  const mk=(id,cls,label,glyph)=>{const g=E('g',{id,class:'handle',tabindex:'0',role:'slider','aria-label':label},hg);
+    g.innerHTML=`<circle class="hit" r="34"/><circle class="pulse ${cls}" r="15"/><circle class="knob ${cls}" r="15"/><path class="gl" d="${glyph}"/>`;return g;};
+  mk('hSlide','c-curve','Slide the curve. Arrow keys move it.','M-8 0H8M-8 0l4 -4M-8 0l4 4M8 0l-4 -4M8 0l-4 4');
+  mk('hStretch','c-stretch','Stretch the curve. Up and down arrow keys change the stretch.','M0 -8V8M0 -8l-4 4M0 -8l4 4M0 8l-4 -4M0 8l4 -4');
+  mk('hScrub','c-curve','Pick a day. Left and right arrow keys change the day.','M-8 0H8M-8 0l4 -4M-8 0l4 4M8 0l-4 -4M8 0l-4 4');
+  bindHandles();
+}
+function ticks(){
+  let s='';
+  for(let v=0;v<=VMAX;v++)s+=tx(PX0-12,Y(v)+5,v,'tm f15 num','end');
+  s+=`<text transform="translate(${PX0-58},${Y(3)}) rotate(-90)" class="t f15 tb" text-anchor="middle">Ice thickness (inches)</text>`;
+  const wk={4:'Fri',8:'Tue',12:'Sat',14:'Mon'};
+  for(let d=0;d<=16;d++){if(compact&&d%2)continue;s+=tx(X(d),PY0+21,d,(wk[d]?'t tb':'tm')+' f15 num','middle');
+    if(wk[d]&&S.beat<B.slide&&!compact)s+=tx(X(d),PY0+38,d===8?'Tue · today':wk[d],'tm f12','middle');}
+  if(S.beat<B.slide)s+=tx(X(8.2),PY0+62,'Day of December (measured each evening)','t f15 tb','middle');
+  $('ticks').innerHTML=s;
+}
+
+/* ---------- paths ---------- */
+function curvePts(shape,a,h,k,x1){x1=x1==null?DMAX:x1;const p=[];
+  if(shape==='sqrt'){const s1=Math.sqrt(Math.max(0,x1-h));for(let i=0;i<=140;i++){const s=s1*i/140;p.push([h+s*s,a*s+k]);}}
+  else for(let i=0;i<=200;i++){const x=-1+(x1+1)*i/200;p.push([x,a*G[shape](x-h)+k]);}
+  return p;}
+function toPath(p){let d='',pen=false;for(const q of p){if(!(q[1]>-4&&q[1]<14)){pen=false;continue;}d+=(pen?'L':'M')+X(q[0]).toFixed(1)+' '+Y(q[1]).toFixed(1);pen=true;}return d;}
+const fmtRise=r=>Math.abs(r-Math.round(r))<1e-6?String(Math.round(r)):f2(r);
+function stairs(P,cls,prog,labels){let s='';
+  for(let i=0;i<P.length-1;i++){const t=clamp(prog-i,0,1);if(t<=0)break;const a=P[i],b=P[i+1],rise=b[1]-a[1];if(a[1]>=VMAX)break;
+    const run=clamp(t*2,0,1),up=clamp(t*2-1,0,1);
+    s+=`<path class="${cls} nofill" stroke-width="2.5" stroke-dasharray="4 5" d="M${X(a[0])} ${Y(a[1])}H${lerp(X(a[0]),X(b[0]),run).toFixed(1)}"/>`;
+    if(up>0){s+=`<path class="${cls} nofill" stroke-width="6" stroke-linecap="round" d="M${X(b[0])} ${Y(a[1])}V${Y(a[1]+rise*up).toFixed(1)}"/>`;
+      if(labels&&up>=1&&!(compact&&i>1)){const my=Y(clamp(a[1]+rise/2,0.12,VMAX-.25))+5;s+=tx(X(b[0])+9,my,'+'+fmtRise(rise),cls+' nostroke f15 tb num halo');}}}
+  return s;}
+function valAt(pts,d){if(!pts.length)return null;const all=[[TODAY,DATA[3][1]]].concat(pts);if(d>all[all.length-1][0])return null;
+  for(let i=1;i<all.length;i++)if(d<=all[i][0]){const a=all[i-1],b=all[i];return lerp(a[1],b[1],(d-a[0])/Math.max(1e-6,b[0]-a[0]));}return null;}
+const userSat=()=>S.drawDone?valAt(S.pts,SAT):null;
+
+/* ---------- render ---------- */
+function render(){
+  const b=S.beat,m=S.morph;
+  /* pond: full scene -> inset */
+  const pond=$('pond'),inset=(b>=B.line&&b<=B.pick)||b>=B.calc,bigT=S.insetBig;
+  const ix=126,iy=100,iw=lerp(186,430,bigT),ih=lerp(194,448,bigT);
+  const px=lerp(0,ix,m),py=lerp(0,iy,m),pw=lerp(1200,iw,m),ph=lerp(675,ih,m);
+  pond.setAttribute('x',px);pond.setAttribute('y',py);pond.setAttribute('width',pw);pond.setAttribute('height',ph);
+  pond.setAttribute('viewBox',`${lerp(0,440,m)} ${lerp(0,300,m)} ${lerp(1200,360,m)} ${lerp(675,375,m)}`);
+  pond.style.display=(m<1||inset)?'':'none';
+  $('insetG').innerHTML=(m>=1&&inset)?`<rect x="${ix-2}" y="${iy-2}" width="${iw+4}" height="${ih+4}" rx="9" fill="none" stroke="var(--fg)" stroke-width="2.5"/>`+tx(ix,iy-9,`Your pond · ${DOW[Math.floor(S.day+1e-6)%7]}, Dec ${Math.floor(S.day+1e-6)}`,'t f13 tb'):'';
+  const th=ice(S.day),ib=330+th*56;
+  $('pIce').setAttribute('height',Math.max(.5,th*56));$('pBottom').setAttribute('y1',ib);$('pBottom').setAttribute('y2',ib);
+  $('pHole').setAttribute('height',S.cores>0?Math.max(0,ib-322):0);
+  $('pIceT').setAttribute('y',330+th*28+7);$('pIceT').style.display=(th>.5&&S.view!=='blanket')?'':'none';
+  const rate=th>.05?clamp(1/th,0,1.4):1.4,aw=clamp(2+rate*7,2,12);
+  ['pArrow1','pArrow2'].forEach((id,i)=>{const n=$(id),x=536+i*30;n.setAttribute('d',th>.25?`M${x} ${ib-6}V${342}`:'');n.setAttribute('stroke-width',aw.toFixed(1));n.setAttribute('opacity',clamp(.25+rate*.6,.25,1).toFixed(2));});
+  $('pHeat').setAttribute('y',ib+26);$('pHeat').style.display=(th>.25&&S.view==='blanket')?'':'none';
+  let lay='';if(S.view==='blanket'||b>=B.calc){let prev=0;for(let i=0;i<12;i++){const d0=H+i,d1=Math.min(S.day,d0+1);if(d1<=d0)break;const t0=ice(d0),t1=ice(d1);
+      lay+=`<rect x="0" y="${330+t0*56}" width="1200" height="${(t1-t0)*56}" fill="${i%2?'#9fcfe6':'#d2ecf8'}" opacity=".9"/>`;
+      if(S.view==='blanket'&&d1-d0>.98&&i<4)lay+=`<text x="${i%2?524:456}" y="${330+(t0+t1)*28+7}" class="f16 tb num" fill="#0f3550" ${i%2?'text-anchor="end"':''}>+${f2(t1-t0)}</text>`;prev=t1;}}
+  $('pLayers').innerHTML=lay;
+  const dd=Math.floor(S.day+1e-6);$('pDate').textContent=`${DOWL[dd%7]}, Dec ${dd}`;$('pDate2').textContent=dd===4&&S.cores===0?'evening · the pond just froze over':'evening';
+  $('pDate').style.display=$('pDate2').style.display=m<.5?'':'none';
+  $('pLight').setAttribute('opacity',(S.light*.75).toFixed(2));
+
+  /* cores */
+  let cs='';for(let i=0;i<S.cores;i++){const v=DATA[i][1],t=S.coreT[i];let x,base,hh,w=30;
+    if(t<.5){x=598;hh=v*56;base=lerp(330+hh,312,t/.5);}else{const u=easeOut((t-.5)/.5);x=lerp(598,872+i*74,u);hh=v*56;base=lerp(312,318,u);}
+    const cm=S.coreMorph;x=lerp(x,X(5+i),cm);base=lerp(base,PY0,cm);hh=lerp(hh,v*UY,cm);w=lerp(30,18,cm);
+    const op=1-S.coreFade;if(op<=0)continue;
+    cs+=`<g opacity="${op.toFixed(2)}"><rect class="core" x="${(x-w/2).toFixed(1)}" y="${(base-hh).toFixed(1)}" width="${w.toFixed(1)}" height="${hh.toFixed(1)}" rx="5"/><path d="M${(x-w/2+5).toFixed(1)} ${(base-hh+6).toFixed(1)}v${Math.max(0,hh-12).toFixed(1)}" stroke="#fff" stroke-width="3" opacity=".8" stroke-linecap="round"/>`;
+    if(t>=1||cm>0)cs+=`<text x="${x.toFixed(1)}" y="${(base-hh-10).toFixed(1)}" text-anchor="middle" class="f16 tb num" fill="${cm>.5?'var(--fg)':'#fff'}">${trim(v)} in</text>`;
+    if(t>=1&&cm<.4)cs+=`<text x="${x.toFixed(1)}" y="${(base+22).toFixed(1)}" text-anchor="middle" class="f13 tb" fill="#17334d" opacity="${(1-cm*2.5).toFixed(2)}">${DOW[(5+i)%7]} ${5+i}</text>`;
+    cs+='</g>';}
+  $('cores').innerHTML=cs;
+
+  /* graph */
+  $('gGraph').style.opacity=m;
+  $('needG').innerHTML=`<path class="need" d="M${PX0} ${Y(4)}H${X(DMAX)}"/>`+(S.insetBig>0?'':tx(X(5.25),Y(4)-9,compact?'4 in to walk on':'4 in: thick enough to walk on','t f15 tb halo'))+(b<B.calc?tx(X(TODAY)+10,PY0-12,'the future','tm f14 tb'):'')+tx(X(SAT),(b>=B.shape&&S.shape)?152:Y(VMAX)+18,compact?'Sat':'Saturday','c-guess nostroke f14 tb halo','middle');
+  let ds='';if(S.dotsOn>0)DATA.forEach(p=>{const fit=b>=B.stretch&&Math.abs(S.a*Math.sqrt(p[0]-S.h)+S.k-p[1])<.03;
+    ds+=(fit?`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="14" class="c-good nofill" stroke-width="3"/>`:'')+`<circle class="dot" cx="${X(p[0])}" cy="${Y(p[1])}" r="7.5" opacity="${S.dotsOn}"/>`;});
+  $('dots').innerHTML=ds;
+
+  /* the student's own line, and the ruler */
+  const ul=$('userLine'),showU=(b>=B.draw&&b<=B.pick)||(b===B.calc&&S.probe>=3&&S.probeT>=1)||b>=B.back;
+  ul.setAttribute('d',showU&&S.pts.length?'M'+X(TODAY)+' '+Y(DATA[3][1])+S.pts.map(p=>'L'+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(''):'');
+  ul.setAttribute('class','user'+(b===B.draw?'':' dim'));
+  const showR=(b===B.others&&S.view==='ruler')||b===B.pick||(b===B.calc&&S.probe>=3&&S.probeT>=1)||b>=B.back;
+  $('rulerLine').setAttribute('d',showR?`M${X(7)} ${Y(DATA[2][1])}L${X(13.2)} ${Y(rulerAt(13.2))}`:'');
+  let rs='';if(b===B.others&&S.view==='ruler'){const P=[];for(let d=8;d<=12;d++)P.push([d,rulerAt(d)]);rs=stairs(P,'c-fg',S.stairs,true)+`<circle cx="${X(SAT)}" cy="${Y(4)}" r="7" class="c-fg"/>`;}
+  $('rulerSteps').innerHTML=rs;
+
+  /* staircases */
+  const dataSteps=[[4,0]].concat(DATA);
+  $('stairsR').innerHTML=((b===B.others&&S.view==='stairs')||(b===B.shape&&S.shape))?stairs(dataSteps,'c-slide',S.stairs,true):'';
+  $('stairsL').innerHTML=(b===B.shape&&S.shape)?stairs([0,1,2,3,4].map(x=>[x,G[S.shape](x)]),'c-curve',S.stairs,true):'';
+
+  /* curves */
+  const cv=$('curve');
+  if(S.shape&&b>=B.shape){cv.setAttribute('d',toPath(curvePts(S.shape,S.a,S.h,S.k)));cv.setAttribute('stroke-dasharray',S.shapeIn>=1?'none':`${S.shapeIn} 1`);}else cv.setAttribute('d','');
+  $('ghostHome').setAttribute('d',(b===B.slide||b===B.stretch)?toPath(curvePts('sqrt',1,0,0)):'');
+  $('ghostShift').setAttribute('d',(b===B.stretch||b===B.calc||b===B.back)?toPath(curvePts('sqrt',1,H,0)):'');
+
+  let gt='';if(!compact){if(b===B.slide||b===B.stretch)gt+=tx(X(1.25),Y(1.95),'the plain shape, y = √x','tm f13 tb halo');
+    if(b===B.stretch)gt+=tx(X(16.3),Y(2.72),'slid, not stretched yet','tm f13 tb halo','end');}
+  $('ghostTags').innerHTML=gt;
+  /* slide arrow */
+  let sa='';if((b===B.slide||b===B.stretch)&&(S.h>.15||Math.abs(S.k)>.1)){const x0=X(0),y0=Y(0),x1=X(S.h),y1=Y(S.k),off=b===B.slide?20:20;
+    if(S.h>.15)sa+=`<path class="c-slide nofill" stroke-width="3.5" stroke-linecap="round" d="M${x0} ${y0-off}H${x1-3}"/><path class="c-slide nostroke" d="M${x1} ${y0-off}l-12 -7v14z"/>`+tx((x0+x1)/2,y0-off-9,`${f1(S.h)} right`,'c-slide nostroke f15 tb num halo','middle');
+    if(Math.abs(S.k)>.1)sa+=`<path class="c-guess nofill" stroke-width="3.5" stroke-linecap="round" d="M${x1+22} ${y0}V${y1}"/>`+tx(x1+30,(y0+y1)/2+5,`${f1(Math.abs(S.k))} ${S.k>0?'up':'down'}`,'c-guess nostroke f15 tb num halo');}
+  $('slideArrow').innerHTML=sa;
+
+  /* days-of-ice strip */
+  let st='';if(b>=B.slide&&b<=B.story){const x0=X(S.h),y=604,hh=25,snap=S.h===H&&S.k===0;
+    st+=`<path d="M${x0} ${PY0}V${y}" class="c-slide nofill" stroke-width="1.5" stroke-dasharray="3 4"/><rect class="strip" x="${x0}" y="${y}" width="${X(DMAX)-x0}" height="${hh}" rx="6"/>`;
+    const hl=(b===B.calc&&S.probe>=1)?(S.probe>1?8:8*S.probeT):0,hb=(b===B.back&&S.back>=2)?(S.back>2?CROSS-H:(CROSS-H)*S.backT):0;
+    if(hl>0)st+=`<rect x="${x0}" y="${y}" width="${hl*UX}" height="${hh}" rx="6" class="c-slide" opacity=".85"/>`;
+    if(hb>0)st+=`<rect x="${x0}" y="${y}" width="${hb*UX}" height="${hh}" rx="6" class="c-slide" opacity=".85"/>`;
+    for(let n=0;S.h+n<=DMAX;n++){if(compact&&n%2)continue;const on=n<=Math.max(hl,hb)+1e-6&&Math.max(hl,hb)>0;st+=`<text x="${X(S.h+n)+(n?0:9)}" y="${y+18}" text-anchor="middle" class="f14 tb num" fill="${on?'#fff':'var(--slide)'}">${n}</text>`;}
+    st+=tx(X(DMAX),y+hh+21,(snap?'days of ice':'days on the curve')+` = date − ${f1(S.h).replace('.0','')}`,'c-slide nostroke f15 tb num','end');
+    st+=tx(PX0,y+hh+21,'date in December ↑','tm f13');}
+  $('gStrip').innerHTML=st;
+
+  /* gap sticks and stretch arrows */
+  let gp='';if((b===B.slide&&S.slideDone)||b===B.stretch){DATA.forEach((p,i)=>{const base=Math.sqrt(Math.max(0,p[0]-S.h))+S.k,cur=S.a*Math.sqrt(Math.max(0,p[0]-S.h))+S.k;
+      if(b===B.stretch&&Math.abs(cur-base)>.04){gp+=`<path class="c-stretch nofill" stroke-width="3" d="M${X(p[0])} ${Y(base)}V${Y(cur)+(cur>base?8:-8)}"/><path class="c-stretch nostroke" d="M${X(p[0])} ${Y(cur)}l-6 ${cur>base?11:-11}h12z"/>`;}
+      if(Math.abs(cur-p[1])>.03)gp+=`<path class="c-ghost nofill" stroke-width="2" stroke-dasharray="2 4" d="M${X(p[0])} ${Y(cur)}V${Y(p[1])}"/>`;});}
+  $('gaps').innerHTML=gp;
+
+  /* forward probe: slide, root, stretch */
+  let pr='';if(b===B.calc&&S.probe>=1){const s=S.probe,t=S.probeT,x=X(SAT),root=Math.sqrt(8);
+    pr+=`<path class="c-slide nofill" stroke-width="1.5" stroke-dasharray="3 4" d="M${x} ${PY0}V604"/>`+tx(X(8),PY0-13,'12 − 4 = 8 days of ice','c-slide nostroke f15 tb num halo','middle');
+    if(s>=2){const v=s>2?root:root*t;pr+=`<rect x="${x-5}" y="${Y(v)}" width="10" height="${v*UY}" class="c-fg nostroke" opacity=".75"/>`;if(s>2||t>=1)pr+=tx(x-14,Y(1.45),'√8 ≈ 2.83','t f15 tb num halo','end');}
+    if(s>=3){const v=lerp(root,SATV,t);pr+=`<rect x="${x-5}" y="${Y(v)}" width="10" height="${(v-root)*UY}" class="c-stretch nostroke"/>`;
+      if(t>=1)pr+=tx(x+15,Y(3.26),'× 1.3 ≈ 3.68 in','c-stretch nostroke f15 tb num halo')+`<circle cx="${x}" cy="${Y(SATV)}" r="8" class="c-curve" stroke="var(--paper)" stroke-width="2.5"/>`;}}
+  $('probe').innerHTML=pr;
+
+  /* Saturday's ice, three ways */
+  let sb='';const us=userSat();if((b===B.calc&&S.boxT>0)||b===B.story){const T=b===B.story?1:S.boxT,bx=944,by=344,bw=230,bh=206,base=by+bh-30,sc=27;
+    const bars=[];if(us!=null)bars.push(['you',us,'c-guess']);bars.push(['ruler',4,'c-fg'],['equation',SATV,'c-curve']);
+    sb+=`<rect class="boxbg" x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="10"/>`+tx(bx+bw/2,by+20,'Saturday’s ice, three ways','t f14 tb','middle');
+    bars.forEach((r,i)=>{const cx=bx+bw*(i+1)/(bars.length+1)+(bars.length===3?(i-1)*10:0),v=Math.min(r[1],5.1)*T,hh=v*sc;
+      sb+=`<rect x="${cx-17}" y="${base-hh}" width="34" height="${hh}" rx="4" class="${r[2]} nostroke" opacity=".9"/>`+tx(cx,base+19,r[0],'t f13 tb','middle');
+      if(T>=1)sb+=`<text x="${cx}" y="${base-hh+17}" text-anchor="middle" class="f13 tb num" fill="#fff">${(r[1]>5.1?'↑':'')+(r[0]==='equation'?f2(r[1]):f1(r[1]))}</text>`;});
+    sb+=`<path class="need" d="M${bx+8} ${base-4*sc}H${bx+bw-8}"/>`+tx(bx+bw-9,base-4*sc-6,'4 in','t f12 tb halo','end');}
+  $('satBox').innerHTML=sb;
+
+  /* backward probe: undo stretch, undo root, undo slide */
+  let bk='';if(b===B.back&&S.back>=1){const s=S.back,t=S.backT,xc=X(CROSS),r=4/A,fade=S.scrub!=null?.35:1;
+    const v1=s>1?r:lerp(4,r,t);bk+=`<g opacity="${fade}"><path class="c-stretch nofill" stroke-width="3.5" d="M${PX0} ${Y(v1)}H${xc}"/>`;
+    if(s>1||t>=1)bk+=tx(X(10.8),Y(r)+19,'4 ÷ 1.3 ≈ 3.08','c-stretch nostroke f15 tb num halo','middle')+`<circle cx="${xc}" cy="${Y(r)}" r="6" class="c-stretch"/>`;
+    if(s>=2){const y2=s>2?604:lerp(Y(r),604,t);bk+=`<path class="c-fg nofill" stroke-width="3" d="M${xc} ${Y(r)}V${y2}"/>`;if(s>2||t>=1)bk+=tx(xc-12,PY0-13,'3.08² ≈ 9.47 days of ice','t f15 tb num halo','end');}
+    if(s>=3){bk+=`<circle cx="${xc}" cy="${PY0}" r="7" class="c-slide" stroke="var(--paper)" stroke-width="2"/>`;if(t>=1)bk+=tx(xc+13,PY0-13,'+ 4 → Dec 13.47','c-slide nostroke f15 tb num halo')+`<path class="c-curve nofill" stroke-width="3" stroke-dasharray="2 5" d="M${xc} ${Y(r)}V${Y(4)}"/>`;}
+    bk+='</g>';}
+  $('backG').innerHTML=bk;
+
+  /* marks: Saturday point, crossing, scrub flag, the student's Saturday reading */
+  let mk='';
+  if(b===B.draw&&S.drawDone&&us!=null)mk+=`<circle cx="${X(SAT)}" cy="${Y(us)}" r="7" class="c-guess" stroke="var(--paper)" stroke-width="2"/>`+tx(X(SAT)+13,Y(us)+(us>3.6&&us<4.4?(us>=4?-12:22):5),`yours: ${f1(us)} in`,'c-guess nostroke f15 tb num halo');
+  if(b>=B.back){mk+=`<circle cx="${X(SAT)}" cy="${Y(SATV)}" r="7" class="c-curve" stroke="var(--paper)" stroke-width="2.5"/>`;
+    if((b===B.back&&S.back>=3&&S.backT>=1)||b===B.story)mk+=`<circle cx="${X(CROSS)}" cy="${Y(4)}" r="8" class="c-curve" stroke="var(--paper)" stroke-width="2.5"/>`+(S.scrub==null?tx(X(CROSS)+12,Y(4)-13,'4 in: early Monday','c-curve nostroke f15 tb halo'):'');
+    if(b===B.back)mk+=tx(X(SAT)-12,Y(SATV)+24,'Sat: 3.68','c-curve nostroke f14 tb num halo','end');}
+  if(S.scrub!=null&&b>=B.back){const d=S.scrub,v=ice(d),dn=Math.floor(d+1e-6),part=d-dn<.2?'evening':d-dn<.6?'overnight':'next afternoon';
+    const left=d>9.4;mk+=tx(X(d)+(left?-18:18),Y(v)+(left?-16:30),`${DOW[dn%7]}, Dec ${dn} ${part}: ${f2(v)} in`,'t f15 tb num halo',left?'end':'start');}
+  $('marks').innerHTML=mk;
+
+  /* handles */
+  const hs=$('hSlide'),ht=$('hStretch'),hc=$('hScrub');
+  hs.style.display=(b===B.slide)?'':'none';hs.setAttribute('transform',`translate(${X(S.h)},${Y(S.k)})`);
+  hs.setAttribute('aria-valuetext',`corner at day ${f1(S.h)}, height ${f1(S.k)}`);
+  ht.style.display=(b===B.stretch)?'':'none';ht.setAttribute('transform',`translate(${X(H+1)},${Y(S.a)})`);ht.setAttribute('aria-valuetext',`stretch ${f2(S.a)}`);
+  const scOn=(b===B.back&&S.back>=3&&S.backT>=1)||b===B.story;
+  hc.style.display=scOn?'':'none';const sd=S.scrub==null?CROSS:S.scrub;hc.setAttribute('transform',`translate(${X(sd)},${Y(ice(sd))})`);hc.setAttribute('aria-valuetext',`December ${f1(sd)}`);
+  $('drawPad').style.display=(b===B.draw&&!S.drawDone)?'':'none';
+
+  /* equation card and chat */
+  const showEq=b>=B.shape&&S.shape&&m>=1;eqEl.hidden=!showEq;if(showEq){const h=eqHTML();if(eqEl._h!==h){eqEl.innerHTML=h;eqEl._h=h;}}
+}
+function eqHTML(){
+  const s=S.shape,b=S.beat,hz=Math.abs(S.h)<.05,arg=hz?'<i>x</i>':`<i>x</i> − <b class="ph">${f1(S.h).replace('.0','')}</b>`;
+  const av=b>=B.stretch?`<b class="pa">${trim(S.a)}</b>`:'';
+  let body;
+  const RAD='<svg class="rs" viewBox="0 0 14 24" preserveAspectRatio="none" aria-hidden="true"><path d="M1 15l3 -1.6l3.6 9l5.6 -21.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>';
+  if(s==='sqrt')body=`${av}<span class="rad">${RAD}<span class="ri">${arg}</span></span>`;
+  else if(s==='line')body=`<i>x</i>`;else if(s==='abs')body=`|<i>x</i>|`;else if(s==='quad')body=`<i>x</i><sup>2</sup>`;else body=`<i>x</i><sup>3</sup>`;
+  const kk=Math.abs(S.k)>.05?` ${S.k>0?'+':'−'} <b class="pk">${f1(Math.abs(S.k))}</b>`:'';
+  let lg='';
+  if(b===B.shape)lg=`<span>the plain shape: a parent function</span>`;
+  if(b>=B.slide)lg+=`<span><i style="background:var(--slide)"></i>slide ${f1(S.h).replace('.0','')} right</span>`;
+  if(Math.abs(S.k)>.05)lg+=`<span><i style="background:var(--guess)"></i>${f1(Math.abs(S.k))} ${S.k>0?'up':'down'}</span>`;
+  if(b>=B.stretch)lg+=`<span><i style="background:var(--stretch)"></i>stretch × ${trim(S.a)}</span>`;
+  return `<div class="f"><i>y</i> = ${body}${kk}</div><div class="lg">${lg}</div>`;
+}
+
+/* ---------- beats ---------- */
+function canon(i){
+  S.morph=i<=B.line?0:1;S.cores=i>=B.ask?4:0;S.coreT=[1,1,1,1];S.day=i===B.night?4:TODAY;S.light=0;
+  S.coreMorph=i>B.line?1:0;S.coreFade=i>B.line?1:0;S.dotsOn=i>B.line?1:0;
+  S.view=null;S.insetBig=0;S.stairs=0;S.shapeIn=1;
+  S.shape=i>B.shape?'sqrt':null;S.h=i>B.slide?H:0;S.k=0;S.a=i>B.stretch?A:1;S.slideDone=i>B.slide;S.stretchDone=i>B.stretch;
+  S.probe=i>B.calc?3:0;S.probeT=i>B.calc?1:0;S.boxT=i>B.calc?1:0;S.calcOK=i>B.calc;S.back=i>B.back?3:0;S.backT=i>B.back?1:0;S.scrub=null;S.busy=false;S.tried=0;
+  if(i>B.calc)S.day=SAT;
+}
+function go(i){
+  i=clamp(i,0,BEATS.length-1);GEN++;const from=S.beat;S.beat=i;S.reached=Math.max(S.reached,i);canon(i);
+  chatEl.hidden=!(i===B.ask||i===B.story);storyEl.hidden=i!==B.story;
+  if(i===B.ask)chatEl.innerHTML=`<p class="them"><small>Group chat</small>Skating Saturday the 12th??</p><p class="you">We need 4 inches to walk on it. Let me check.</p>`;
+  if(i===B.story){buildStory();}
+  ticks();chapters();ui();render();
+  if(i===B.line)runLine();
+  if(i===B.story&&from!==i)setTimeout(()=>{try{storyEl.scrollIntoView({behavior:RM?'auto':'smooth',block:'nearest'});}catch(e){}},300);
+}
+async function runLine(){S.morph=0;S.coreMorph=0;S.coreFade=0;S.dotsOn=0;render();
+  if(!await wait(250))return;
+  if(!await animate(1500,t=>{S.morph=t;S.coreMorph=t;}))return;
+  if(!await animate(700,t=>{S.dotsOn=t;S.coreFade=t;}))return;ui();}
+async function drill(){if(S.busy||S.cores>=4)return;S.busy=true;ui();const n=S.cores,g=GEN;
+  if(!await animate(1300,t=>{S.day=4+n+t;S.light=Math.sin(Math.PI*t);})){return;}
+  S.cores=n+1;S.coreT[n]=0;if(!await animate(1100,t=>{S.coreT[n]=t;},easeOut))return;
+  S.busy=false;if(g!==GEN)return;if(S.cores>=4){ui();await wait(500);if(g===GEN)go(B.ask);}else ui();}
+async function showView(v){GEN++;const g=GEN;S.view=v;S.seen[v]=1;S.stairs=0;S.insetBig=0;S.day=TODAY;ui();render();
+  if(v==='blanket'){if(!await animate(600,t=>{S.insetBig=t;}))return;S.day=4;if(!await animate(4200,t=>{S.day=4+4*t;},t=>t))return;}
+  else{if(!await animate(v==='ruler'?1800:2200,t=>{S.stairs=t*4;},t=>t))return;}
+  if(g===GEN)ui();}
+async function pickShape(s){GEN++;const g=GEN;S.shape=s;S.tried++;S.h=0;S.k=0;S.a=1;S.shapeIn=0;S.stairs=0;ui();render();
+  if(!await animate(700,t=>{S.shapeIn=t;}))return;if(!await animate(2000,t=>{S.stairs=t*4;},t=>t))return;if(g===GEN)ui();}
+async function showSlide(){GEN++;const h0=S.h,k0=S.k;$('hSlide').classList.add('used');await animate(1200,t=>{S.h=lerp(h0,H,t);S.k=lerp(k0,0,t);});S.h=H;S.k=0;S.slideDone=true;ui();render();}
+async function showStretch(){GEN++;const a0=S.a;$('hStretch').classList.add('used');await animate(1200,t=>{S.a=lerp(a0,A,t);});S.a=A;S.stretchDone=true;ui();render();}
+async function runProbe(){GEN++;const g=GEN;S.busy=true;S.boxT=0;ui();
+  for(let s=1;s<=3;s++){S.probe=s;S.probeT=0;if(!await animate(1000,t=>{S.probeT=t;}))return;if(!await wait(650))return;}
+  const d0=S.day;if(!await animate(1400,t=>{S.boxT=Math.min(1,t*1.6);S.day=lerp(d0,SAT,t);},easeOut))return;S.busy=false;S.calcOK=true;if(g===GEN)ui();}
+async function undo(){if(S.busy||S.back>=3)return;const g=GEN;S.busy=true;S.back++;S.backT=0;ui();const d0=S.day,fin=S.back>=3;if(!await animate(1100,t=>{S.backT=t;if(fin)S.day=lerp(d0,CROSS,t);}))return;S.busy=false;if(g===GEN)ui();}
+
+/* ---------- the story column ---------- */
+function chapters(){const cur=BEATS[S.beat].ch,rc=BEATS[S.reached].ch;
+  $('chs').innerHTML=CH.map((c,i)=>`<li><button type="button" data-ch="${i}" class="${i===cur?'on':i<=rc?'done':''}" ${i===cur?'aria-current="step"':''}><span class="n">${i+1}</span><span class="l">${c}</span></button></li>`).join('');}
+$('chs').addEventListener('click',e=>{const t=e.target.closest('button[data-ch]');if(!t)return;const c=+t.dataset.ch;go(BEATS.findIndex(b=>b.ch===c));});
+const SHAPE_ICON={line:'M6 30L48 4',abs:'M6 4L27 30L48 4',quad:'M6 4Q27 56 48 4',cubic:'M6 32C22 30 20 17 27 17S32 4 48 2',sqrt:'M6 30C10 14 26 8 48 5'};
+const SHAPE_FB={
+  line:'A line climbs the same amount every step: 1, 1, 1, 1. Your ice climbs less each night.',
+  abs:'From its corner, absolute value is a straight line: equal steps. Your ice’s steps shrink.',
+  quad:'A parabola’s steps get bigger: 1, 3, 5, 7. Your ice’s steps get smaller.',
+  cubic:'A cubic’s steps grow even faster: 1, 7, 19. Your ice’s steps get smaller.',
+  sqrt:'Its steps are 1, 0.41, 0.32, 0.27: big, then smaller and smaller. That is your ice’s pattern, only shorter and 4 days to the left.'};
+const VIEWS={
+  ruler:['The ruler','<q>It gained 0.35 inches last night. It will gain 0.35 every night.</q> A straight line through the last two dots lands on exactly 4.0 inches on Saturday.'],
+  stairs:['The stairs','<q>Each night it gains less than the night before.</q> The steps are 1.30, 0.54, 0.41 and 0.35 inches. They keep shrinking.'],
+  blanket:['The blanket','<q>New ice forms on the bottom, and the cold has to get through all the ice above it first.</q> The thicker the blanket, the slower the freezing.']};
+function chips(){const us=userSat();return `<ul class="chips">${us!=null?`<li><i style="background:var(--guess)"></i>Your first line<b>${f1(us)} in</b></li>`:''}<li><i style="background:var(--fg)"></i>The ruler’s line<b>4.0 in</b></li><li><i style="background:var(--curve)"></i>Your equation<b>3.68 in</b></li></ul>`;}
+function ui(){
+  const b=S.beat,ch=BEATS[b].ch;let cap='',sub='',ctl='',room='',ok=true,nextL='Next';
+  switch(BEATS[b].id){
+  case 'night':cap=S.cores?`${DOWL[(4+S.cores)%7]} evening: ${trim(DATA[S.cores-1][1])} inches of ice.`:'Friday night, Dec 4. The pond behind your house just froze over.';
+    sub='Each evening you drill a test hole and pull out a core of ice to measure.';
+    ctl=`<button class="btn primary" data-act="drill" ${S.busy?'disabled':''}>${S.cores?'Next evening: drill again':'Next evening: drill a hole'}</button>`;ok=false;break;
+  case 'ask':cap='Tuesday, Dec 8. Four cores, and a text from your friends.';
+    sub='New, clear ice should be about 4 inches thick before people walk on it. Saturday is 4 days away.';nextL='Stand the cores on a timeline';break;
+  case 'line':cap='Each core stands on its date. The top of each core becomes a dot.';
+    sub='Height is thickness. Those four dots are everything you know. The shaded part is the future.';ok=S.dotsOn>=1;break;
+  case 'draw':cap='How do you see it? Draw where the ice goes next.';
+    if(S.drawDone){const u=userSat();sub=`Your line says <b>${f1(u)} inches</b> on Saturday: ${u>=4?'go skate':'not yet'}. Keep it. You will test it.`;ctl=`<button class="btn sm" data-act="redraw">Draw it again</button>`;}
+    else{sub='Start at Tuesday’s dot and drag to the right, past Saturday. Go with your gut.';
+      ctl=`<button class="btn primary" data-act="commit" ${S.pts.length&&S.pts[S.pts.length-1][0]>=12.2?'':'disabled'}>This is my line</button><button class="btn sm" data-act="clear" ${S.pts.length?'':'disabled'}>Clear</button>`
+        +`<span class="muted" style="flex-basis:100%;font-size:14px">Can’t draw here? Pick one:</span><button class="btn sm" data-act="pre" data-v="same">Same climb each night</button><button class="btn sm" data-act="pre" data-v="slow">Slowing down</button><button class="btn sm" data-act="pre" data-v="fast">Speeding up</button>`;}
+    ok=S.drawDone;room='<b>In class:</b> everyone draws on paper first. No talking yet.';break;
+  case 'others':cap='Three people looked at the same four dots.';sub=S.view?VIEWS[S.view][1]:'Tap each one to see what they saw.';
+    ctl=Object.keys(VIEWS).map(v=>`<button class="btn pick ${S.view===v?'on':''}" data-act="view" data-v="${v}">${VIEWS[v][0]}${S.seen[v]?'<span class="ck" aria-label="seen">✓</span>':''}</button>`).join('');
+    ok=Object.keys(VIEWS).every(v=>S.seen[v]);room='<b>In class:</b> hands up for each one. Who drew something like it?';break;
+  case 'pick':cap='Which is closest to how you saw it?';
+    sub=S.pick?'There is no wrong way to see it. But they cannot all be right about Saturday. The ruler says 4.0 inches, exactly enough. The other two say the ice is slowing down.':'Pick one. You will come back to it at the end.';
+    ctl=Object.keys(VIEWS).map(v=>`<button class="btn pick ${S.pick===v?'on':''}" data-act="pickv" data-v="${v}" aria-pressed="${S.pick===v}">${VIEWS[v][0]}</button>`).join('')+`<button class="btn pick ${S.pick==='own'?'on':''}" data-act="pickv" data-v="own" aria-pressed="${S.pick==='own'}">None of them</button>`;ok=!!S.pick;break;
+  case 'shape':cap='Math keeps a few basic shapes. Which one climbs fast, then slower and slower?';
+    sub=S.shape?(S.stairs>=4?SHAPE_FB[S.shape]:'Watch its steps next to your ice’s steps.'):'Your class calls them <span class="term">parent functions</span>: every curve in a family is its parent, moved or stretched. Pick one and test its steps against your ice.';
+    ctl=SHAPES.map(s=>`<button class="btn shape ${S.shape===s[0]?(s[0]==='sqrt'?'good':'on'):''}" data-act="shape" data-v="${s[0]}"><svg viewBox="0 0 54 34" aria-hidden="true"><path d="${SHAPE_ICON[s[0]]}"/></svg>${s[1]}</button>`).join('');
+    if(S.tried>=2&&S.shape!=='sqrt')ctl+=`<span class="muted" style="flex-basis:100%;font-size:14px">Stuck? Look for the shape that bends over, like the dots.</span>`;
+    ok=S.shape==='sqrt'&&S.stairs>=4;break;
+  case 'slide':cap=S.slideDone?'The curve now starts when the ice did.':'Right shape, wrong place. Drag the curve’s corner to the moment the ice began.';
+    sub=S.slideDone?'That slide is a <span class="term">horizontal shift</span>. The curve’s day 0 now sits on Dec 4, so Dec 8 is day 8 − 4 = 4 of ice. That is why the equation says <i>x</i> − 4.':'The pond froze on Dec 4 with 0 inches of ice. Watch the equation while you drag.';
+    ctl=S.slideDone?'':`<button class="btn sm" data-act="showSlide">Stuck? Show me</button>`;ok=S.slideDone;break;
+  case 'stretch':cap=S.stretchDone?'One stretch, and all four dots fit.':'Right place, too short. Drag the handle up until the curve meets the first dot.';
+    sub=S.stretchDone?'That is a <span class="term">vertical stretch</span>: every height times 1.3. You only fixed one dot. The other three fit because the shape was right.':'After 1 day the plain curve is 1 high. Your ice was 1.3 inches.';
+    ctl=S.stretchDone?'':`<button class="btn sm" data-act="showStretch">Stuck? Show me</button>`;ok=S.stretchDone;room='<b>In class:</b> why did fixing one dot fix all four?';break;
+  case 'calc':
+    if(S.calcOK){cap='3.68 inches on Saturday. Not enough.';sub='The equation made that number in three moves, the same three you made: slide (12 − 4 = 8), root (√8 ≈ 2.83), stretch (× 1.3 ≈ 3.68). The ruler’s straight line said go.'+chips();ctl=`<button class="btn sm" data-act="probe">Play the three moves again</button>`;}
+    else if(S.busy){cap='Watch the equation build Saturday’s ice.';sub='Slide, then root, then stretch.';}
+    else{cap='Saturday is Dec 12. Ask your equation.';sub='Work out 1.3 × √(12 − 4) on paper or a calculator. Round to two decimals.';
+      ctl=`<form class="ans" data-form="calc"><label for="calcIn" class="muted">Saturday’s ice:</label><input id="calcIn" inputmode="decimal" autocomplete="off" aria-label="Saturday’s ice in inches"><span>in</span><button class="btn primary" type="submit">Check</button></form><p class="fb" id="calcFb"></p><button class="btn sm" data-act="probe">Show me</button>`;}
+    ok=S.calcOK;break;
+  case 'back':{const s=S.back,done=s>=3&&S.backT>=1;
+    cap=done?'About 4 inches by early Monday, Dec 14.':'So when? Start at 4 inches and undo each move, last one first.';
+    sub=['The equation slid, took the root, then stretched. To go backward, undo the stretch first.',
+      '4 ÷ 1.3 ≈ 3.08. The plain curve only has to reach 3.08.','3.08² ≈ 9.47. The ice needs 9.47 days.',
+      '9.47 + 4 = 13.47. That is early Monday morning. Sunday evening the ice is 3.9 inches: close, not there. Undoing the moves in reverse order is how you find an <span class="term">inverse</span>.'][s];
+    const labs=['Undo the stretch: 4 ÷ 1.3','Undo the root: square it','Undo the slide: add 4'];
+    ctl=s<3?`<button class="btn primary" data-act="undo" ${S.busy?'disabled':''}>${labs[s]}</button>`:'<span class="muted">Drag the red dot along the curve to see any day.</span>';ok=done;nextL='Tell the story';break;}
+  case 'story':cap='Now tell the story of the math.';sub='Fill the gaps below in your own words. Your answer to the group chat appears on the picture.';room='<b>In class:</b> tell your story to a partner without looking at the screen.';ok=false;break;
+  }
+  panel.innerHTML=`<p class="kicker">Chapter ${ch+1} of ${CH.length} · ${CH[ch]}</p><p class="cap">${cap}</p><div class="sub">${sub}</div>${ctl?`<div class="ctl">${ctl}</div>`:''}${room?`<p class="room">${room}</p>`:''}
+    <div class="nav"><button class="btn" data-act="back" ${b===0?'disabled':''}>Back</button>${b<BEATS.length-1?`<button class="btn ${ok?'primary':''}" data-act="next" ${ok?'':'disabled'}>${nextL}</button>`:`<button class="btn" data-act="restart">Start over</button>`}</div>`;
+}
+panel.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t||t.disabled)return;const a=t.dataset.act,v=t.dataset.v;
+  if(a==='next')go(S.beat+1);else if(a==='back')go(S.beat-1);else if(a==='restart'){S.pts=[];S.drawDone=false;S.seen={};S.pick=null;S.reached=0;go(0);}
+  else if(a==='drill')drill();
+  else if(a==='clear'){S.pts=[];ui();render();}else if(a==='commit'){S.drawDone=true;ui();render();}else if(a==='redraw'){S.pts=[];S.drawDone=false;ui();render();}
+  else if(a==='pre'){S.pts=[];for(let d=8.2;d<=DMAX;d+=.2){const u=d-8;S.pts.push([d,clamp(v==='same'?2.6+.35*u:v==='slow'?2.6+.62*Math.sqrt(u)*.9:2.6+.3*u+.06*u*u,0,6.3)]);}S.drawDone=true;ui();render();}
+  else if(a==='view')showView(v);else if(a==='pickv'){S.pick=v;ui();}
+  else if(a==='shape')pickShape(v);else if(a==='showSlide')showSlide();else if(a==='showStretch')showStretch();
+  else if(a==='probe')runProbe();else if(a==='undo')undo();});
+panel.addEventListener('submit',e=>{e.preventDefault();const inp=$('calcIn'),fb=$('calcFb');if(!inp)return;const x=parseFloat(String(inp.value).replace(',','.'));
+  if(!isFinite(x)){fb.className='fb no';fb.textContent='Type a number, like 3.25.';return;}
+  if(Math.abs(x-SATV)<=.06){runProbe();return;}
+  fb.className='fb no';
+  fb.textContent=Math.abs(x-1.3*Math.sqrt(12))<.06?'That used √12. The ice has only had 12 − 4 = 8 days. Slide first.':Math.abs(x-Math.sqrt(8))<.04?'That is √8. You still need to stretch it: times 1.3.':Math.abs(x-Math.sqrt(1.3*8))<.05?'The 1.3 goes outside the root: find √8 first, then multiply.':Math.abs(x-10.4)<.06?'That is 1.3 × 8. Take the square root of 8 before you multiply.':'Not yet. Do the inside first: 12 − 4. Then the root. Then times 1.3.';});
+
+/* ---------- pointer work ---------- */
+function pt(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());return q;}
+function snapSlide(){if(Math.abs(S.h-H)<.24&&Math.abs(S.k)<.2){S.h=H;S.k=0;}}
+function snapStretch(){if(Math.abs(S.a-A)<.055)S.a=A;}
+function bindHandles(){
+  const drag=(n,move,end)=>{let on=false;
+    n.addEventListener('pointerdown',e=>{if(e.button)return;on=true;GEN++;n.classList.add('used');try{n.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();});
+    n.addEventListener('pointermove',e=>{if(!on)return;move(pt(e));render();});
+    const up=()=>{if(!on)return;on=false;end&&end();};n.addEventListener('pointerup',up);n.addEventListener('pointercancel',up);};
+  drag($('hSlide'),q=>{S.h=clamp(Math.round(Dinv(q.x)*20)/20,0,11);S.k=clamp(Math.round(Vinv(q.y)*20)/20,-.4,3);snapSlide();},()=>{const d=S.h===H&&S.k===0;if(d!==S.slideDone){S.slideDone=d;ui();}render();});
+  drag($('hStretch'),q=>{S.a=clamp(Math.round(Vinv(q.y)*100)/100,-1.5,3.4);snapStretch();},()=>{const d=S.a===A;if(d!==S.stretchDone){S.stretchDone=d;ui();}render();});
+  drag($('hScrub'),q=>{S.scrub=clamp(Math.round(Dinv(q.x)*20)/20,H,DMAX-.1);S.day=S.scrub;});
+  $('hSlide').addEventListener('keydown',e=>{const st=e.shiftKey?1:.1,k=e.key;if(!/^Arrow/.test(k))return;e.preventDefault();GEN++;$('hSlide').classList.add('used');
+    if(k==='ArrowLeft')S.h-=st;if(k==='ArrowRight')S.h+=st;if(k==='ArrowUp')S.k+=.1;if(k==='ArrowDown')S.k-=.1;S.h=clamp(Math.round(S.h*10)/10,0,11);S.k=clamp(Math.round(S.k*10)/10,-.4,3);
+    const d=S.h===H&&S.k===0;if(d!==S.slideDone){S.slideDone=d;ui();}render();});
+  $('hStretch').addEventListener('keydown',e=>{const k=e.key;if(k!=='ArrowUp'&&k!=='ArrowDown')return;e.preventDefault();GEN++;$('hStretch').classList.add('used');S.a=clamp(Math.round((S.a+(k==='ArrowUp'?.05:-.05))*100)/100,-1.5,3.4);
+    const d=Math.abs(S.a-A)<1e-6;if(d)S.a=A;if(d!==S.stretchDone){S.stretchDone=d;ui();}render();});
+  $('hScrub').addEventListener('keydown',e=>{const k=e.key;if(k!=='ArrowLeft'&&k!=='ArrowRight')return;e.preventDefault();S.scrub=clamp((S.scrub==null?CROSS:S.scrub)+(k==='ArrowRight'?.25:-.25),H,DMAX-.1);S.day=S.scrub;render();});
+  /* free drawing */
+  const pad=$('drawPad');let drawing=false;
+  const add=e=>{const q=pt(e),d=clamp(Dinv(q.x),TODAY,DMAX),v=clamp(Vinv(q.y),0,6.3),L=S.pts[S.pts.length-1];if(d<TODAY+.08)return;if(!L||d>L[0]+.04)S.pts.push([d,v]);};
+  pad.addEventListener('pointerdown',e=>{if(e.button)return;drawing=true;S.pts=[];try{pad.setPointerCapture(e.pointerId);}catch(_){}add(e);render();e.preventDefault();});
+  pad.addEventListener('pointermove',e=>{if(!drawing)return;add(e);render();});
+  const end=()=>{if(!drawing)return;drawing=false;ui();};pad.addEventListener('pointerup',end);pad.addEventListener('pointercancel',end);
+}
+document.addEventListener('keydown',e=>{if(e.target.closest('input,select,textarea,button,.handle'))return;
+  if(e.key==='ArrowRight'){const n=panel.querySelector('[data-act=next]');if(n&&!n.disabled)go(S.beat+1);}
+  else if(e.key==='ArrowLeft'&&S.beat>0)go(S.beat-1);});
+
+/* ---------- tell the story ---------- */
+const ST={};
+function mini(kind){const fx=d=>18+d*13.4,fy=v=>120-v*19;let s='';
+  const dots=DATA.map(p=>`<circle cx="${fx(p[0])}" cy="${fy(p[1])}" r="3.6" class="dot" style="stroke-width:1.6"/>`).join('');
+  const cur=(a,h,x1)=>{let d='';for(let i=0;i<=60;i++){const t=Math.sqrt(x1-h)*i/60;d+=(i?'L':'M')+fx(h+t*t).toFixed(1)+' '+fy(a*t).toFixed(1);}return d;};
+  const ax=`<path d="M18 8V120H236" class="axis" style="stroke-width:1.4"/>`;
+  if(kind===0){s=`<rect width="240" height="135" fill="#0c2a44"/><rect width="240" height="22" fill="#cfe6f1"/>`;let y=22;[1.3,.54,.41,.35].forEach((g,i)=>{const h=g*26;s+=`<rect y="${y}" width="240" height="${h}" fill="${i%2?'#9fcfe6':'#d8eef8'}"/><text x="12" y="${y+h/2+4}" font-size="${i?9:12}" font-weight="700" fill="#0f3550">+${f2(g)}</text>`;y+=h;});
+    s+=`<path d="M190 ${y-2}V26" stroke="#ffb25b" stroke-width="4" fill="none" marker-end="url(#mUp)"/>`;}
+  if(kind===1){s=ax;const L=[0,1,2,3,4].map(x=>[x,Math.sqrt(x)]),R=[[4,0]].concat(DATA);[[L,'var(--curve)'],[R,'var(--slide)']].forEach(([P,c])=>{for(let i=0;i<4;i++)s+=`<path d="M${fx(P[i][0])} ${fy(P[i][1])}H${fx(P[i+1][0])}" stroke="${c}" stroke-width="1.2" stroke-dasharray="2 2" fill="none"/><path d="M${fx(P[i+1][0])} ${fy(P[i][1])}V${fy(P[i+1][1])}" stroke="${c}" stroke-width="3.4" stroke-linecap="round"/>`;});s+=dots;}
+  if(kind===2){s=ax+`<path d="${cur(1,0,16)}" class="ghostc" style="stroke-width:1.5;stroke-dasharray:2 4"/><path d="${cur(A,H,16)}" class="curve" style="stroke-width:2.6"/><path d="M${fx(0)} 128H${fx(4)-2}" stroke="var(--slide)" stroke-width="2.4"/><path d="M${fx(4)} 128l-7 -4v8z" fill="var(--slide)"/><path d="M${fx(5)} ${fy(1)}V${fy(1.3)+4}" stroke="var(--stretch)" stroke-width="2.4"/>`+dots;}
+  if(kind===3){s=ax+`<path d="M18 ${fy(4)}H236" class="need" style="stroke-width:1.3;stroke-dasharray:5 4"/><path d="${cur(A,H,16.2)}" class="curve" style="stroke-width:2.6"/>`+dots+`<circle cx="${fx(SAT)}" cy="${fy(SATV)}" r="4.5" fill="var(--curve)" stroke="var(--paper)" stroke-width="1.5"/><text x="${fx(SAT)+7}" y="${fy(SATV)+15}" font-size="10" font-weight="700" fill="var(--fg)">Sat 3.68</text><circle cx="${fx(CROSS)}" cy="${fy(4)}" r="4.5" fill="var(--curve)" stroke="var(--paper)" stroke-width="1.5"/>`;}
+  return `<svg viewBox="0 0 240 135" aria-hidden="true">${s}</svg>`;}
+function buildStory(){
+  const sel=(id,opts)=>`<select id="${id}" aria-label="choose"><option value="">choose…</option>${opts.map(o=>`<option${ST[id]===o?' selected':''}>${o}</option>`).join('')}</select>`;
+  const txt=(id,ph)=>`<input type="text" id="${id}" placeholder="${ph}" value="${esc(ST[id]||'')}" aria-label="${ph}">`;
+  const num=(id)=>`<input class="n" id="${id}" inputmode="decimal" value="${esc(ST[id]||'')}" aria-label="number">`;
+  const first={ruler:'the ruler',stairs:'the stairs',blanket:'the blanket',own:'none of them'}[S.pick]||'';if(first&&!ST.s_first)ST.s_first=first;
+  storyEl.innerHTML=`<h3>The story of the ice</h3><p class="lead">Four frames. Fill each gap, then read it out loud. If it sounds like a story, you understand the math.</p>
+  <div class="frames">
+   <div class="frame">${mini(0)}<p class="no">1 · What happened</p><p>The ice grew ${sel('s_a',['fast','slowly','steadily'])} at first, then ${sel('s_b',['slower every night','faster every night','the same every night'])}, because ${txt('s_why','your reason')}</p></div>
+   <div class="frame">${mini(1)}<p class="no">2 · The shape</p><p>So I picked the ${sel('s_shape',['line','parabola','square root','cubic'])} shape. Its steps ${sel('s_steps',['stay the same','get bigger','get smaller'])}, just like the ice.</p></div>
+   <div class="frame">${mini(2)}<p class="no">3 · Making it fit</p><p>I slid it ${num('s_h')} to the right so it starts when ${txt('s_start','what happened then?')} Then I stretched it by ${num('s_a2')} so it ${txt('s_fit','what did that fix?')}</p></div>
+   <div class="frame">${mini(3)}<p class="no">4 · The answer</p><p>On Saturday the ice will be about ${num('s_sat')} inches. We should skate on ${sel('s_day',['Saturday','Sunday morning','Monday'])}.</p></div>
+  </div>
+  <p class="last">At first I saw it like ${sel('s_first',['the ruler','the stairs','the blanket','none of them'])}. Now I would say ${txt('s_now','what changed in how you see it?')}</p>
+  <div class="srow"><button class="btn primary" id="copyBtn" type="button">Copy my story for Canvas</button><span id="copyMsg" class="muted" aria-live="polite"></span></div>
+  <textarea id="copyOut" hidden readonly aria-label="Your story, ready to copy"></textarea>`;
+  storyEl.oninput=storyEl.onchange=e=>{const t=e.target;if(t.id&&t.id.startsWith('s_')){ST[t.id]=t.value;checkStory();}};
+  $('copyBtn').onclick=()=>{const text=storyText(),out=$('copyOut'),msg=$('copyMsg');out.value=text;const fail=()=>{out.hidden=false;out.focus();out.select();msg.textContent='Select the text below and copy it.';};
+    try{navigator.clipboard.writeText(text).then(()=>{msg.textContent='Copied. Paste it into Canvas.';},fail);}catch(_){fail();}};
+  checkStory();
+}
+const g=id=>(ST[id]||'').trim()||'____';
+function storyText(){return ['Pond day: the story of the ice',
+  `1. The ice grew ${g('s_a')} at first, then ${g('s_b')}, because ${g('s_why')}`,
+  `2. So I picked the ${g('s_shape')} shape. Its steps ${g('s_steps')}, just like the ice.`,
+  `3. I slid it ${g('s_h')} to the right so it starts when ${g('s_start')} Then I stretched it by ${g('s_a2')} so it ${g('s_fit')}`,
+  `4. On Saturday the ice will be about ${g('s_sat')} inches. We should skate on ${g('s_day')}.`,
+  `At first I saw it like ${g('s_first')}. Now I would say ${g('s_now')}`,'My equation: y = 1.3√(x − 4)'].join('\n');}
+function checkStory(){
+  const right={s_a:v=>v==='fast',s_b:v=>v==='slower every night',s_shape:v=>v==='square root',s_steps:v=>v==='get smaller',s_h:v=>Math.abs(parseFloat(v)-4)<.01,s_a2:v=>Math.abs(parseFloat(v)-1.3)<.01,s_sat:v=>Math.abs(parseFloat(v)-SATV)<.1,s_day:v=>v==='Monday'};
+  for(const id in right){const n=$(id);if(n)n.classList.toggle('okk',!!ST[id]&&right[id](ST[id]));}
+  const sat=(ST.s_sat||'').trim(),day=ST.s_day||'';
+  chatEl.innerHTML=`<p class="them"><small>Group chat</small>So?? Saturday?</p><p class="you">${sat||day?esc(`${day==='Saturday'?'Saturday works.':'Not Saturday.'} The ice will be about ${sat||'…'} in then, and we need 4.${day&&day!=='Saturday'?' '+day+'.':''}`):'…'}</p>`;
+}
+
+/* ---------- fit to the screen ---------- */
+function fit(){
+  const two=window.innerWidth>1020,lay=$('lay');let w=lay.clientWidth-(two?344:0);
+  if(two&&window.innerHeight<1500){const top=stage.getBoundingClientRect().top+window.scrollY,avail=window.innerHeight-Math.min(top,260)-14;w=Math.min(w,Math.max(560,avail*16/9));}
+  stage.style.maxWidth=two?w+'px':'';lay.style.gridTemplateColumns=two?`${Math.floor(w)}px minmax(300px,1fr)`:'';
+  const sw=stage.clientWidth||w;K=clamp(880/sw,1,2.2);const c=K>1.55;svg.style.setProperty('--k',K.toFixed(2));if(c!==compact){compact=c;}ticks();render();
+}
+window.addEventListener('resize',fit);
+
+/* ---------- start ---------- */
+build();go(0);fit();
+if(/github\.io$/.test(location.hostname)){const s=document.createElement('script');s.async=true;s.src='//gc.zgo.at/count.js';s.setAttribute('data-goatcounter','https://rjedtech.goatcounter.com/count');document.head.appendChild(s);}
+window.__pond={S,go,B,render};
+})();
+</script>
+</body>
+</html>

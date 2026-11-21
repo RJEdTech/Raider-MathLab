@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dance Floor Story</title>
+<style>
+:root{
+  /* Layout: one 16:9 picture that fills the screen, a narrow story column beside it.
+     The picture carries the lesson; everything around it stays quiet. */
+  --bg:#f3f3f1; --card:#ffffff; --card2:#f7f7f5; --fg:#1c1c1f; --muted:#5d5d63; --line:#d8d8d3;
+  --rj:#C11430; --rj-ink:#a8102a; --focus:#1f6feb; --good:#1b7339;
+  --paper:#fbfbf9; --grid:#e6e6e0; --axis:#6b6b72; --future:#eceeeb;
+  --curve:#C11430; --slide:#1b5fc4; --stretch:#b45309; --guess:#a8178f; --ghost:#85858d;
+  --dot:#12344d; --dotfill:#bfe3f2; --strip:#e9eef7;
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --math:"Cambria Math","STIX Two Math","Latin Modern Math",Cambria,Georgia,serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#15161a; --card:#1d1f24; --card2:#24272d; --fg:#ececef; --muted:#a2a2aa; --line:#353840;
+    --rj-ink:#ed516a; --focus:#6ea8ff; --good:#5cc27f;
+    --paper:#191b20; --grid:#2b2e35; --axis:#9a9aa2; --future:#22262c;
+    --curve:#ed516a; --slide:#6ea8ff; --stretch:#f2a94c; --guess:#ec74da; --ghost:#8d8d96;
+    --dot:#d6ebf4; --dotfill:#2a6f8f; --strip:#1f2a3b;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#15161a; --card:#1d1f24; --card2:#24272d; --fg:#ececef; --muted:#a2a2aa; --line:#353840;
+  --rj-ink:#ed516a; --focus:#6ea8ff; --good:#5cc27f;
+  --paper:#191b20; --grid:#2b2e35; --axis:#9a9aa2; --future:#22262c;
+  --curve:#ed516a; --slide:#6ea8ff; --stretch:#f2a94c; --guess:#ec74da; --ghost:#8d8d96;
+  --dot:#d6ebf4; --dotfill:#2a6f8f; --strip:#1f2a3b;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.45 var(--font);-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+.mast{background:#2b2b2b;border-bottom:5px solid var(--rj);color:#fff}
+.mast-in{max-width:1560px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:13px}
+.rjmark{height:34px;width:auto;display:block}
+.mast h1{font-size:19px;line-height:1.1;margin:0;font-weight:700}
+.mast .tag{margin:3px 0 0;color:#b8b8b8;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+
+.wrap{max-width:1560px;margin:0 auto;padding:12px 20px 40px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 24px;margin-bottom:10px}
+.eyebrow{margin:0;color:var(--rj-ink);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.head h2{margin:2px 0 0;font-size:24px;line-height:1.15;text-wrap:balance}
+.chs{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px}
+.chs button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 11px 4px 5px;font-size:13.5px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px}
+.chs button .n{display:inline-grid;place-items:center;width:21px;height:21px;border-radius:50%;background:var(--card2);border:1px solid var(--line);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.chs button.done{color:var(--fg)}
+.chs button.done .n{background:var(--fg);color:var(--card);border-color:var(--fg)}
+.chs button.on{border-color:var(--rj);color:var(--fg);font-weight:700}
+.chs button.on .n{background:var(--rj);border-color:var(--rj);color:#fff}
+
+.lay{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+.stage{position:relative;container-type:inline-size;aspect-ratio:16/9;width:100%;justify-self:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+#svg{display:block;width:100%;height:100%;font-family:var(--font);user-select:none;-webkit-user-select:none}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;min-height:300px}
+.kicker{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rj-ink)}
+.cap{margin:0;font-size:21px;line-height:1.25;font-weight:700;text-wrap:balance}
+.sub{margin:0;font-size:16px;color:var(--fg)}
+.sub q{quotes:"\201C" "\201D";font-style:italic}
+.sub .term{font-weight:700}
+.muted{color:var(--muted)}
+.room{margin:0;font-size:14px;color:var(--muted);border-top:1px dashed var(--line);padding-top:9px}
+.room b{color:var(--fg)}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.nav{display:flex;gap:8px;margin-top:auto;padding-top:6px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:9px 14px;font-weight:600;cursor:pointer;min-height:42px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--rj);border-color:var(--rj);color:#fff}
+.btn.primary:hover{background:#a8102a}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.sm{padding:6px 11px;min-height:36px;font-size:14.5px;font-weight:500}
+.btn.pick{display:flex;align-items:center;gap:8px;text-align:left}
+.btn.pick.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
+.btn.pick .ck{color:var(--good);font-weight:700}
+.btn.shape{flex-direction:column;gap:2px;padding:7px 9px;font-size:13.5px;font-weight:500;min-width:88px;align-items:center}
+.btn.shape svg{width:54px;height:34px;display:block}
+.btn.shape svg path{fill:none;stroke:var(--fg);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.btn.shape.bad{opacity:.55}
+.btn.shape.good{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.ans{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ans input{width:104px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--card2);font-size:18px;font-variant-numeric:tabular-nums}
+.fb{margin:0;font-weight:600}
+.fb.ok{color:var(--good)} .fb.no{color:var(--rj-ink)}
+.chips{display:flex;flex-direction:column;gap:5px;margin:0;padding:0;list-style:none;font-size:15px;font-variant-numeric:tabular-nums}
+.chips li{display:flex;align-items:center;gap:8px}
+.chips i{width:12px;height:12px;border-radius:50%;flex:none}
+.chips b{margin-left:auto}
+
+.eq{position:absolute;right:2.2%;top:3.4%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.5em .9em .45em;box-shadow:0 2px 10px rgba(0,0,0,.08);font-size:clamp(15px,2.05cqw,32px);max-width:44%}
+.eq .f{font-family:var(--math);font-size:1.5em;line-height:1.3;white-space:nowrap;font-variant-numeric:tabular-nums}
+.eq .f i{font-style:italic}
+.eq .f b{font-weight:700;font-style:normal}
+.eq .ph{color:var(--slide)} .eq .pa{color:var(--stretch)} .eq .pk{color:var(--guess)}
+.eq .rad{position:relative;display:inline-block;padding-left:.62em;margin-left:.1em}
+.eq .rs{position:absolute;left:0;top:0;width:.66em;height:100%;overflow:visible}
+.eq .ri{display:inline-block;border-top:.07em solid currentColor;padding:.05em .14em 0 .1em;line-height:1.12}
+.eq .lg{display:flex;flex-wrap:wrap;gap:.2em .9em;font-size:.56em;font-weight:600;margin-top:.15em}
+.eq .lg span{display:flex;align-items:center;gap:.4em}
+.eq .lg i{width:.75em;height:.75em;border-radius:2px;display:block}
+
+.chat{position:absolute;left:24%;top:5%;width:38%;display:flex;flex-direction:column;gap:.5em;font-size:clamp(13px,1.55cqw,22px)}
+.chat p{margin:0;padding:.5em .8em;border-radius:1.1em;max-width:88%;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.chat .them{background:#e9e9ee;color:#1c1c1f;align-self:flex-start;border-bottom-left-radius:.3em}
+.chat .you{background:#1b6fe0;color:#fff;align-self:flex-end;border-bottom-right-radius:.3em}
+.chat small{display:block;font-size:.72em;opacity:.7;font-weight:600}
+
+/* picture */
+.paper{fill:var(--paper)}
+.grid line{stroke:var(--grid);stroke-width:1}
+.axis{stroke:var(--axis);stroke-width:2;fill:none}
+.future{fill:var(--future)}
+.t{fill:var(--fg)} .tm{fill:var(--muted)} .tb{font-weight:700}
+.f12{font-size:calc(12px*var(--k))} .f13{font-size:calc(13px*var(--k))} .f14{font-size:calc(14px*var(--k))}
+.f15{font-size:calc(15px*var(--k))} .f16{font-size:calc(16px*var(--k))} .f18{font-size:calc(18px*var(--k))}
+.f20{font-size:calc(20px*var(--k))} .f24{font-size:calc(24px*var(--k))}
+.num{font-variant-numeric:tabular-nums}
+.need{stroke:var(--fg);stroke-width:2;stroke-dasharray:9 7;fill:none}
+.curve{fill:none;stroke:var(--curve);stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round}
+.ghostc{fill:none;stroke:var(--ghost);stroke-width:2.5;stroke-dasharray:3 7;stroke-linecap:round}
+.user{fill:none;stroke:var(--guess);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.user.dim{stroke-width:3;stroke-dasharray:2 8}
+.rulerl{fill:none;stroke:var(--fg);stroke-width:2.5;stroke-dasharray:10 6}
+.c-slide{stroke:var(--slide);fill:var(--slide)} .c-stretch{stroke:var(--stretch);fill:var(--stretch)}
+.c-curve{stroke:var(--curve);fill:var(--curve)} .c-guess{stroke:var(--guess);fill:var(--guess)} .c-fg{stroke:var(--fg);fill:var(--fg)}
+.c-good{stroke:var(--good);fill:var(--good)} .c-ghost{stroke:var(--ghost);fill:var(--ghost)}
+.nofill{fill:none} .nostroke{stroke:none}
+.halo{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+.dot{fill:var(--dotfill);stroke:var(--dot);stroke-width:3}
+.strip{fill:var(--strip);stroke:var(--slide);stroke-width:1.5}
+.core{fill:#cfeaf6;stroke:#5fa3c2;stroke-width:2}
+.boxbg{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+.handle{cursor:grab;touch-action:none}
+.handle:active{cursor:grabbing}
+.handle .hit{fill:transparent}
+.handle .knob{stroke:#fff;stroke-width:3}
+.handle .gl{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.handle .pulse{fill:none;stroke-width:3;opacity:.55;transform-box:fill-box;transform-origin:center;animation:pulse 1.6s ease-out infinite}
+.handle.used .pulse{display:none}
+.handle:focus-visible{outline:none}
+.handle:focus-visible .knob{stroke:var(--focus);stroke-width:5}
+@keyframes pulse{from{transform:scale(.7);opacity:.7}to{transform:scale(1.9);opacity:0}}
+#drawPad{fill:transparent;touch-action:none;cursor:crosshair}
+@media (prefers-reduced-motion: reduce){.handle .pulse{animation:none}}
+
+.story{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.story h3{margin:0 0 4px;font-size:20px}
+.story .lead{margin:0 0 12px;color:var(--muted)}
+.frames{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.frame{border:1px solid var(--line);border-radius:10px;background:var(--card2);padding:10px;display:flex;flex-direction:column;gap:8px}
+.frame svg{width:100%;height:auto;display:block;background:var(--paper);border-radius:6px;border:1px solid var(--line)}
+.frame p{margin:0;font-size:16px;line-height:1.9}
+.frame .no{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rj-ink);line-height:1.2}
+.frame select,.frame input{border:0;border-bottom:2px solid var(--muted);background:transparent;padding:1px 4px;border-radius:4px 4px 0 0;max-width:100%}
+.frame select{padding-right:2px}
+.frame input[type=text]{width:100%}
+.frame input.n{width:4.2em;text-align:center;font-variant-numeric:tabular-nums}
+.frame .okk{border-bottom-color:var(--good)}
+.last{margin:12px 0 0;font-size:16px;line-height:1.9}
+.last input{border:0;border-bottom:2px solid var(--muted);background:transparent;padding:1px 4px;width:min(100%,30em)}
+.last select{border:0;border-bottom:2px solid var(--muted);background:transparent;padding:1px 4px}
+.srow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+#copyOut{width:100%;min-height:150px;margin-top:10px;border:1px solid var(--line);border-radius:8px;background:var(--card2);padding:10px;font-size:15px}
+
+.turn{display:none;margin:8px 0 0;font-size:14px;color:var(--muted)}
+.teach{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.teach summary{font-weight:700;cursor:pointer}
+.teach h4{margin:14px 0 4px;font-size:16px}
+.teach p,.teach li{max-width:72ch}
+.teach ul{margin:4px 0;padding-left:20px}
+.foot{margin:16px 0 0;color:var(--muted);font-size:13.5px;text-align:center}
+.foot a{color:inherit}
+
+@media (max-width:1020px){
+  .lay{grid-template-columns:1fr}
+  .panel{min-height:0}
+  .frames{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .wrap{padding:10px 16px 32px}
+  .head h2{font-size:20px}
+  .chs button{padding:3px} .chs button .l{display:none}
+  .cap{font-size:19px}
+  .frames{grid-template-columns:1fr}
+  .eq{right:1.5%;top:2.5%;font-size:clamp(9px,2.7cqw,20px);padding:.35em .6em;max-width:60%}
+  .turn{display:block!important}
+  .chat{left:20%;width:62%;font-size:13px}
+}
+
+:root{--violet:#6d4bd1;--wood:#8a5a2b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--violet:#a892ff;--wood:#dba76d}}
+:root[data-theme="dark"]{--violet:#a892ff;--wood:#dba76d}
+.c-wood{stroke:var(--wood);fill:var(--wood)}
+.sw{width:40px;height:40px;border-radius:10px;border:2px solid var(--line);cursor:pointer;padding:0}
+.sw.on{outline:3px solid var(--fg);outline-offset:2px}
+.miss{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.miss li{display:flex;gap:9px;align-items:flex-start}
+.miss li.done{color:var(--muted)} .miss li.now{font-weight:700}
+.miss .bx{width:21px;height:21px;border:2px solid var(--muted);border-radius:5px;flex:none;display:grid;place-items:center;font-size:14px;font-weight:700;color:var(--good);margin-top:1px}
+.eq .f2{font-family:var(--math);font-size:1.02em;color:var(--muted);white-space:nowrap;margin-top:.1em;font-variant-numeric:tabular-nums}
+.eq .f2 b{font-weight:700}
+.eq button.term{font:inherit;background:none;border:0;border-bottom:.08em dashed currentColor;padding:0 .06em;cursor:pointer;border-radius:.15em}
+.eq button.term.on{background:color-mix(in srgb,currentColor 20%,transparent)}
+.eq .c1{color:var(--slide)} .eq .c2{color:var(--stretch)} .eq .c3{color:var(--good)} .eq .c4{color:var(--violet)} .eq .cw{color:var(--wood)}
+.eq sup{font-size:.62em}
+.rng{width:100%;display:block;margin-top:4px}
+.ans label{display:flex;align-items:center;gap:8px}
+[data-p]{cursor:pointer}
+.chat{left:55%;width:41%;top:24%}
+@media (max-width:640px){.chat{left:30%;width:66%;top:4%}}
+</style>
+</head>
+<body>
+<header class="mast"><div class="mast-in">
+  <img class="rjmark" alt="RJ" src="data:image/png;base64,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">
+  <div><h1>Raider MathLab</h1><p class="tag">Story version · prototype</p></div>
+</div></header>
+<main class="wrap">
+  <div class="head">
+    <div>
+      <p class="eyebrow">Area models and squaring a binomial · Algebra 1 Unit 6 · Algebra 2 Unit 3</p>
+      <h2>The dance floor: how many more panels?</h2>
+    </div>
+    <ol class="chs" id="chs" aria-label="Chapters"></ol>
+  </div>
+  <div class="lay" id="lay">
+    <div class="stage" id="stage">
+      <svg id="svg" viewBox="0 0 1200 675" style="--k:1" role="img" aria-label="A square dance floor made of panels, seen from above. It grows, and you color, cut and rebuild it."></svg>
+      <div class="eq" id="eq" hidden></div>
+      <div class="chat" id="chat" hidden></div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+  <p class="turn">Built for a laptop or a projector. On a phone, turn it sideways for a bigger picture.</p>
+  <section class="story" id="story" hidden></section>
+  <details class="teach">
+    <summary>For teachers: what this page is</summary>
+    <h4>One idea, shown</h4>
+    <p>A prototype of a different way to build a MathLab tool. It covers one idea: a squared binomial is a real square made of four pieces, (<i>x</i> + <i>a</i>)&sup2; = <i>x</i>&sup2; + 2<i>ax</i> + <i>a</i>&sup2;. It is meant to sit beside your lesson, before or after it. It does not replace the lesson.</p>
+    <h4>What students do</h4>
+    <ul>
+      <li><b>Guess, and see the guess on the floor.</b> An order of 9 covers only the corner.</li>
+      <li><b>Count it their own way.</b> They color the gap in chunks and the page writes their number sentence. Then they see four other colorings of the same gap. It is a version of the well-known border problem, set on a dance floor.</li>
+      <li><b>Move the picture, watch the equation.</b> They drag <i>x</i> and <i>a</i>; every term in the formula is a piece they can tap.</li>
+      <li><b>Build it backward.</b> They drag six strips onto a square, find the hole, and complete the square.</li>
+      <li><b>One dimension up.</b> They pull apart (<i>x</i> + <i>a</i>)&sup3; and count 1, 3, 3, 1.</li>
+      <li><b>Tell the story</b> and copy it into Canvas.</li>
+    </ul>
+    <h4>Ways to use it</h4>
+    <ul>
+      <li><b>Projected:</b> the chapter buttons jump anywhere. The "In class" lines are short prompts for the room.</li>
+      <li><b>On laptops:</b> about 12 minutes, alone or in pairs.</li>
+      <li><b>Homework or catching up:</b> students paste their story into a Canvas text entry.</li>
+    </ul>
+    <h4>What it leaves out</h4>
+    <p>Unequal growth, (<i>x</i> + <i>a</i>)(<i>x</i> + <i>b</i>), negative terms, and factoring trinomials that are not perfect squares. The floor is counted in panels, so there are no prices or measurements to check. The current tool covers those: <a href="https://rjedtech.github.io/Raider-MathLab/#areamodel">rjedtech.github.io/Raider-MathLab/#areamodel</a>.</p>
+  </details>
+  <p class="foot">RJ Ed Tech · Raider MathLab · &copy; 2026 Jason Beyer, RJ Ed Tech · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a></p>
+</main>
+<script>
+(function(){
+'use strict';
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const svg=$('svg'),stage=$('stage'),panel=$('panel'),eqEl=$('eq'),chatEl=$('chat'),storyEl=$('story');
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t;
+const easeIO=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,easeOut=t=>1-Math.pow(1-t,3);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tx=(x,y,s,cls,anchor,extra)=>`<text x="${(+x).toFixed(1)}" y="${(+y).toFixed(1)}" class="${cls||'t f15'}"${anchor?` text-anchor="${anchor}"`:''}${extra||''}>${s}</text>`;
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function rnd(seed){let s=seed;return()=>((s=(s*1664525+1013904223)%4294967296)/4294967296);}
+
+/* ---------- the model ---------- */
+const OX=86,OY=84,X0=12,A0=3,N0=X0+A0,GAPN=N0*N0-X0*X0;      /* 81 */
+const GAP=[];for(let r=0;r<N0;r++)for(let c=0;c<N0;c++)if(c>=X0||r>=X0)GAP.push([c,r]);
+const GIDX={};GAP.forEach((g,i)=>GIDX[g[1]*N0+g[0]]=i);
+const COLS=['','var(--slide)','var(--stretch)','var(--good)','var(--violet)'],CCLS=['','c1','c2','c3','c4'];
+const S={beat:0,reached:0,x:X0,a:A0,cell:36,people:1,grow:0,
+  guess:null,guessT:0,
+  paint:new Array(GAPN).fill(0),color:1,order:[],typedOK:false,mine:'',
+  view:null,viewT:1,seen:{},pick:null,
+  hot:null,m:[false,false,false],xLo:99,xHi:0,
+  sel:{},trapDone:false,
+  r:0,bm:0,drag:null,holeOK:false,holeT:0,buildDone:false,tenOK:false,tenT:0,
+  explode:0,cubeOK:false,busy:false};
+const BEATS=[{id:'last',ch:0},{id:'bigger',ch:0},{id:'count',ch:1},{id:'others',ch:1},{id:'pick',ch:1},
+  {id:'letters',ch:2},{id:'trap',ch:2},{id:'build',ch:3},{id:'ten',ch:3},{id:'cube',ch:4},{id:'story',ch:5}];
+const CH=['The floor','How do you see it?','Numbers to letters','Build it backward','One dimension up','Tell the story'];
+const B={};BEATS.forEach((b,i)=>B[b.id]=i);
+let GEN=0;
+function animate(ms,fn,ease){const g=GEN;ease=ease||easeIO;return new Promise(res=>{
+  if(RM||ms<=0){fn(1);render();return res(true);}
+  const t0=performance.now();
+  (function f(now){if(g!==GEN)return res(false);const t=clamp(((now||performance.now())-t0)/ms,0,1);fn(ease(t));render();if(t<1)requestAnimationFrame(f);else res(true);})(t0);});}
+const wait=ms=>animate(ms,()=>{});
+const PX=n=>OX+n*S.cell,PY=n=>OY+n*S.cell;
+
+/* ---------- views: four ways to count the same gap ---------- */
+const VIEWS={
+  strips:{name:'Strips and a corner',q:'Two strips of 3 by 12, and the 3 by 3 corner.',sent:'<b class="c1">36</b> + <b class="c3">36</b> + <b class="c2">9</b> = 81',plain:'36 + 36 + 9'},
+  minus:{name:'Big square minus small',q:'The whole new floor, take away the old one.',sent:'<b class="c4">225</b> − <b class="cw">144</b> = 81',plain:'225 − 144'},
+  long:{name:'Two long strips',q:'One strip the full 15 long, one strip 12 long.',sent:'<b class="c3">45</b> + <b class="c1">36</b> = 81',plain:'45 + 36'},
+  rings:{name:'Three L-shaped rings',q:'Each ring wraps the last one and is 2 panels longer.',sent:'<b class="c1">25</b> + <b class="c3">27</b> + <b class="c2">29</b> = 81',plain:'25 + 27 + 29'}};
+
+/* ---------- static frame ---------- */
+let K=1,compact=false,PEOPLE='';
+function build(){
+  const r=rnd(11),pts=[],shirts=['#27374d','#7a1f2b','#2f5d50','#3b3b58','#6b4a2e','#8d8f98','#1f4e79','#5b2a5e'],hair=['#2a1a10','#4a3120','#111','#7a5a3a','#b08a55','#3a2a1a'];
+  let tries=0;while(pts.length<150&&tries<9000){tries++;const x=-0.25+r()*12.5,y=-0.25+r()*12.5;if(pts.every(p=>(p[0]-x)**2+(p[1]-y)**2>0.62))pts.push([x,y,Math.floor(r()*8),Math.floor(r()*6),r()*180]);}
+  PEOPLE=pts.map(p=>`<g transform="translate(${(OX+p[0]*36).toFixed(1)},${(OY+p[1]*36).toFixed(1)}) rotate(${p[4].toFixed(0)})"><ellipse rx="11.5" ry="6" fill="${shirts[p[2]]}"/><circle r="5.6" fill="${hair[p[3]]}"/></g>`).join('');
+  svg.innerHTML=`<defs><pattern id="pWood" patternUnits="userSpaceOnUse"></pattern><pattern id="pGrid" patternUnits="userSpaceOnUse"></pattern>
+   <pattern id="pHatch" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)"><rect width="4" height="10" fill="var(--fg)" opacity=".5"/></pattern></defs>
+  <rect class="paper" width="1200" height="675"/>
+  <g id="floor"></g><g id="side"></g><g id="cube"></g><g id="top"></g><g id="handles"></g>`;
+  const hg=$('handles');
+  const mk=(id,cls,label,glyph)=>{const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('id',id);g.setAttribute('class','handle');g.setAttribute('tabindex','0');g.setAttribute('role','slider');g.setAttribute('aria-label',label);
+    g.innerHTML=`<circle class="hit" r="32"/><circle class="pulse ${cls}" r="15"/><circle class="knob ${cls}" r="15"/><path class="gl" d="${glyph}"/>`;hg.appendChild(g);return g;};
+  mk('hX','c-wood','Change x, the side of the old floor. Left and right arrow keys.','M-8 0H8M-8 0l4 -4M-8 0l4 4M8 0l-4 -4M8 0l-4 4');
+  mk('hA','c-slide','Change a, how much the floor grows. Left and right arrow keys.','M-6 -6L6 6M-6 -6h6M-6 -6v6M6 6h-6M6 6v-6');
+  bind();
+}
+function patterns(){const c=S.cell,h=c/2;
+  const pw=$('pWood'),pg=$('pGrid');[pw,pg].forEach(p=>{p.setAttribute('x',OX);p.setAttribute('y',OY);p.setAttribute('width',c);p.setAttribute('height',c);});
+  pw.innerHTML=`<rect width="${c}" height="${c}" fill="#c8945c"/><rect width="${h}" height="${h}" fill="#b98349"/><rect x="${h}" y="${h}" width="${h}" height="${h}" fill="#b98349"/><path d="M${h} 0V${c}M0 ${h}H${c}" stroke="#a87440" stroke-width="1"/><path d="M0 0H${c}M0 0V${c}" stroke="#6f451d" stroke-width="1.8" fill="none"/>`;
+  pg.innerHTML=`<path d="M0 0H${c}M0 0V${c}" stroke="#000" stroke-opacity=".38" stroke-width="1.5" fill="none"/>`;}
+/* a block of panels: wood under a color wash, seams on top */
+function piece(c0,r0,w,h,col,o){o=o||{};const x=PX(c0),y=PY(r0),W=w*S.cell,H=h*S.cell,op=o.op==null?1:o.op;
+  return `<g opacity="${op}"${o.attr||''}><rect x="${x}" y="${y}" width="${W}" height="${H}" fill="url(#pWood)"/>${col?`<rect x="${x}" y="${y}" width="${W}" height="${H}" fill="${col}" opacity="${o.wash||.62}"/>`:''}<rect x="${x}" y="${y}" width="${W}" height="${H}" fill="url(#pGrid)"/>${o.hot?`<rect x="${x+2}" y="${y+2}" width="${W-4}" height="${H-4}" fill="none" stroke="var(--fg)" stroke-width="4"/>`:''}</g>`;}
+function pill(cx,cy,s,o){o=o||{};const fs=(o.s||16)*K,w=(String(s).replace(/<[^>]+>/g,'').length*fs*.6+fs*1.1),h=fs*1.75;
+  return `<g pointer-events="none"><rect x="${cx-w/2}" y="${cy-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="var(--card)" stroke="${o.c||'var(--fg)'}" stroke-width="2"/><text x="${cx}" y="${cy+fs*.35}" text-anchor="middle" style="font-size:${fs}px" class="tb num" fill="${o.c||'var(--fg)'}">${s}</text></g>`;}
+function dims(x,a,o){o=o||{};const c=S.cell,y=OY-18,xl=OX-18;let s='';
+  const seg=(x0,x1,lab,col)=>`<path d="M${x0+2} ${y}H${x1-2}M${x0+2} ${y-6}v12M${x1-2} ${y-6}v12" stroke="${col}" stroke-width="2.2" fill="none"/>`+tx((x0+x1)/2,y-11,lab,'f18 tb num','middle',` fill="${col}"`);
+  const segv=(y0,y1,lab,col)=>`<path d="M${xl} ${y0+2}V${y1-2}M${xl-6} ${y0+2}h12M${xl-6} ${y1-2}h12" stroke="${col}" stroke-width="2.2" fill="none"/>`+tx(xl-10,(y0+y1)/2+6,lab,'f18 tb num','end',` fill="${col}"`);
+  s+=seg(PX(0),PX(x),o.lx||x,'var(--wood)')+segv(PY(0),PY(x),o.lx||x,'var(--wood)');
+  if(a>0.01){s+=seg(PX(x),PX(x+a),o.la||('+'+a),o.ca||'var(--slide)');if(o.lb!==null)s+=segv(PY(x),PY(x+(o.b==null?a:o.b)),o.lb||o.la||('+'+a),o.cb||o.ca||'var(--slide)');}
+  return s;}
+
+/* ---------- render ---------- */
+function render(){
+  const b=S.beat,c=S.cell,x=S.x,a=S.a;patterns();
+  let f='',side='',top='';
+  const showFloor=b!==B.cube;
+  if(showFloor){
+    /* the old floor */
+    const hotSq=S.hot==='sq'||S.sel.sq;
+    if(b!==B.others||S.view!=='minus')f+=piece(0,0,x,x,null,{hot:hotSq,attr:' data-p="sq"'});
+    if(b===B.last)f+=`<g opacity="${S.people}">${PEOPLE}</g>`;
+    /* the bigger outline */
+    if(b>=B.bigger&&b<B.build){const n=x+a*S.grow;f+=`<rect x="${OX}" y="${OY}" width="${n*c}" height="${n*c}" fill="none" stroke="var(--rj-ink)" stroke-width="3" stroke-dasharray="10 7"/>`;}
+    if(b===B.bigger){
+      const N=S.guess||0,show=Math.floor(S.guessT*Math.min(N,GAPN)),ord=fillOrder(N);let g='';
+      for(let i=0;i<show;i++){const q=ord[i];g+=`<rect x="${PX(q[0])+1.5}" y="${PY(q[1])+1.5}" width="${c-3}" height="${c-3}" rx="3" fill="var(--guess)" opacity=".85"/>`;}
+      f+=g;if(S.guess!=null&&S.guessT>=1){if(N>GAPN)side+=tx(690,360,`${N-GAPN} panels left over`,'c-guess nostroke f20 tb')+tx(690,388,'stacked against the wall','tm f15');
+        side+=tx(690,300,`Your order: ${N} panels`,'c-guess nostroke f24 tb');}
+      top+=dims(x,a*S.grow>0.5?a:0);
+    }
+    if(b===B.count){let g='';GAP.forEach((q,i)=>{const col=S.paint[i];g+=`<rect x="${PX(q[0])+1.5}" y="${PY(q[1])+1.5}" width="${c-3}" height="${c-3}" rx="3" fill="${col?COLS[col]:'var(--card2)'}" stroke="${col?'none':'var(--line)'}" stroke-width="1.5" opacity="${col?.9:1}"/>`;});f+=g;top+=dims(x,a);}
+    if(b===B.others||b===B.pick){const v=b===B.pick?(S.pick&&VIEWS[S.pick]?S.pick:null):S.view,T=b===B.pick?1:S.viewT;
+      if(v==='strips'){f+=piece(12,0,3,12,COLS[1],{op:T})+piece(0,12,12,3,COLS[3],{op:T})+piece(12,12,3,3,COLS[2],{op:T});if(T>=1)f+=pill(PX(13.5),PY(6),'3 × 12 = 36',{c:COLS[1],s:14})+pill(PX(6),PY(13.5),'12 × 3 = 36',{c:COLS[3]})+pill(PX(13.5),PY(13.5),'3 × 3 = 9',{c:COLS[2],s:13});}
+      else if(v==='minus'){f+=piece(0,0,15,15,COLS[4],{op:T,wash:.5});const lift=T*10;f+=`<g transform="translate(${-lift},${-lift})"><rect x="${OX}" y="${OY}" width="${12*c}" height="${12*c}" fill="url(#pWood)" stroke="var(--fg)" stroke-width="3"/></g>`;if(T>=1)f+=pill(PX(6)-10,PY(6)-10,'take away 12 × 12 = 144',{c:'var(--wood)'})+pill(PX(8),PY(13.5),'all of it: 15 × 15 = 225',{c:COLS[4]});}
+      else if(v==='long'){f+=piece(12,0,3,15,COLS[3],{op:T})+piece(0,12,12,3,COLS[1],{op:T});if(T>=1)f+=pill(PX(13.5),PY(7.5),'3 × 15 = 45',{c:COLS[3],s:14})+pill(PX(6),PY(13.5),'12 × 3 = 36',{c:COLS[1]});}
+      else if(v==='rings'){[1,3,2].forEach((ci,k)=>{const n=12+k;f+=piece(n,0,1,n+1,COLS[ci],{op:T})+piece(0,n,n,1,COLS[ci],{op:T});});if(T>=1)f+=pill(PX(4),PY(12.5),'25',{c:COLS[1],s:14})+pill(PX(6.5),PY(13.5),'27',{c:COLS[3],s:14})+pill(PX(9),PY(14.5),'29',{c:COLS[2],s:14});}
+      else{f+=`<rect x="${PX(12)}" y="${OY}" width="${3*c}" height="${15*c}" fill="var(--card2)"/><rect x="${OX}" y="${PY(12)}" width="${12*c}" height="${3*c}" fill="var(--card2)"/>`;}
+      top+=dims(x,a);
+    }
+    if(b===B.letters||b===B.trap||b===B.story){
+      const sr=S.hot==='strips'||S.sel.sr,sb=S.hot==='strips'||S.sel.sb,co=S.hot==='corner'||S.sel.co,miss=b===B.letters&&S.m[0]&&S.m[1];
+      f+=piece(x,0,a,x,COLS[1],{hot:sr,attr:' data-p="sr"'})+piece(0,x,x,a,COLS[1],{hot:sb,attr:' data-p="sb"'})+piece(x,x,a,a,COLS[2],{hot:co,attr:' data-p="co"'});
+      if(miss)f+=`<rect x="${PX(x)}" y="${OY}" width="${a*c}" height="${x*c}" fill="url(#pHatch)" pointer-events="none"/><rect x="${OX}" y="${PY(x)}" width="${x*c}" height="${a*c}" fill="url(#pHatch)" pointer-events="none"/>`;
+      const L=b!==B.trap||S.trapDone;
+      f+=pill(PX(x/2),PY(x/2),b===B.story?`x² = ${x*x}`:`x² = ${x*x}`,{c:'var(--wood)',s:17});
+      if(L){if(a*c>(compact?999:52))f+=pill(PX(x+a/2),PY(x*0.24),`${a*x}`,{c:COLS[1],s:15});f+=pill(PX(x/2),PY(x+a/2),`a·x = ${a*x}`,{c:COLS[1],s:a*c<40?12:15});
+        f+=pill(PX(x+a/2),PY(x+a/2),a*c>70?`a² = ${a*a}`:`${a*a}`,{c:COLS[2],s:a*c<40?12:15});}
+      top+=dims(x,a,{lx:`x = ${x}`,la:`a = ${a}`});
+      if(b===B.letters){const tot=(x+a)*(x+a),bx=690,by=392,bw=470,sc=bw/361,w1=x*x*sc,w2=2*a*x*sc,w3=a*a*sc;
+        side+=tx(bx,by-34,'All the panels, in a row','t f15 tb')+`<rect x="${bx}" y="${by}" width="${w1}" height="34" fill="url(#pWood)"/><rect x="${bx}" y="${by}" width="${w1}" height="34" fill="none" stroke="var(--wood)" stroke-width="2"/>
+          <rect x="${bx+w1}" y="${by}" width="${w2}" height="34" fill="var(--slide)" opacity=".8"/><rect x="${bx+w1+w2}" y="${by}" width="${w3}" height="34" fill="var(--stretch)"/>`
+          +tx(bx+w1/2,by+56,`x² = ${x*x}`,'f15 tb num','middle',' fill="var(--wood)"')+tx(bx+w1+w2/2,by-9,`2·a·x = ${2*a*x}`,'f15 tb num','middle',' fill="var(--slide)"')+tx(bx+w1+w2+w3/2+4,by+56,`a² = ${a*a}`,'f15 tb num','middle',' fill="var(--stretch)"')
+          +tx(bx,by+92,`${tot} panels in all`,'tm f15 num');
+        if(miss)side+=`<rect x="${bx+w1}" y="${by}" width="${w2}" height="34" fill="url(#pHatch)"/>`+tx(bx,by+124,`The corner-only shortcut misses the striped part:`,'t f15')+tx(bx,by+146,`${2*a*x} of the ${2*a*x+a*a} new panels.`,'t f15 tb num');}
+    }
+    if(b===B.build||b===B.ten){
+      const ten=b===B.ten,n=ten?10:6,r=ten?(S.tenOK?5:0):S.r,bm=ten?(S.tenOK?5:0):S.bm,T=ten?S.tenT:1;
+      for(let i=0;i<r;i++)f+=piece(12+i,0,1,12,COLS[1],{op:T,attr:` data-strip="r" style="cursor:grab"`});
+      for(let i=0;i<bm;i++)f+=piece(0,12+i,12,1,COLS[1],{op:T,attr:` data-strip="b" style="cursor:grab"`});
+      if(r>0&&bm>0){const filled=ten?S.tenOK:S.holeOK,ft=ten?S.tenT:S.holeT;
+        f+=`<rect x="${PX(12)}" y="${PY(12)}" width="${r*c}" height="${bm*c}" fill="var(--card2)" stroke="var(--stretch)" stroke-width="3" stroke-dasharray="7 5"/>`;
+        if(filled)f+=piece(12,12,r,bm,COLS[2],{op:ft})+(ft>=1?pill(PX(12+r/2),PY(12+bm/2),`${r*bm}`,{c:COLS[2],s:15}):'');
+        else if(r===bm)f+=tx(PX(12+r/2),PY(12+bm/2)+7,'?','f24 tb','middle',' fill="var(--stretch)"');}
+      top+=dims(12,r,{lx:'x',la:r?`+ ${r}`:'',b:bm,lb:bm?`+ ${bm}`:null});if(!r&&bm)top+=tx(OX-28,PY(12+bm/2)+6,`+ ${bm}`,'f18 tb num','end',' fill="var(--slide)"');
+      f+=pill(PX(6),PY(6),'x²',{c:'var(--wood)',s:20});
+      /* the rack */
+      const left=ten?(S.tenOK?0:10):n-S.r-S.bm-(S.drag&&S.drag.from==='rack'?1:0),rx=726,ry=250,rc=ten?26:30;
+      if(left>0){side+=tx(rx,ry-16,ten?'10 strips, each 1 by x':`Strips on the truck: ${Math.max(0,left)} of 6`,'t f15 tb');
+        for(let i=0;i<left;i++)side+=`<g data-strip="rack" style="cursor:grab"><rect x="${rx}" y="${ry+i*(rc+6)}" width="${12*c}" height="${c-2}" fill="url(#pWood)" /><rect x="${rx}" y="${ry+i*(rc+6)}" width="${12*c}" height="${c-2}" fill="var(--slide)" opacity=".62"/><rect x="${rx}" y="${ry+i*(rc+6)}" width="${12*c}" height="${c-2}" fill="none" stroke="var(--fg)" stroke-opacity=".4" stroke-width="1.5"/></g>`;}
+      if(S.drag){const d=S.drag,vert=d.zone==='r';side+=`<g pointer-events="none" opacity=".85"><rect x="${d.x-(vert?c/2:6*c)}" y="${d.y-(vert?6*c:c/2)}" width="${vert?c:12*c}" height="${vert?12*c:c}" fill="var(--slide)" stroke="var(--fg)" stroke-width="2"/></g>`;}
+    }
+    if(b===B.story)side+='';
+    if(b===B.last)top+=dims(12,0);
+  }
+  $('floor').innerHTML=f;$('side').innerHTML=side;$('top').innerHTML=top;
+  $('cube').innerHTML=b===B.cube?cubeSVG():'';
+  /* handles */
+  const hx=$('hX'),ha=$('hA'),on=b===B.letters;
+  hx.style.display=on?'':'none';ha.style.display=on?'':'none';
+  hx.setAttribute('transform',`translate(${PX(x)},${PY(x/2)})`);ha.setAttribute('transform',`translate(${PX(x+a)},${PY(x+a)})`);
+  hx.setAttribute('aria-valuetext','x = '+x);ha.setAttribute('aria-valuetext','a = '+a);
+  svg.style.touchAction=(b===B.count||b===B.build)?'none':'';
+  /* equation card */
+  const h=eqHTML();eqEl.hidden=!h;if(h&&eqEl._h!==h){eqEl.innerHTML=h;eqEl._h=h;}
+}
+function fillOrder(N){const o=[];const add=(c0,c1,r0,r1)=>{for(let r=r0;r<r1;r++)for(let c=c0;c<c1;c++)o.push([c,r]);};
+  if(N===9)add(12,15,12,15);else if(N===36){add(12,15,0,12);}else if(N===72){add(12,15,0,12);add(0,12,12,15);}
+  const seen={};o.forEach(q=>seen[q[1]*15+q[0]]=1);const rest=[];for(let r=0;r<15;r++)for(let c=12;c<15;c++)rest.push([c,r]);for(let r=12;r<15;r++)for(let c=0;c<12;c++)rest.push([c,r]);
+  rest.forEach(q=>{if(!seen[q[1]*15+q[0]])o.push(q);});return o;}
+function mySentence(){const cnt=[0,0,0,0,0];S.paint.forEach(v=>cnt[v]++);const parts=S.order.filter(c=>cnt[c]>0);const tot=GAPN-cnt[0];
+  return {html:parts.map(c=>`<b class="${CCLS[c]}">${cnt[c]}</b>`).join(' + '),plain:parts.map(c=>cnt[c]).join(' + '),tot,parts:parts.length};}
+function eqHTML(){
+  const b=S.beat,x=S.x,a=S.a,T=(k,s,cls)=>`<button type="button" class="term ${cls||''} ${S.hot===k?'on':''}" data-term="${k}">${s}</button>`;
+  if(b===B.count){const m=mySentence();if(!m.tot)return `<div class="f">? = ?</div><div class="lg"><span>your number sentence builds here</span></div>`;
+    return `<div class="f">${m.html}${m.tot===GAPN?' = 81':''}</div><div class="lg"><span>${m.tot===GAPN?'your number sentence':`${m.tot} colored, ${GAPN-m.tot} to go`}</span></div>`;}
+  if(b===B.others&&S.view)return `<div class="f">${VIEWS[S.view].sent}</div><div class="lg"><span>${VIEWS[S.view].name.toLowerCase()}</span></div>`;
+  if(b===B.pick)return `<div class="f2" style="font-size:1.15em;color:var(--fg);line-height:1.5">${Object.keys(VIEWS).map(k=>VIEWS[k].sent).join('<br>')}</div><div class="lg"><span>four sentences, one number</span></div>`;
+  if(b===B.letters||b===B.story)return `<div class="f">(<i>x</i> + <i>a</i>)<sup>2</sup> = ${T('sq','<i>x</i><sup>2</sup>','cw')} + ${T('strips','2·<i>a</i>·<i>x</i>','c1')} + ${T('corner','<i>a</i><sup>2</sup>','c2')}</div>
+    <div class="f2">(${x} + ${a})<sup>2</sup> = <b class="cw">${x*x}</b> + <b class="c1">${2*a*x}</b> + <b class="c2">${a*a}</b> = ${(x+a)*(x+a)}</div><div class="lg"><span>tap a term to find it on the floor</span></div>`;
+  if(b===B.trap)return S.trapDone?`<div class="f">(<i>x</i> + 3)<sup>2</sup> = <b class="cw"><i>x</i><sup>2</sup></b> + <b class="c1">6<i>x</i></b> + <b class="c2">9</b></div><div class="lg"><span>a perfect square trinomial</span></div>`
+    :`<div class="f">(<i>x</i> + 3)<sup>2</sup> = <i>x</i><sup>2</sup> + 9 <span style="color:var(--rj-ink)">?</span></div><div class="lg"><span>a friend's shortcut</span></div>`;
+  if(b===B.build){const sq=S.r===3&&S.bm===3;return `<div class="f"><b class="cw"><i>x</i><sup>2</sup></b> + <b class="c1">6<i>x</i></b> + <b class="c2">${S.holeOK?'9':'?'}</b>${sq?` = (<i>x</i> + 3)<sup>2</sup>`:''}</div><div class="lg"><span>${S.holeOK?'the square is complete':sq?'a square with a hole':'one section and six strips'}</span></div>`;}
+  if(b===B.ten)return `<div class="f"><b class="cw"><i>x</i><sup>2</sup></b> + <b class="c1">10<i>x</i></b> + <b class="c2">${S.tenOK?'25':'?'}</b> = (<i>x</i> + ${S.tenOK?'5':'?'})<sup>2</sup></div><div class="lg"><span>${S.tenOK?'half of 10, then squared':'ten strips this time'}</span></div>`;
+  if(b===B.cube)return S.cubeOK?`<div class="f" style="font-size:1.2em">(<i>x</i> + <i>a</i>)<sup>3</sup> = <b class="cw"><i>x</i><sup>3</sup></b> + <b class="c1">3<i>x</i><sup>2</sup><i>a</i></b> + <b class="c2">3<i>xa</i><sup>2</sup></b> + <b class="c3"><i>a</i><sup>3</sup></b></div><div class="lg"><span>1, 3, 3, 1</span></div>`
+    :`<div class="f">(<i>x</i> + <i>a</i>)<sup>3</sup> = ?</div><div class="lg"><span>a cube with side x + a</span></div>`;
+  return '';
+}
+/* ---------- the cube ---------- */
+function cubeSVG(){
+  const u=46,xs=3*u,as=1*u,e=S.explode*112,cx=380,cy=338;
+  const P=(X,Y,Z)=>[cx+(X-Y)*.866,cy+(X+Y)*.5-Z];
+  const seg=i=>i?[xs+e,xs+e+as]:[0,xs];
+  const boxes=[];for(let i=0;i<2;i++)for(let j=0;j<2;j++)for(let k=0;k<2;k++)boxes.push({i,j,k,n:i+j+k});
+  boxes.sort((p,q)=>p.n-q.n);
+  const fills=[['#d9a873','#b98349','#9a6a36'],['#6fa3ee','#2f6fd0','#1b4f9e'],['#f0b860','#c9790f','#9a5a06'],['#69c48a','#1f8a48','#14632f']];
+  let s='';
+  boxes.forEach(bx=>{const [x0,x1]=seg(bx.i),[y0,y1]=seg(bx.j),[z0,z1]=seg(bx.k),F=fills[bx.n];
+    const poly=(pts,fill)=>`<polygon points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${fill}" stroke="#2a1a0c" stroke-opacity=".55" stroke-width="1.6" stroke-linejoin="round"/>`;
+    s+=poly([P(x0,y0,z1),P(x1,y0,z1),P(x1,y1,z1),P(x0,y1,z1)],F[0])+poly([P(x1,y0,z0),P(x1,y1,z0),P(x1,y1,z1),P(x1,y0,z1)],F[1])+poly([P(x0,y1,z0),P(x1,y1,z0),P(x1,y1,z1),P(x0,y1,z1)],F[2]);});
+  /* edge labels on the front bottom edges */
+  const a1=P(xs+e+as,0,0),a2=P(xs+e+as,xs,0),a3=P(xs+e+as,xs+e,0),a4=P(xs+e+as,xs+e+as,0);
+  s+=tx((a1[0]+a2[0])/2+16,(a1[1]+a2[1])/2+24,'x','f24 tb','middle',' fill="var(--wood)" font-style="italic"')+tx((a3[0]+a4[0])/2+16,(a3[1]+a4[1])/2+24,'a','f24 tb','middle',' fill="var(--slide)" font-style="italic"');
+  /* legend */
+  const lx=760,ly=300,rows=[['big cube','x by x by x',0,S.cubeOK?1:'?'],['flat slabs','x by x by a',1,S.cubeOK?3:'?'],['thin rods','x by a by a',2,S.cubeOK?3:'?'],['small cube','a by a by a',3,S.cubeOK?1:'?']];
+  s+=tx(lx,ly-22,'The pieces','t f18 tb');
+  rows.forEach((r,i)=>{const y=ly+i*48;s+=`<rect x="${lx}" y="${y}" width="30" height="30" rx="5" fill="${fills[r[2]][1]}" stroke="#2a1a0c" stroke-opacity=".5"/>`+tx(lx+44,y+15,r[0],'t f16 tb')+tx(lx+44,y+33,r[1],'tm f13')+tx(lx+250,y+25,r[3],'t f24 tb num','middle');});
+  if(S.cubeOK){s+=tx(lx,ly+232,'Square: 1, 2, 1','t f16 num')+tx(lx,ly+258,'Cube: 1, 3, 3, 1','t f16 tb num');}
+  return s;
+}
+
+/* ---------- beats ---------- */
+function canon(i){
+  S.x=X0;S.a=A0;S.cell=(i>=B.letters&&i<=B.ten)?29:36;if(i===B.build||i===B.ten)S.cell=i===B.ten?30:30;
+  S.people=i===B.last?1:0;S.grow=i>B.bigger?1:0;S.guessT=(i===B.bigger&&S.guess!=null)?1:0;
+  S.view=null;S.viewT=1;S.hot=null;S.sel={};S.drag=null;S.busy=false;
+  if(i===B.build){if(S.buildDone){S.r=3;S.bm=3;S.holeOK=true;S.holeT=1;}else{S.r=0;S.bm=0;S.holeOK=false;S.holeT=0;}}
+  if(i===B.ten)S.tenT=S.tenOK?1:0;
+  S.explode=0;
+}
+function go(i){i=clamp(i,0,BEATS.length-1);GEN++;const from=S.beat;S.beat=i;S.reached=Math.max(S.reached,i);canon(i);
+  chatEl.hidden=!(i===B.last||i===B.story);storyEl.hidden=i!==B.story;
+  if(i===B.last)chatEl.innerHTML=`<p class="them"><small>Dance committee</small>Last year’s floor was way too small. Go 3 panels bigger each way?</p><p class="you">On it. How many more panels do I order?</p>`;
+  if(i===B.story)buildStory();
+  chapters();ui();render();
+  if(i===B.bigger&&S.guess==null){S.grow=0;animate(1100,t=>{S.grow=t;});}else if(i===B.bigger)S.grow=1,render();
+  if(i===B.story&&from!==i)setTimeout(()=>{try{storyEl.scrollIntoView({behavior:RM?'auto':'smooth',block:'nearest'});}catch(e){}},300);}
+async function placeOrder(n){GEN++;const g=GEN;S.guess=n;S.grow=1;S.guessT=0;S.busy=true;ui();
+  await animate(Math.min(2600,400+Math.min(n,GAPN)*30),t=>{S.guessT=t;},t=>t);S.guessT=1;S.busy=false;if(g===GEN){ui();render();}}
+async function showView(v){GEN++;const g=GEN;S.view=v;S.seen[v]=1;S.viewT=0;ui();if(!await animate(900,t=>{S.viewT=t;}))return;if(g===GEN)render();}
+async function fillHole(){GEN++;S.holeOK=true;S.holeT=0;ui();await animate(900,t=>{S.holeT=t;});S.holeT=1;S.buildDone=true;ui();render();}
+async function doTen(){GEN++;S.tenOK=true;S.tenT=0;ui();await animate(1200,t=>{S.tenT=t;});S.tenT=1;ui();render();}
+function checkMissions(){const x=S.x,a=S.a;let ch=false;
+  if(!S.m[0]&&a*a===16){S.m[0]=true;ch=true;}
+  else if(S.m[0]&&!S.m[1]&&a*x===40){S.m[1]=true;ch=true;S.xLo=99;S.xHi=0;}
+  else if(S.m[0]&&S.m[1]&&!S.m[2]){if(a===3){S.xLo=Math.min(S.xLo,x);S.xHi=Math.max(S.xHi,x);if(S.xLo<=7&&S.xHi>=13){S.m[2]=true;ch=true;}}else{S.xLo=99;S.xHi=0;}}
+  if(ch)ui();}
+
+/* ---------- the story column ---------- */
+function chapters(){const cur=BEATS[S.beat].ch,rc=BEATS[S.reached].ch;
+  $('chs').innerHTML=CH.map((c,i)=>`<li><button type="button" data-ch="${i}" class="${i===cur?'on':i<=rc?'done':''}" ${i===cur?'aria-current="step"':''}><span class="n">${i+1}</span><span class="l">${c}</span></button></li>`).join('');}
+$('chs').addEventListener('click',e=>{const t=e.target.closest('button[data-ch]');if(!t)return;go(BEATS.findIndex(b=>b.ch===+t.dataset.ch));});
+function ui(){
+  const b=S.beat,ch=BEATS[b].ch;let cap='',sub='',ctl='',room='',ok=true,nextL='Next';
+  switch(BEATS[b].id){
+  case 'last':cap='Last year’s dance floor: 12 panels by 12. It was packed.';sub='The rental floor comes in square wooden panels that lock together. This year the dance committee wants it 3 panels bigger each way, and you place the order.';break;
+  case 'bigger':cap='12 by 12 becomes 15 by 15. How many more panels do you order?';
+    if(S.guess==null){sub='Go with your gut. Your order goes straight onto the floor.';ctl=`<form class="ans" data-form="guess"><label for="gIn" class="muted">More panels:</label><input id="gIn" inputmode="numeric" autocomplete="off"><button class="btn primary" type="submit">Place my order</button></form><p class="fb" id="gFb"></p>`;ok=false;}
+    else if(S.busy){sub='Your panels are going down.';ok=false;}
+    else{const n=S.guess;sub=n<GAPN?`Your ${n} panels are down, and there is still bare gym floor inside the dashed line.`:n===GAPN?'Your order fills the gap exactly. Now see how other people count it.':'The gap is full, and you paid for panels you did not need.';
+      if(n===9)sub+=' Three more each way felt like 3 × 3.';if(n===6)sub+=' Three and three felt like 6.';}
+    break;
+  case 'count':{const m=mySentence(),done=m.tot===GAPN||S.typedOK;cap=done?'That is your way of seeing it.':'Take your order back off. Count the gap your own way.';
+    sub=done?(m.tot===GAPN?`Your number sentence: <b>${m.plain} = 81</b>. Keep it. Next, see how four other people colored the same gap.`:'81 panels. Next, see how four other people colored the same gap.'):'No counting one by one. Pick a color and drag across a chunk you can count fast, like a strip. Change color for the next chunk. Your number sentence builds on the picture.';
+    ctl=[1,2,3,4].map(c=>`<button type="button" class="sw ${S.color===c?'on':''}" data-act="color" data-v="${c}" style="background:${COLS[c]}" aria-label="color ${c}" aria-pressed="${S.color===c}"></button>`).join('')
+      +`<button class="btn sm" data-act="fillrest" ${m.tot&&m.tot<GAPN?'':'disabled'}>Fill the rest with this color</button><button class="btn sm" data-act="clearp" ${m.tot?'':'disabled'}>Clear</button>`
+      +(done?'':`<form class="ans" data-form="typed" style="flex-basis:100%"><label for="tIn" class="muted">Or type your count:</label><input id="tIn" inputmode="numeric" autocomplete="off" style="width:84px"><button class="btn sm" type="submit">Check</button></form><p class="fb" id="tFb"></p>`);
+    ok=done;room='<b>In class:</b> color yours on paper first, then compare number sentences with a neighbor.';break;}
+  case 'others':cap='Four people colored the same gap.';sub=S.view?`<q>${VIEWS[S.view].q}</q> ${VIEWS[S.view].plain} = 81.`:'Tap each one to see what they saw.';
+    ctl=Object.keys(VIEWS).map(v=>`<button class="btn pick ${S.view===v?'on':''}" data-act="view" data-v="${v}">${VIEWS[v].name}${S.seen[v]?'<span class="ck" aria-label="seen">✓</span>':''}</button>`).join('');
+    ok=Object.keys(VIEWS).every(v=>S.seen[v]);room='<b>In class:</b> whose number sentence matches each one?';break;
+  case 'pick':cap='Which is closest to how you saw it?';sub=S.pick?'Four different sentences, one number. Nobody recounted. That is what an equals sign means: different ways of seeing the same amount.':'Pick one. You will come back to it at the end.';
+    ctl=Object.keys(VIEWS).map(v=>`<button class="btn pick ${S.pick===v?'on':''}" data-act="pickv" data-v="${v}" aria-pressed="${S.pick===v}">${VIEWS[v].name}</button>`).join('')+`<button class="btn pick ${S.pick==='own'?'on':''}" data-act="pickv" data-v="own" aria-pressed="${S.pick==='own'}">Mine was different</button>`;ok=!!S.pick;break;
+  case 'letters':{const all=S.m.every(Boolean),now=S.m.indexOf(false);cap=all?'The strips grow with the floor. The corner never does.':'Now the floor can be any size: x panels on a side, grown by a.';
+    const ms=['Drag the blue handle until the corner is 16 panels.','Now make each strip 40 panels.','Set a to 3. Then drag x from 6 all the way to 14 and watch which pieces change.'];
+    sub=`<ul class="miss">${ms.map((t,i)=>`<li class="${S.m[i]?'done':i===now?'now':''}"><span class="bx">${S.m[i]?'✓':''}</span><span>${t}</span></li>`).join('')}</ul>`
+      +(all?'<p style="margin:10px 0 0">So skipping the strips costs more on a bigger floor. On a 14-by-14 floor it misses 84 of 93 new panels.</p>':'<p class="muted" style="margin:10px 0 0;font-size:14.5px">Wood handle changes x. Blue handle changes a. The equation follows the floor.</p>');
+    ctl=all?'':`<button class="btn sm" data-act="showm">Stuck? Show me</button>`;ok=all;room='<b>In class:</b> before each drag, predict which pieces will change.';break;}
+  case 'trap':cap=S.trapDone?'The two strips. That is the 6x.':'A friend writes (x + 3)² = x² + 9. Tap the pieces they left out.';
+    sub=S.trapDone?'Each strip is 3 by x, and there are two: 3x + 3x = 6x. So (x + 3)² = x² + 6x + 9. Three terms that make a perfect square: a <span class="term">perfect square trinomial</span>.':'Their x² is the old floor and their 9 is the corner. Tap what is missing on the picture.';
+    ctl=S.trapDone?'':`<button class="btn sm" data-act="showtrap">Stuck? Show me</button>`;ok=S.trapDone;break;
+  case 'build':{const n=S.r+S.bm,sq=S.r===3&&S.bm===3;
+    cap=S.holeOK?'9 panels complete the square.':sq?'A square, with a hole in the corner.':'Run it backward. The truck brings one 12-by-12 section and 6 strips. Build a square floor.';
+    sub=S.holeOK?'x² + 6x was not a square until you added 9. Then it is (x + 3)².':sq?'15 across and 15 down. How many single panels fill the hole?':n<6?`Drag each strip onto the right side or the bottom of the big section. ${n} of 6 placed.`:`${12+S.r} across and ${12+S.bm} down. Not a square yet. Drag a strip to the other side.`;
+    ctl=S.holeOK?'':sq?`<form class="ans" data-form="hole"><label for="hIn" class="muted">Single panels:</label><input id="hIn" inputmode="numeric" autocomplete="off" style="width:84px"><button class="btn primary" type="submit">Fill it</button></form><p class="fb" id="hFb"></p>`
+      :`<button class="btn sm" data-act="addr" ${n<6?'':'disabled'}>Strip to the right</button><button class="btn sm" data-act="addb" ${n<6?'':'disabled'}>Strip to the bottom</button><button class="btn sm" data-act="resetb" ${n?'':'disabled'}>Take them back</button>`;
+    ok=S.holeOK;break;}
+  case 'ten':cap=S.tenOK?'Half the strips on each side. The corner is that half, squared.':'Same truck, 10 strips this time.';
+    sub=S.tenOK?'x² + 10x + 25 = (x + 5)². Your class calls this move <span class="term">completing the square</span>: you add the corner that makes it one.':'Plan it before you build it.';
+    ctl=S.tenOK?'':`<form class="ans" data-form="ten" style="flex-direction:column;align-items:flex-start"><label>Strips on each side <input id="t1" inputmode="numeric" autocomplete="off" style="width:70px"></label><label>Single panels for the corner <input id="t2" inputmode="numeric" autocomplete="off" style="width:70px"></label><button class="btn primary" type="submit">Build it</button></form><p class="fb" id="nFb"></p>`;ok=S.tenOK;break;
+  case 'cube':cap=S.cubeOK?'A square splits 1, 2, 1. A cube splits 1, 3, 3, 1.':'One dimension up: the same cut, made in a cube.';
+    sub=S.cubeOK?'One big cube, three slabs, three rods, one small cube. You will meet that pattern again in Algebra 2 as <span class="term">Pascal’s triangle</span>.':'This is (x + a)³: a cube with side x + a. Pull it apart, then count the pieces.';
+    ctl=`<label style="flex-basis:100%">Pull it apart<input class="rng" id="expl" type="range" min="0" max="100" value="${Math.round(S.explode*100)}"></label>`+(S.cubeOK?'':`<form class="ans" data-form="cube"><label>Flat slabs <input id="c1" inputmode="numeric" autocomplete="off" style="width:60px"></label><label>Thin rods <input id="c2" inputmode="numeric" autocomplete="off" style="width:60px"></label><button class="btn primary" type="submit">Check</button></form><p class="fb" id="cFb"></p>`);
+    ok=S.cubeOK;nextL='Tell the story';break;
+  case 'story':cap='Now tell the story of the math.';sub='Fill the gaps below in your own words. Your answer to the committee appears on the picture.';room='<b>In class:</b> tell your story to a partner without looking at the screen.';ok=false;break;
+  }
+  panel.innerHTML=`<p class="kicker">Chapter ${ch+1} of ${CH.length} · ${CH[ch]}</p><p class="cap">${cap}</p><div class="sub">${sub}</div>${ctl?`<div class="ctl">${ctl}</div>`:''}${room?`<p class="room">${room}</p>`:''}
+    <div class="nav"><button class="btn" data-act="back" ${b===0?'disabled':''}>Back</button>${b<BEATS.length-1?`<button class="btn ${ok?'primary':''}" data-act="next" ${ok?'':'disabled'}>${nextL}</button>`:`<button class="btn" data-act="restart">Start over</button>`}</div>`;
+}
+panel.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t||t.disabled)return;const a=t.dataset.act,v=t.dataset.v;
+  if(a==='next')go(S.beat+1);else if(a==='back')go(S.beat-1);
+  else if(a==='restart'){Object.assign(S,{guess:null,paint:new Array(GAPN).fill(0),order:[],typedOK:false,seen:{},pick:null,m:[false,false,false],trapDone:false,buildDone:false,holeOK:false,tenOK:false,cubeOK:false,reached:0});go(0);}
+  else if(a==='color'){S.color=+v;ui();}
+  else if(a==='clearp'){S.paint.fill(0);S.order=[];ui();render();}
+  else if(a==='fillrest'){if(S.order.indexOf(S.color)<0)S.order.push(S.color);for(let i=0;i<GAPN;i++)if(!S.paint[i])S.paint[i]=S.color;ui();render();}
+  else if(a==='view')showView(v);else if(a==='pickv'){S.pick=v;ui();render();}
+  else if(a==='showm'){const i=S.m.indexOf(false);GEN++;if(i===0){S.a=4;}else if(i===1){S.x=10;S.a=4;}else{S.a=3;S.xLo=6;S.xHi=14;const g=GEN;S.x=6;animate(2600,t=>{S.x=Math.round(lerp(6,14,t));},t=>t).then(()=>{if(g===GEN){S.m[2]=true;ui();render();}});}checkMissions();render();}
+  else if(a==='showtrap'){S.sel={sr:1,sb:1};S.trapDone=true;ui();render();}
+  else if(a==='addr'){if(S.r+S.bm<6){S.r++;ui();render();}}else if(a==='addb'){if(S.r+S.bm<6){S.bm++;ui();render();}}else if(a==='resetb'){S.r=0;S.bm=0;ui();render();}});
+panel.addEventListener('input',e=>{if(e.target.id==='expl'){S.explode=e.target.value/100;render();}});
+panel.addEventListener('submit',e=>{e.preventDefault();const f=e.target.dataset.form,num=id=>{const n=$(id);return n?parseFloat(String(n.value).replace(',','.')):NaN;},fb=(id,s)=>{const n=$(id);if(n){n.className='fb no';n.textContent=s;}};
+  if(f==='guess'){const n=num('gIn');if(!isFinite(n)||n<0||n>400||n!==Math.round(n))return fb('gFb','Type a whole number of panels.');placeOrder(n);}
+  if(f==='typed'){const n=num('tIn');if(n===GAPN){S.typedOK=true;ui();}else fb('tFb',n===9?'That is only the corner. Look at the two long strips.':n===72?'That is the two strips. What about the corner?':'Not yet. Color it in chunks and let the picture add them.');}
+  if(f==='hole'){const n=num('hIn');if(n===9)fillHole();else fb('hFb',n===3?'The hole is 3 panels each way. How many panels is that?':n===6?'The hole is 3 by 3, not 3 + 3.':'Look at the dashed hole: 3 across and 3 down.');}
+  if(f==='ten'){const p=num('t1'),q=num('t2');if(p===5&&q===25)doTen();else fb('nFb',p!==5?'A square needs the same number of strips on each side. Split the 10 evenly.':q===10?'The corner is 5 by 5. Multiply, don’t add.':'The corner is as wide as the strips on one side and as tall as the strips on the other.');}
+  if(f==='cube'){const p=num('c1'),q=num('c2');if(p===3&&q===3){S.cubeOK=true;if(S.explode<.6)animate(700,t=>{S.explode=lerp(S.explode,1,t);});ui();render();}else fb('cFb',S.explode<.5?'Pull it further apart so you can see every piece.':'Blue pieces are the flat slabs. Orange pieces are the thin rods. Count again.');}});
+eqEl.addEventListener('click',e=>{const t=e.target.closest('[data-term]');if(!t)return;S.hot=S.hot===t.dataset.term?null:t.dataset.term;eqEl._h=null;render();});
+
+/* ---------- pointer work ---------- */
+function pt(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function bind(){
+  const drag=(n,move)=>{let on=false;
+    n.addEventListener('pointerdown',e=>{if(e.button)return;on=true;GEN++;n.classList.add('used');try{n.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();});
+    n.addEventListener('pointermove',e=>{if(!on)return;move(pt(e));checkMissions();render();});
+    const up=()=>{on=false;};n.addEventListener('pointerup',up);n.addEventListener('pointercancel',up);};
+  drag($('hX'),q=>{S.x=clamp(Math.round((q.x-OX)/S.cell),6,14);});
+  drag($('hA'),q=>{S.a=clamp(Math.round(((q.x-OX)+(q.y-OY))/2/S.cell)-S.x,1,5);});
+  $('hX').addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();GEN++;S.x=clamp(S.x+(e.key==='ArrowRight'?1:-1),6,14);checkMissions();render();});
+  $('hA').addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();GEN++;S.a=clamp(S.a+(e.key==='ArrowRight'?1:-1),1,5);checkMissions();render();});
+  /* painting, piece taps, strip dragging */
+  let painting=false;
+  const paintAt=e=>{const q=pt(e),c=Math.floor((q.x-OX)/S.cell),r=Math.floor((q.y-OY)/S.cell);if(c<0||r<0||c>=N0||r>=N0)return;const i=GIDX[r*N0+c];if(i==null)return;
+    if(S.paint[i]!==S.color){S.paint[i]=S.color;if(S.order.indexOf(S.color)<0)S.order.push(S.color);render();}};
+  const zone=q=>{const ex=OX+12*S.cell,ey=OY+12*S.cell;if(q.x>700)return 'rack';const inR=q.x>ex-12&&q.y<ey+20,inB=q.y>ey-12&&q.x<ex+20;
+    if(inR&&inB)return (q.x-ex)>(q.y-ey)?'r':'b';return inR?'r':inB?'b':(q.x>ex&&q.y>ey?((q.x-ex)>(q.y-ey)?'r':'b'):'rack');};
+  svg.addEventListener('pointerdown',e=>{if(e.button)return;const b=S.beat;
+    if(b===B.count){painting=true;paintAt(e);e.preventDefault();return;}
+    if(b===B.build&&!S.holeOK){const t=e.target.closest('[data-strip]');if(!t)return;const from=t.dataset.strip,q=pt(e);if(from==='r')S.r--;if(from==='b')S.bm--;S.drag={from,x:q.x,y:q.y,zone:zone(q)};e.preventDefault();render();return;}
+    if(b===B.trap&&!S.trapDone){const t=e.target.closest('[data-p]');if(!t)return;const k=t.dataset.p;S.sel[k]=!S.sel[k];if(S.sel.sr&&S.sel.sb&&!S.sel.co&&!S.sel.sq){S.trapDone=true;ui();}render();return;}
+    if(b===B.letters||b===B.story){const t=e.target.closest('[data-p]');if(!t)return;const k={sq:'sq',sr:'strips',sb:'strips',co:'corner'}[t.dataset.p];S.hot=S.hot===k?null:k;eqEl._h=null;render();}});
+  window.addEventListener('pointermove',e=>{if(painting&&S.beat===B.count){paintAt(e);return;}if(S.drag){const q=pt(e);S.drag.x=q.x;S.drag.y=q.y;S.drag.zone=zone(q);render();}});
+  const up=()=>{if(painting){painting=false;ui();}if(S.drag){const z=S.drag.zone;S.drag=null;if(z==='r'&&S.r+S.bm<6)S.r++;else if(z==='b'&&S.r+S.bm<6)S.bm++;ui();render();}};
+  window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
+}
+document.addEventListener('keydown',e=>{if(e.target.closest('input,select,textarea,button,.handle'))return;
+  if(e.key==='ArrowRight'){const n=panel.querySelector('[data-act=next]');if(n&&!n.disabled)go(S.beat+1);}else if(e.key==='ArrowLeft'&&S.beat>0)go(S.beat-1);});
+
+/* ---------- tell the story ---------- */
+const ST={};
+function mini(kind){const c=7,ox=22,oy=14,R=(x,y,w,h,fill,ex)=>`<rect x="${ox+x*c}" y="${oy+y*c}" width="${w*c}" height="${h*c}" fill="${fill}" ${ex||''}/>`;let s='';
+  const wood='#c8945c',st='stroke="#6f451d" stroke-width="1"';
+  if(kind===0)s=R(0,0,12,12,wood,st)+R(0,0,15,15,'none','stroke="var(--rj-ink)" stroke-width="1.6" stroke-dasharray="5 3"')+`<text x="170" y="62" font-size="13" font-weight="700" fill="var(--guess)">${S.guess==null?'?':S.guess}</text><text x="170" y="78" font-size="10" fill="var(--muted)">my gut</text>`;
+  if(kind===1){s=R(0,0,12,12,wood,st);GAP.forEach((q,i)=>{s+=R(q[0],q[1],1,1,S.paint[i]?COLS[S.paint[i]]:'var(--slide)','stroke="var(--paper)" stroke-width=".5"');});}
+  if(kind===2)s=R(0,0,12,12,wood,st)+R(12,0,3,12,'var(--slide)',st)+R(0,12,12,3,'var(--slide)',st)+R(12,12,3,3,'var(--stretch)',st)+`<text x="${ox+6*c}" y="${oy+6*c+5}" font-size="14" font-weight="700" text-anchor="middle" fill="#2a1a0c" font-style="italic">x²</text><text x="170" y="52" font-size="12" font-weight="700" fill="var(--slide)">2ax</text><text x="170" y="112" font-size="12" font-weight="700" fill="var(--stretch)">a²</text>`;
+  if(kind===3)s=R(0,0,12,12,wood,st)+[0,1,2].map(i=>R(12+i,0,1,12,'var(--slide)',st)+R(0,12+i,12,1,'var(--slide)',st)).join('')+R(12,12,3,3,'none','stroke="var(--stretch)" stroke-width="1.6" stroke-dasharray="4 3"')+`<text x="${ox+13.5*c}" y="${oy+13.5*c+5}" font-size="13" font-weight="700" text-anchor="middle" fill="var(--stretch)">?</text>`;
+  return `<svg viewBox="0 0 240 135" aria-hidden="true">${s}</svg>`;}
+function buildStory(){
+  const sel=(id,opts)=>`<select id="${id}" aria-label="choose"><option value="">choose…</option>${opts.map(o=>`<option${ST[id]===o?' selected':''}>${o}</option>`).join('')}</select>`;
+  const txt=(id,ph)=>`<input type="text" id="${id}" placeholder="${ph}" value="${esc(ST[id]||'')}" aria-label="${ph}">`;
+  const num=(id,w)=>`<input class="n" id="${id}" inputmode="decimal" value="${esc(ST[id]||'')}" aria-label="number"${w?` style="width:${w}"`:''}>`;
+  if(S.guess!=null&&!ST.s_guess)ST.s_guess=String(S.guess);const m=mySentence();if(m.tot===GAPN&&!ST.s_sent)ST.s_sent=m.plain;
+  const first={strips:'strips and a corner',minus:'big square minus small',long:'two long strips',rings:'three L-shaped rings',own:'my own way'}[S.pick]||'';if(first&&!ST.s_first)ST.s_first=first;
+  storyEl.innerHTML=`<h3>The story of the floor</h3><p class="lead">Four frames. Fill each gap, then read it out loud. If it sounds like a story, you understand the math.</p>
+  <div class="frames">
+   <div class="frame">${mini(0)}<p class="no">1 · The gut</p><p>The floor grew from 12 by 12 to 15 by 15. My first guess was ${num('s_guess')} more panels. It really takes ${num('s_real')}.</p></div>
+   <div class="frame">${mini(1)}<p class="no">2 · How I saw it</p><p>I counted the gap as ${txt('s_sent','your number sentence')} Someone else saw ${sel('s_other',['36 + 36 + 9','225 − 144','45 + 36','25 + 27 + 29'])}, and both make 81 because ${txt('s_why','why are they equal?')}</p></div>
+   <div class="frame">${mini(2)}<p class="no">3 · In letters</p><p>(x + a)² = x² + ${sel('s_mid',['a²','2ax','ax','2a'])} + a². The piece people forget is ${sel('s_forget',['the old floor','the two strips','the corner'])}, and it gets ${sel('s_grow',['bigger','smaller','no different'])} when the floor is bigger.</p></div>
+   <div class="frame">${mini(3)}<p class="no">4 · Backward</p><p>x² + 6x is not a square yet. I put ${num('s_half')} strips on each side and added ${num('s_corner')} panels, because ${txt('s_back','what did the corner need?')}</p></div>
+  </div>
+  <p class="last">At first I saw it like ${sel('s_first',['strips and a corner','big square minus small','two long strips','three L-shaped rings','my own way'])}. Now I would say ${txt('s_now','what changed in how you see it?')}</p>
+  <div class="srow"><button class="btn primary" id="copyBtn" type="button">Copy my story for Canvas</button><span id="copyMsg" class="muted" aria-live="polite"></span></div>
+  <textarea id="copyOut" hidden readonly aria-label="Your story, ready to copy"></textarea>`;
+  storyEl.oninput=storyEl.onchange=e=>{const t=e.target;if(t.id&&t.id.startsWith('s_')){ST[t.id]=t.value;checkStory();}};
+  $('copyBtn').onclick=()=>{const text=storyText(),out=$('copyOut'),msg=$('copyMsg');out.value=text;const fail=()=>{out.hidden=false;out.focus();out.select();msg.textContent='Select the text below and copy it.';};
+    try{navigator.clipboard.writeText(text).then(()=>{msg.textContent='Copied. Paste it into Canvas.';},fail);}catch(_){fail();}};
+  checkStory();}
+const gv=id=>(ST[id]||'').trim()||'____';
+function storyText(){return ['Dance floor: the story of the math',
+  `1. The floor grew from 12 by 12 to 15 by 15. My first guess was ${gv('s_guess')} more panels. It really takes ${gv('s_real')}.`,
+  `2. I counted the gap as ${gv('s_sent')} Someone else saw ${gv('s_other')}, and both make 81 because ${gv('s_why')}`,
+  `3. (x + a)² = x² + ${gv('s_mid')} + a². The piece people forget is ${gv('s_forget')}, and it gets ${gv('s_grow')} when the floor is bigger.`,
+  `4. x² + 6x is not a square yet. I put ${gv('s_half')} strips on each side and added ${gv('s_corner')} panels, because ${gv('s_back')}`,
+  `At first I saw it like ${gv('s_first')}. Now I would say ${gv('s_now')}`].join('\n');}
+function checkStory(){
+  const right={s_real:v=>+v===81,s_mid:v=>v==='2ax',s_forget:v=>v==='the two strips',s_grow:v=>v==='bigger',s_half:v=>+v===3,s_corner:v=>+v===9};
+  for(const id in right){const n=$(id);if(n)n.classList.toggle('okk',!!ST[id]&&right[id](ST[id]));}
+  const real=(ST.s_real||'').trim();
+  chatEl.innerHTML=`<p class="them"><small>Dance committee</small>So how many more panels?</p><p class="you">${real?esc(`${real} more. Two strips of 36 and a corner of 9.`):'…'}</p>`;}
+
+/* ---------- fit to the screen ---------- */
+function fit(){
+  const two=window.innerWidth>1020,lay=$('lay');let w=lay.clientWidth-(two?344:0);
+  if(two&&window.innerHeight<1500){const top=stage.getBoundingClientRect().top+window.scrollY,avail=window.innerHeight-Math.min(top,260)-14;w=Math.min(w,Math.max(560,avail*16/9));}
+  stage.style.maxWidth=two?w+'px':'';lay.style.gridTemplateColumns=two?`${Math.floor(w)}px minmax(300px,1fr)`:'';
+  const sw=stage.clientWidth||w;K=clamp(880/sw,1,2.2);compact=K>1.55;svg.style.setProperty('--k',K.toFixed(2));render();}
+window.addEventListener('resize',fit);
+
+build();go(0);fit();
+if(/github\.io$/.test(location.hostname)){const s=document.createElement('script');s.async=true;s.src='//gc.zgo.at/count.js';s.setAttribute('data-goatcounter','https://rjedtech.goatcounter.com/count');document.head.appendChild(s);}
+window.__floor={S,go,B,render,ui};
+})();
+
+</script>
+</body>
+</html>
