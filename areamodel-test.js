@@ -1,0 +1,18 @@
+/* Test yourself questions for The dance floor (story version). Steps are 1-based story steps. */
+TestYourself.mount({lab:'MathLab',id:'areamodel',title:'Raider MathLab · The dance floor: how many more panels?',el:'#ty',scrollTo:'#stage',go:i=>window.__floor.go(i),
+ questions:[
+ {q:'A 10-by-10 patio of tiles grows 2 tiles each way, to 12 by 12. How many new tiles are needed?',answer:44,tol:.01,unit:'tiles',
+  hint:v=>Math.abs(v-4)<.01?'4 is only the corner. Don’t forget the two long strips.':Math.abs(v-40)<.01?'40 is the two strips. Add the corner.':'Two strips of 2 by 10, plus the 2-by-2 corner.',step:3,stepName:'count the gap',
+  why:'20 + 20 + 4 = 44, the same as 144 − 100.'},
+ {q:'Which is (x + 5)² written out?',choices:['x² + 10x + 25','x² + 25','x² + 5x + 25','x² + 10x + 10'],answer:0,
+  hint:'Draw it: a big x-by-x square, two strips 5 by x, and a 5-by-5 corner.',step:6,stepName:'numbers to letters',
+  why:'x² + 5x + 5x + 25 = x² + 10x + 25.'},
+ {q:'A friend writes (x + 4)² = x² + 16. What did they leave out?',choices:['The two strips, 8x','The corner, 16','The old square, x²','Nothing: it is right'],answer:0,
+  hint:'x² is the old floor and 16 is the corner. What else did the floor gain?',step:7,stepName:'the shortcut trap',
+  why:'Two 4-by-x strips: 4x + 4x = 8x. So (x + 4)² = x² + 8x + 16.'},
+ {q:'x² + 14x + ? is a perfect square. What number completes it?',answer:49,tol:.01,unit:'',
+  hint:v=>Math.abs(v-14)<.01||Math.abs(v-196)<.01?'Split the 14 strips evenly: 7 on each side. The corner is 7 by 7.':'Half of 14 on each side, then the corner is that half squared.',step:9,stepName:'ten strips',
+  why:'7 on each side, so the corner is 7 × 7 = 49: x² + 14x + 49 = (x + 7)².'},
+ {q:'Pull (x + a)³ apart. How many flat slabs (x by x by a) are there?',choices:['3','2','1','4'],answer:0,
+  hint:'A square splits 1, 2, 1. A cube splits into one more layer of pieces. Count the blue slabs.',step:10,stepName:'one dimension up',
+  why:'1 big cube, 3 slabs, 3 rods, 1 small cube: 1, 3, 3, 1.'}]});

@@ -1,0 +1,18 @@
+/* Test yourself questions for Pond day (story version). Steps are 1-based story steps. */
+TestYourself.mount({lab:'MathLab',id:'pondday',title:'Raider MathLab · Pond day: will the ice hold by Saturday?',el:'#ty',scrollTo:'#stage',go:i=>window.__pond.go(i),
+ questions:[
+ {q:'A sunflower grows 4, then 1.7, then 1.3, then 1.1 cm in four weeks. Which parent shape fits its growth?',choices:['Square root','Line','Parabola','Absolute value'],answer:0,
+  hint:'Look at the steps: they start big and get smaller. Which shape’s staircase does that?',step:7,stepName:'find the shape',
+  why:'Square root’s steps start big and keep shrinking, like the sunflower’s. A line’s steps stay equal; a parabola’s grow.'},
+ {q:'How does the graph of y = √(x − 6) compare with y = √x?',choices:['Slid 6 to the right','Slid 6 to the left','Stretched 6 times as tall','Slid 6 up'],answer:0,
+  hint:'x − 6 means the curve’s day 0 now sits at x = 6. Which way did its corner move?',step:8,stepName:'slide it',
+  why:'Inside the root, x − 6 moves the corner to x = 6: a slide 6 to the right.'},
+ {q:'How does the graph of y = 2√x compare with y = √x?',choices:['Every height is doubled','Slid 2 to the right','Slid 2 up','Every height is halved'],answer:0,
+  hint:'The 2 is outside the root. It multiplies every height.',step:9,stepName:'stretch it',
+  why:'Multiplying outside the root stretches the curve: every height doubles. That is a vertical stretch.'},
+ {q:'Using the pond’s equation y = 1.3√(x − 4), how thick is the ice on December 20 (x = 20)?',answer:5.2,tol:.02,unit:'inches',
+  hint:v=>Math.abs(v-5.81)<.02?'That used √20. Slide first: the ice has had 20 − 4 = 16 days.':'Same three moves: slide (20 − 4), root, stretch (× 1.3).',step:10,stepName:'ask the equation',
+  why:'20 − 4 = 16, √16 = 4, 4 × 1.3 = 5.2 inches.'},
+ {q:'Using y = 1.3√(x − 4), on what December date does the ice reach 2.6 inches? (Type the day.)',answer:8,tol:.01,unit:'(day of December)',
+  hint:v=>Math.abs(v-6)<.01?'Undo the root by squaring: 2² = 4, not 2. Then add 4.':'Undo the moves in reverse: 2.6 ÷ 1.3, then square, then add 4.',step:11,stepName:'work it backward',
+  why:'2.6 ÷ 1.3 = 2, 2² = 4, 4 + 4 = 8: December 8, the day of your last core.'}]});
