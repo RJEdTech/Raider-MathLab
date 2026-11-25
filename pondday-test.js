@@ -15,4 +15,7 @@ TestYourself.mount({lab:'MathLab',id:'pondday',title:'Raider MathLab · Pond day
   why:'20 − 4 = 16, √16 = 4, 4 × 1.3 = 5.2 inches.'},
  {q:'Using y = 1.3√(x − 4), on what December date does the ice reach 2.6 inches? (Type the day.)',answer:8,tol:.01,unit:'(day of December)',
   hint:v=>Math.abs(v-6)<.01?'Undo the root by squaring: 2² = 4, not 2. Then add 4.':'Undo the moves in reverse: 2.6 ÷ 1.3, then square, then add 4.',step:11,stepName:'work it backward',
-  why:'2.6 ÷ 1.3 = 2, 2² = 4, 4 + 4 = 8: December 8, the day of your last core.'}]});
+  why:'2.6 ÷ 1.3 = 2, 2² = 4, 4 + 4 = 8: December 8, the day of your last core.'},
+ {q:'Ice that grows like your pond (a square-root curve) is 4 inches thick after 9 days of freezing. About how thick is it after 36 days?',answer:8,tol:.2,unit:'inches',
+  hint:v=>Math.abs(v-16)<.3?'That is a straight line: 4 times the days, 4 times the ice. A square-root curve grows by √(36 ÷ 9).':'36 days is 4 times as long. √4 = 2, so the ice is 2 times as thick.',step:12,stepName:'who is doing this',
+  why:'√(36 ÷ 9) = √4 = 2, so 2 × 4 = 8 inches. Four times the time only doubles the ice, which is why a warm spell late in winter matters so much.'}]});
