@@ -15,4 +15,7 @@ TestYourself.mount({lab:'MathLab',id:'areamodel',title:'Raider MathLab · The da
   why:'7 on each side, so the corner is 7 × 7 = 49: x² + 14x + 49 = (x + 7)².'},
  {q:'Pull (x + a)³ apart. How many flat slabs (x by x by a) are there?',choices:['3','2','1','4'],answer:0,
   hint:'A square splits 1, 2, 1. A cube splits into one more layer of pieces. Count the blue slabs.',step:10,stepName:'one dimension up',
-  why:'1 big cube, 3 slabs, 3 rods, 1 small cube: 1, 3, 3, 1.'}]});
+  why:'1 big cube, 3 slabs, 3 rods, 1 small cube: 1, 3, 3, 1.'},
+ {q:'A zaï field is 120 pits by 120 pits. The farmer adds 5 rows on two sides, so it is 125 by 125. How many new pits does he dig?',answer:1225,tol:.5,unit:'pits',
+  hint:v=>Math.abs(v-25)<.5?'That is only the corner. Add the two strips, each 5 by 120.':Math.abs(v-1200)<.5?'You have the two strips. Add the corner, 5 by 5.':Math.abs(v-600)<.5?'That is one strip. There are two, plus the corner.':'Two strips of 5 × 120, plus a corner of 5 × 5. Or 125² − 120².',step:11,stepName:'who is doing this',
+  why:'2 × 5 × 120 + 5² = 1,200 + 25 = 1,225. Same as 125² − 120² = 15,625 − 14,400. The strips are almost all of the new pits.'}]});

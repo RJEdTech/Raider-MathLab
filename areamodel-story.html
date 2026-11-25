@@ -236,6 +236,7 @@ button,input,select,textarea{font:inherit;color:inherit}
   <div class="lay" id="lay">
     <div class="stage" id="stage">
       <svg id="svg" viewBox="0 0 1200 675" style="--k:1" role="img" aria-label="A square dance floor made of panels, seen from above. It grows, and you color, cut and rebuild it."></svg>
+      <canvas id="zaiCv" width="1200" height="675" hidden style="position:absolute;inset:0;width:100%;height:100%" aria-label="Zaï pits in Burkina Faso: a field that grows by two strips and a corner, a pit cut in half, and a timeline"></canvas>
       <div class="eq" id="eq" hidden></div>
       <div class="chat" id="chat" hidden></div>
     </div>
@@ -271,7 +272,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 </main>
 <script src="story-help.js?v=202611211900"></script>
 <script src="test-yourself.js?v=2026112122" defer></script>
-<script src="areamodel-test.js?v=2026112122" defer></script>
+<script src="areamodel-test.js?v=2026112502" defer></script>
 <script>
 (function(){
 'use strict';
@@ -299,10 +300,210 @@ const S={beat:0,reached:0,x:X0,a:A0,cell:36,people:1,grow:0,
   r:0,bm:0,drag:null,holeOK:false,holeT:0,buildDone:false,tenOK:false,tenT:0,
   explode:0,cubeOK:false,busy:false};
 const BEATS=[{id:'last',ch:0},{id:'bigger',ch:0},{id:'count',ch:1},{id:'others',ch:1},{id:'pick',ch:1},
-  {id:'letters',ch:2},{id:'trap',ch:2},{id:'build',ch:3},{id:'ten',ch:3},{id:'cube',ch:4},{id:'story',ch:5}];
-const CH=['The floor','How do you see it?','Numbers to letters','Build it backward','One dimension up','Tell the story'];
+  {id:'letters',ch:2},{id:'trap',ch:2},{id:'build',ch:3},{id:'ten',ch:3},{id:'cube',ch:4},{id:'zai',ch:5},{id:'story',ch:6}];
+const CH=['The floor','How do you see it?','Numbers to letters','Build it backward','One dimension up','Who is doing this','Tell the story'];
 const B={};BEATS.forEach((b,i)=>B[b.id]=i);
 let GEN=0;
+/* ---------- Who is doing this: Yacouba Sawadogo's zaï pits, Gourga, Burkina Faso (Nov 25, 2026) ----------
+   The field grows like the dance floor: old field x², two strips 2ax, corner a². Cause: where you dig, pits or bare crust,
+   rain, years. Transformation: the pit close-up (rain → pooled water → termite tunnels → wet soil → roots → sorghum).
+   Effect: crops, a muddy gully of lost soil, trees. Numbers stay in Test yourself.
+   Sources: Right Livelihood (2018, 2023); UNEP Champions of the Earth (2020); World Bank IK Notes 78 (2005); The Conversation / WEF (2023). */
+const zaCv=document.getElementById('zaiCv'),zaX=zaCv?zaCv.getContext('2d'):null;
+const ZN=12,ZXO=9;// 12 by 12 pits: old field 9 by 9, grown by 3 each way
+const ZA={};
+function zaReset(){Object.assign(ZA,{t:0,pick:null,dug:false,digging:false,dig:0,land:'pits',rainT:-1,season:0,rained:false,crustTried:false,years:0,yearsGo:false,yearsDone:false,
+  water:new Float32Array(ZN*ZN),grow:new Float32Array(ZN*ZN),wilt:new Float32Array(ZN*ZN),sown:false,runs:[],mud:0,mudFlow:0,wet:0,term:0,splash:[],birds:0});}
+zaReset();
+const zaKind=(i,r)=>i<ZXO&&r<ZXO?'old':i>=ZXO&&r>=ZXO?'corner':'strip';
+const ZA_ORDER=(()=>{const o=[];for(let r=0;r<ZXO;r++)for(let i=ZXO;i<ZN;i++)o.push(r*ZN+i);for(let r=ZXO;r<ZN;r++)for(let i=0;i<ZXO;i++)o.push(r*ZN+i);for(let r=ZXO;r<ZN;r++)for(let i=ZXO;i<ZN;i++)o.push(r*ZN+i);return o;})();
+function zaPit(c){const i=c%ZN,r=(c/ZN)|0;if(zaKind(i,r)==='old')return true;if(!ZA.dug&&!ZA.digging)return false;
+  if(ZA.digging||!ZA.dug){const k=ZA_ORDER.indexOf(c);return k<Math.floor(ZA.dig*ZA_ORDER.length);}return ZA.land==='pits';}
+const ZW=ZN*ZN,ZA_WATCH=4*ZN+10;// the close-up pit: right strip, row 5
+/* perspective: world X across (field −6..6), Z away from you (field 0..12); 1 unit = one pit spacing, about 80 cm */
+const zaP=(X,Z)=>{const z=Z+12;return[385+X*580/z,95+4500/z,12/z];};
+const zaCell=c=>{const i=c%ZN,r=(c/ZN)|0;return[-6+i+.5,12-(r+.5)];};
+function zaRand(s){return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};}
+let zaGround=null;
+function zaMakeGround(){const g=document.createElement('canvas');g.width=1200;g.height=675;const c=g.getContext('2d');
+  // sky: dry-season haze
+  let gr=c.createLinearGradient(0,10,0,100);gr.addColorStop(0,'#b9cbd6');gr.addColorStop(1,'#e8dccb');c.fillStyle=gr;c.fillRect(0,0,1200,100);
+  // land
+  gr=c.createLinearGradient(0,95,0,522);gr.addColorStop(0,'#d9c6ad');gr.addColorStop(.25,'#cfae8c');gr.addColorStop(1,'#c09572');c.fillStyle=gr;c.fillRect(0,95,1200,600);
+  const R=zaRand(7);
+  // distant tree line and baobabs
+  for(let k=0;k<70;k++){const x=10+R()*750,y=96+R()*8,s=3+R()*6;c.fillStyle=`rgba(${90+R()*30|0},${100+R()*25|0},${70+R()*20|0},.55)`;c.beginPath();c.ellipse(x,y-s*.5,s*1.3,s*.8,0,0,7);c.fill();}
+  [[120,118],[610,112]].forEach(([x,y])=>{c.fillStyle='rgba(95,82,70,.8)';c.beginPath();c.moveTo(x-5,y);c.lineTo(x-3,y-22);c.lineTo(x+3,y-22);c.lineTo(x+5,y);c.fill();c.strokeStyle='rgba(95,82,70,.8)';c.lineWidth=2;
+    [[-14,-34],[-6,-38],[4,-37],[13,-31]].forEach(([dx,dy])=>{c.beginPath();c.moveTo(x,y-21);c.quadraticCurveTo(x+dx*.4,y-30,x+dx,y+dy);c.stroke();});
+    c.fillStyle='rgba(110,120,80,.5)';[[-14,-35],[-5,-40],[5,-39],[13,-32]].forEach(([dx,dy])=>{c.beginPath();c.ellipse(x+dx,y+dy,5,3,0,0,7);c.fill();});});
+  // a Mossi compound: round mud houses with thatched cones, a wall
+  const hut=(x,y,s)=>{c.fillStyle='#b98058';c.fillRect(x-s,y-s*1.1,s*2,s*1.1);c.fillStyle='rgba(0,0,0,.18)';c.fillRect(x+s*.2,y-s*1.1,s*.8,s*1.1);
+    c.fillStyle='#a98a55';c.beginPath();c.moveTo(x-s*1.25,y-s*1.05);c.lineTo(x,y-s*2.5);c.lineTo(x+s*1.25,y-s*1.05);c.closePath();c.fill();c.strokeStyle='rgba(90,70,35,.6)';c.lineWidth=.7;
+    for(let k=-3;k<=3;k++){c.beginPath();c.moveTo(x,y-s*2.5);c.lineTo(x+k*s*.38,y-s*1.08);c.stroke();}c.fillStyle='#3a2a1c';c.fillRect(x-s*.25,y-s*.65,s*.5,s*.65);};
+  c.fillStyle='#b78560';c.fillRect(455,122,92,6);[[468,127,7],[492,124,8],[520,127,7],[540,125,6]].forEach(a=>hut(...a));
+  [[250,130,6],[268,131,5]].forEach(a=>hut(...a));
+  // cracks in the crust, drawn on the ground in perspective
+  c.lineCap='round';
+  for(let k=0;k<900;k++){let X=-26+R()*52,Z=-2+R()*70;const[x0,y0,s]=zaP(X,Z);if(y0>530||y0<100)continue;c.strokeStyle=`rgba(120,82,55,${.25+.25*s})`;c.lineWidth=.5+s*.9;c.beginPath();c.moveTo(x0,y0);
+    for(let j=0;j<3;j++){X+=(R()-.5)*1.6;Z+=(R()-.5)*1.6;const[x,y]=zaP(X,Z);c.lineTo(x,y);}c.stroke();}
+  // gravel and pale patches
+  for(let k=0;k<2600;k++){const X=-28+R()*56,Z=-2+R()*70,[x,y,s]=zaP(X,Z);if(y>530||y<100)continue;const v=R();c.fillStyle=v<.4?`rgba(150,70,40,${.5*s+.1})`:v<.7?`rgba(235,220,200,${.45*s})`:`rgba(95,60,35,${.4*s})`;c.beginPath();c.arc(x,y,.4+s*1.3*R(),0,7);c.fill();}
+  // dry grass tufts and a few shrubs outside the field
+  for(let k=0;k<160;k++){const X=-24+R()*48,Z=-1+R()*40;if(Math.abs(X)<6.6&&Z>-.4&&Z<12.4)continue;const[x,y,s]=zaP(X,Z);if(y>530)continue;c.strokeStyle=`rgba(${170+R()*30|0},${140+R()*20|0},80,.85)`;c.lineWidth=.8*s+.3;
+    for(let j=-3;j<=3;j++){c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+j*2*s,y-5*s,x+j*4*s,y-(7+R()*5)*s);c.stroke();}}
+  for(let k=0;k<10;k++){const X=(R()<.5?-1:1)*(8+R()*14),Z=2+R()*30,[x,y,s]=zaP(X,Z);c.fillStyle='rgba(98,92,58,.85)';for(let j=0;j<7;j++){c.beginPath();c.arc(x+(R()-.5)*14*s,y-(4+R()*8)*s,(3+R()*4)*s,0,7);c.fill();}}
+  zaGround=g;}
+function zaT(c,s,x,y,o){o=o||{};c.font=(o.w||500)+' '+(o.s||15)+'px "Segoe UI",system-ui,sans-serif';c.fillStyle=o.c||'#1c1c1f';c.textAlign=o.a||'left';c.fillText(s,x,y);}
+function zaRR(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function zaQuad(c,X0,Z0,X1,Z1){const p=[zaP(X0,Z0),zaP(X1,Z0),zaP(X1,Z1),zaP(X0,Z1)];c.beginPath();p.forEach((q,k)=>k?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]));c.closePath();}
+function zaPitDraw(c,cell,isPit){const[X,Z]=zaCell(cell),[x,y,s]=zaP(X,Z),rx=.2*580*s/12,ry=rx*8.6/(Z+12)*1.05;
+  if(!isPit){return;}
+  // heaped soil on the downhill (near) side, then the hole, manure, water
+  c.fillStyle='#d7b996';c.beginPath();c.ellipse(x,y+ry*.55,rx*1.35,ry*1.05,0,0,Math.PI);c.fill();
+  const g=c.createRadialGradient(x,y-ry*.3,1,x,y,rx);g.addColorStop(0,'#3e2816');g.addColorStop(1,'#6b4a30');c.fillStyle=g;c.beginPath();c.ellipse(x,y,rx,ry,0,0,7);c.fill();
+  c.fillStyle='rgba(40,26,14,.9)';for(let k=0;k<4;k++){c.beginPath();c.arc(x+(k-1.5)*rx*.35,y+(k%2?.2:-.15)*ry,Math.max(.6,rx*.14),0,7);c.fill();}
+  const w=ZA.water[cell];if(w>.04){c.fillStyle=`rgba(92,140,180,${Math.min(.85,w*1.4)})`;c.beginPath();c.ellipse(x,y,rx*Math.min(.9,.3+w*.7),ry*Math.min(.9,.3+w*.7),0,0,7);c.fill();}}
+function zaSorghum(c,x,y,s,g,wl,seed){if(g<.03)return;const R=zaRand(seed),H=(16+60*g)*s,dry=Math.min(1,wl);
+  const col=(a)=>`rgba(${Math.round(lerp(78,176,dry))},${Math.round(lerp(122,140,dry))},${Math.round(lerp(46,70,dry))},${a})`;
+  c.strokeStyle=col(1);c.lineWidth=Math.max(1,2.2*s*g+.6);c.beginPath();c.moveTo(x,y);c.lineTo(x+(R()-.5)*3*s,y-H*(1-dry*.25));c.stroke();
+  const nL=3+Math.round(g*4);for(let k=0;k<nL;k++){const f=.15+.8*k/nL,yy=y-H*f*(1-dry*.25),dir=k%2?1:-1,L=(14+26*g)*s*(1-f*.35),droop=.35+dry*.8;
+    c.strokeStyle=col(.95);c.lineWidth=Math.max(1,2.6*s*g+.4);c.beginPath();c.moveTo(x,yy);c.quadraticCurveTo(x+dir*L*.55,yy-L*(.45-droop*.4),x+dir*L,yy+L*(droop*.55-.05));c.stroke();
+    c.strokeStyle='rgba(230,235,200,.35)';c.lineWidth=.6;c.beginPath();c.moveTo(x,yy);c.quadraticCurveTo(x+dir*L*.55,yy-L*(.45-droop*.4),x+dir*L*.9,yy+L*(droop*.5-.05));c.stroke();}
+  if(g>.72&&dry<.5){const hy=y-H,hs=(g-.72)/.28;c.fillStyle='#8f3f22';for(let k=0;k<12;k++){c.beginPath();c.arc(x+(R()-.5)*7*s,hy-(R()*14)*s*hs,(1.4+R()*1.2)*s,0,7);c.fill();}
+    c.fillStyle='rgba(200,120,70,.6)';c.beginPath();c.arc(x-1.5*s,hy-6*s*hs,1.4*s,0,7);c.fill();}}
+function zaTree(c,x,y,s,T,seed){if(T<.02)return;const R=zaRand(seed),H=(30+120*T)*s,cw=(16+70*T)*s;
+  c.fillStyle='rgba(60,40,20,.18)';c.beginPath();c.ellipse(x+cw*.15,y+2*s,cw*.8,cw*.18,0,0,7);c.fill();
+  c.fillStyle='#6b4f36';c.beginPath();c.moveTo(x-3.2*s*T-1,y);c.lineTo(x-1.4*s*T-.5,y-H*.62);c.lineTo(x+1.4*s*T+.5,y-H*.62);c.lineTo(x+3.2*s*T+1,y);c.fill();
+  c.strokeStyle='#6b4f36';c.lineWidth=Math.max(1,2*s*T);[[-1,.55],[1,.62],[-.6,.75],[.7,.8]].forEach(([d,f])=>{c.beginPath();c.moveTo(x,y-H*f*.85);c.lineTo(x+d*cw*.42,y-H*f*1.05);c.stroke();});
+  const N=16;for(let k=0;k<N;k++){const a=R()*Math.PI,rr=R(),cx=x+Math.cos(a)*cw*.5*rr*1.1,cy=y-H*.78-Math.sin(a)*H*.22*rr-cw*.05,r0=(5+R()*7)*s*(.5+T*.7);
+    c.fillStyle=['#3f6b2e','#4b7a33','#5c8a3a','#36602a'][k%4];c.beginPath();c.arc(cx,cy,r0,0,7);c.fill();c.fillStyle='rgba(190,220,140,.28)';c.beginPath();c.arc(cx-r0*.3,cy-r0*.35,r0*.45,0,7);c.fill();}}
+function zaFarmer(c,x,y,s,sw){// a man with a daba (short-handled hoe), side view, bending to dig
+  c.save();c.translate(x,y);c.scale(s,s);const lean=.55,arm=Math.sin(sw)*.6;
+  c.fillStyle='rgba(60,40,20,.2)';c.beginPath();c.ellipse(4,1,20,4,0,0,7);c.fill();
+  c.strokeStyle='#2c2f3a';c.lineWidth=6;c.lineCap='round';c.beginPath();c.moveTo(-5,0);c.lineTo(-2,-28);c.moveTo(7,0);c.lineTo(2,-28);c.stroke();
+  c.save();c.translate(0,-30);c.rotate(lean);c.fillStyle='#2f4f86';c.beginPath();c.moveTo(-8,0);c.lineTo(-7,-32);c.quadraticCurveTo(0,-37,8,-32);c.lineTo(9,0);c.closePath();c.fill();
+  c.fillStyle='#5a3a22';c.beginPath();c.ellipse(1,-41,6.2,7,0,0,7);c.fill();c.fillStyle='#c9a66b';c.beginPath();c.ellipse(1,-46,11,3,0,0,7);c.fill();c.beginPath();c.ellipse(1,-48.5,6,4.5,0,Math.PI,0);c.fill();
+  c.restore();
+  // arms and the hoe
+  const sx=-14*Math.sin(lean)+0, sy=-30-30*Math.cos(lean);c.strokeStyle='#5a3a22';c.lineWidth=4.5;const hx=sx+14+arm*6,hy=sy+16+arm*8;c.beginPath();c.moveTo(sx+18,sy+4);c.lineTo(hx,hy);c.stroke();
+  const ang=1.1+arm;c.strokeStyle='#7a5530';c.lineWidth=3;c.beginPath();c.moveTo(hx,hy);c.lineTo(hx+Math.cos(ang)*22,hy+Math.sin(ang)*22);c.stroke();
+  c.fillStyle='#5b5f66';c.save();c.translate(hx+Math.cos(ang)*22,hy+Math.sin(ang)*22);c.rotate(ang+1.4);c.beginPath();c.moveTo(-2,0);c.lineTo(9,-3);c.lineTo(10,4);c.lineTo(-2,3);c.closePath();c.fill();c.restore();
+  c.restore();}
+function zaScene(c){const t=ZA.t,rain=ZA.rainT>=0&&ZA.rainT<7?Math.min(1,ZA.rainT/1.2,(7-ZA.rainT)/1.2):0;
+  if(!zaGround)zaMakeGround();c.drawImage(zaGround,0,0);
+  if(rain>0){c.fillStyle=`rgba(70,78,88,${.35*rain})`;c.fillRect(0,0,1200,100);c.fillStyle=`rgba(60,66,74,${.18*rain})`;c.fillRect(0,100,1200,430);
+    const g=c.createLinearGradient(0,10,0,70);g.addColorStop(0,`rgba(70,76,86,${.8*rain})`);g.addColorStop(1,'rgba(70,76,86,0)');c.fillStyle=g;c.fillRect(0,10,1200,70);}
+  // the gully in front: dry crack, then muddy water carrying the soil away
+  const gy=X=>zaP(X,-1.25)[1]+Math.sin(X*.7)*3;c.strokeStyle='#8a6142';c.lineWidth=14;c.beginPath();for(let X=-14;X<=14;X+=.5){const x=zaP(X,-1.25)[0];X===-14?c.moveTo(x,gy(X)):c.lineTo(x,gy(X));}c.stroke();
+  c.strokeStyle='#5e3f27';c.lineWidth=7;c.stroke();
+  if(ZA.mudFlow>.01||ZA.mud>.01){c.strokeStyle=`rgba(150,104,64,${Math.min(.95,.25+ZA.mudFlow)})`;c.lineWidth=4+8*Math.min(1,ZA.mudFlow+ZA.mud*.3);c.stroke();
+    c.fillStyle='rgba(205,170,130,.8)';for(let k=0;k<28*Math.min(1,ZA.mudFlow*2);k++){const X=-14+((k*1.37+t*2.2)%28),x=zaP(X,-1.25)[0];c.beginPath();c.arc(x,gy(X)+Math.sin(k)*2,1.3,0,7);c.fill();}}
+  // field outlines in the dance-floor colors
+  if(ZA.pick){c.save();c.lineWidth=2;
+    c.fillStyle='rgba(27,95,196,.10)';zaQuad(c,3,3,6,12);c.fill();zaQuad(c,-6,0,3,3);c.fill();c.fillStyle='rgba(180,83,9,.13)';zaQuad(c,3,0,6,3);c.fill();
+    c.setLineDash([6,5]);c.strokeStyle='rgba(27,95,196,.85)';zaQuad(c,3,3,6,12);c.stroke();zaQuad(c,-6,0,3,3);c.stroke();c.strokeStyle='rgba(180,83,9,.95)';zaQuad(c,3,0,6,3);c.stroke();c.setLineDash([]);
+    if(ZA.pick==='corner'&&!ZA.dug){const fl=.5+.5*Math.sin(t*6);c.fillStyle=`rgba(200,40,40,${.18*fl})`;zaQuad(c,3,3,6,12);c.fill();zaQuad(c,-6,0,3,3);c.fill();}
+    c.restore();}
+  c.strokeStyle='rgba(138,90,43,.95)';c.lineWidth=2.4;zaQuad(c,-6,3,3,12);c.stroke();if(!ZA.pick){c.setLineDash([6,5]);c.strokeStyle='rgba(60,60,60,.6)';c.lineWidth=1.6;zaQuad(c,-6,0,6,12);c.stroke();c.setLineDash([]);}
+  // edge letters
+  const lab=(s,X,Z,col)=>{const[x,y]=zaP(X,Z);c.font='italic 700 19px "Cambria Math","Times New Roman",serif';c.textAlign='center';c.lineWidth=4;c.strokeStyle='rgba(255,255,255,.85)';c.strokeText(s,x,y);c.fillStyle=col;c.fillText(s,x,y);};
+  lab('x',-1.5,12.5,'#8a5a2b');lab('a',4.5,12.5,ZA.pick?'#1b5fc4':'#555');
+  // pits, far to near
+  for(let r=0;r<ZN;r++)for(let i=0;i<ZN;i++){const cc=r*ZN+i;zaPitDraw(c,cc,zaPit(cc));if(!zaPit(cc)&&ZA.water[cc]>.05){const[X,Z]=zaCell(cc),[x,y,s]=zaP(X,Z);c.fillStyle=`rgba(120,150,170,${ZA.water[cc]*.8})`;c.beginPath();c.ellipse(x,y,9*s,3*s,0,0,7);c.fill();}}
+  // runoff: brown sheets of water over the crust, toward the gully
+  c.lineCap='round';for(const p of ZA.runs){const[x,y,s]=zaP(p.X,p.Z),[x2,y2]=zaP(p.X,p.Z+.5);c.strokeStyle=`rgba(132,92,58,${.55*Math.min(1,p.l*3)})`;c.lineWidth=1+1.6*s;c.beginPath();c.moveTo(x2,y2);c.lineTo(x,y);c.stroke();}
+  // plants, trees and the farmer, sorted far to near
+  const items=[];
+  for(let cc=0;cc<ZW;cc++){if(ZA.grow[cc]>.03){const[X,Z]=zaCell(cc);items.push([Z,()=>{const[x,y,s]=zaP(X+.08,Z+.05);zaSorghum(c,x,y,s,ZA.grow[cc],ZA.wilt[cc],cc+11);}]);}}
+  const TR=[[1,1,.3],[4,6,.3],[7,2,.35],[2,7,.25],[6,4,.2],[10,2,0],[9,10,0],[3,10,0],[11,7,0],[0,4,.15],[5,11,0]];
+  TR.forEach(([i,r,t0],k)=>{const cc=r*ZN+i,kind=zaKind(i,r);const T=kind==='old'?t0+ZA.years*.7:ZA.years*.75*(ZA.treeNew||0);if(T<.03)return;const[X,Z]=zaCell(cc);items.push([Z-.01,()=>{const[x,y,s]=zaP(X-.25,Z-.2);zaTree(c,x,y,s,Math.min(1,T),k*31+7);}]);});
+  // the farmer: digging along the new pits, or standing at the corner of his field
+  let fX=6.9,fZ=.6,sw=0;if(ZA.digging){const k=Math.min(ZA_ORDER.length-1,Math.floor(ZA.dig*ZA_ORDER.length)),[X,Z]=zaCell(ZA_ORDER[k]);fX=X+.75;fZ=Z-.15;sw=t*9;}
+  items.push([fZ,()=>{const[x,y,s]=zaP(fX,fZ);zaFarmer(c,x,y,s*.95,sw);}]);
+  items.sort((a,b)=>b[0]-a[0]).forEach(f=>f[1]());
+  // birds once the trees are up
+  if(ZA.years>.6){c.strokeStyle='rgba(40,40,40,.75)';c.lineWidth=1.4;for(let k=0;k<5;k++){const bx=150+((t*28+k*130)%560),by=140+Math.sin(t*1.3+k)*18+k*9,f=Math.sin(t*9+k)*3;c.beginPath();c.moveTo(bx-6,by-f);c.quadraticCurveTo(bx-3,by-3,bx,by);c.quadraticCurveTo(bx+3,by-3,bx+6,by-f);c.stroke();}}
+  // rain streaks
+  if(rain>0){c.strokeStyle=`rgba(225,232,240,${.5*rain})`;c.lineWidth=1;c.beginPath();for(let k=0;k<260;k++){const x=((k*97.3+t*140)%800)-20,y=((k*53.7+t*620)%530)+5;c.moveTo(x,y);c.lineTo(x-5,y+16);}c.stroke();}
+  if(ZA.years>0){c.fillStyle='rgba(255,255,255,.88)';zaRR(c,24,24,ZA.years>=1?160:130,30,8);c.fill();zaT(c,ZA.years>=1?'10 years later':'years passing…',36,45,{s:15,w:700,c:'#2a2a2a'});}
+  // callout to the close-up pit
+  const[cx0,cy0]=zaP(...zaCell(ZA_WATCH));c.strokeStyle='rgba(30,30,30,.6)';c.setLineDash([5,4]);c.lineWidth=1.4;c.beginPath();c.arc(cx0,cy0,11,0,7);c.stroke();c.beginPath();c.moveTo(cx0+11,cy0-4);c.lineTo(790,150);c.stroke();c.setLineDash([]);}
+function zaInset(c){const x=790,y=20,w=390,h=310,cx=x+170,gy=y+118,isPit=zaPit(ZA_WATCH),wa=ZA.water[ZA_WATCH],g=ZA.grow[ZA_WATCH],wl=ZA.wilt[ZA_WATCH],t=ZA.t;
+  const rain=ZA.rainT>=0&&ZA.rainT<7?Math.min(1,ZA.rainT/1.2,(7-ZA.rainT)/1.2):0;
+  c.save();zaRR(c,x,y,w,h,12);c.clip();
+  let gr=c.createLinearGradient(0,y,0,gy);gr.addColorStop(0,rain>0?'#8e98a4':'#c9d6de');gr.addColorStop(1,'#e7ddcf');c.fillStyle=gr;c.fillRect(x,y,w,gy-y);
+  // soil, with the crust on top
+  gr=c.createLinearGradient(0,gy,0,y+h);gr.addColorStop(0,'#a87550');gr.addColorStop(1,'#8e5f3e');c.fillStyle=gr;c.fillRect(x,gy,w,h);
+  const R=zaRand(3);c.fillStyle='rgba(60,35,20,.25)';for(let k=0;k<140;k++){c.beginPath();c.arc(x+R()*w,gy+R()*(h-100),.8+R()*1.6,0,7);c.fill();}
+  c.fillStyle='#c9a487';c.fillRect(x,gy-2,w,16);c.strokeStyle='rgba(110,75,50,.55)';c.lineWidth=1;for(let k=0;k<14;k++){const xx=x+R()*w;c.beginPath();c.moveTo(xx,gy-2);c.lineTo(xx+(R()-.5)*6,gy+14);c.stroke();}
+  // the wetting front: how deep the rain has soaked in
+  const wetD=isPit?14+150*ZA.wet:6+10*Math.min(1,ZA.wet*3);
+  if(ZA.wet>.01){c.fillStyle='rgba(55,70,95,.35)';c.beginPath();if(isPit){c.ellipse(cx,gy+40,48+wetD*.55,wetD,0,0,Math.PI);}else{c.rect(x,gy,w,wetD);}c.fill();}
+  if(isPit){// the pit, cut in half: bowl, heaped rim downhill, manure, water
+    c.fillStyle='#d2b190';c.beginPath();c.moveTo(cx+60,gy);c.quadraticCurveTo(cx+86,gy-18,cx+112,gy);c.fill();
+    c.fillStyle='#e7ddcf';c.beginPath();c.moveTo(cx-62,gy-2);c.bezierCurveTo(cx-55,gy+52,cx+55,gy+52,cx+62,gy-2);c.closePath();c.fill();
+    c.strokeStyle='#7a5235';c.lineWidth=2;c.beginPath();c.moveTo(cx-62,gy-2);c.bezierCurveTo(cx-55,gy+52,cx+55,gy+52,cx+62,gy-2);c.stroke();
+    if(wa>.03){const lv=gy+40-Math.min(38,wa*44);c.save();c.beginPath();c.moveTo(cx-62,gy-2);c.bezierCurveTo(cx-55,gy+52,cx+55,gy+52,cx+62,gy-2);c.closePath();c.clip();c.fillStyle='rgba(88,140,186,.8)';c.fillRect(cx-70,lv,140,60);c.restore();}
+    c.fillStyle='#3a2414';for(let k=0;k<11;k++){c.beginPath();c.ellipse(cx-26+k*5.2,gy+33+Math.sin(k*2)*2,5,3.2,k,0,7);c.fill();}
+    // termite tunnels, then roots following the water down
+    if(ZA.term>.02){c.strokeStyle='rgba(235,215,180,.85)';c.lineWidth=2;const TT=[[-30,-1],[-10,.4],[14,-.3],[30,.8]];TT.forEach(([dx,b],k)=>{const L=ZA.term*(70+k*14);c.beginPath();c.moveTo(cx+dx,gy+40);for(let s=0;s<=L;s+=6)c.lineTo(cx+dx+Math.sin(s*.08+k)*7+b*s*.3,gy+40+s);c.stroke();});
+      c.fillStyle='#f1e2c2';for(let k=0;k<4;k++){const L=ZA.term*(70+k*14)*((t*.25+k*.3)%1),dx=[-30,-10,14,30][k],b=[-1,.4,-.3,.8][k];c.beginPath();c.ellipse(cx+dx+Math.sin(L*.08+k)*7+b*L*.3,gy+40+L,2.6,1.6,1.4,0,7);c.fill();}}
+    if(g>.03){c.strokeStyle=`rgba(245,238,215,${.9-wl*.5})`;c.lineWidth=1.6;for(let k=0;k<7;k++){const L=Math.min(wetD+30,g*150)*(0.55+.45*((k*37)%10)/10);c.beginPath();c.moveTo(cx,gy+34);let px=cx,py=gy+34;for(let s=0;s<L;s+=6){px+=Math.sin(k*1.7+s*.05)*2+(k-3)*.9;py+=5.4;c.lineTo(px,py);}c.stroke();}}
+    zaSorghum(c,cx,gy+32,1.25,g,wl,99);
+  }else{// bare crust: rain splashes and runs off, a seed lies on top
+    if(g>.03)zaSorghum(c,cx,gy-2,1.1,g,wl,99);else{c.fillStyle='#c9a36b';c.beginPath();c.ellipse(cx,gy-4,3.4,2.4,0,0,7);c.fill();}
+    if(rain>0){c.strokeStyle='rgba(88,140,186,.85)';c.lineWidth=3;for(let k=0;k<5;k++){const xx=x+20+((k*80+t*120)%w);c.beginPath();c.moveTo(xx,gy-4);c.lineTo(xx+26,gy-4);c.stroke();c.beginPath();c.moveTo(xx+26,gy-4);c.lineTo(xx+20,gy-8);c.moveTo(xx+26,gy-4);c.lineTo(xx+20,gy);c.stroke();}}}
+  if(rain>0){c.strokeStyle='rgba(120,150,190,.8)';c.lineWidth=1.3;c.beginPath();for(let k=0;k<50;k++){const xx=x+((k*41.3+t*60)%w),yy=y+((k*23.1+t*300)%(gy-y-6));c.moveTo(xx,yy);c.lineTo(xx-2,yy+9);}c.stroke();}
+  // labels
+  const L=(s,lx,ly,tx,ty)=>{c.strokeStyle='rgba(40,40,40,.55)';c.lineWidth=1;c.beginPath();c.moveTo(lx,ly);c.lineTo(tx,ty);c.stroke();c.fillStyle='rgba(255,255,255,.88)';c.font='600 13px "Segoe UI",system-ui,sans-serif';const w2=c.measureText(s).width;zaRR(c,lx-4,ly-14,w2+8,19,5);c.fill();zaT(c,s,lx,ly,{s:13,w:600});};
+  L('hard crust',x+12,gy+34,x+60,gy+8);
+  if(isPit){L('manure',x+300,gy+70,cx+22,gy+34);if(ZA.term>.05)L('termite tunnels',x+258,gy+130,cx+30,gy+90);if(ZA.wet>.05)L('wet soil',x+12,gy+150,cx-60,gy+110);if(g>.1)L('roots',x+12,gy+188,cx-6,gy+120);}
+  else{if(rain>0||ZA.rained)L('rain runs off',x+250,gy-24,x+240,gy-6);if(ZA.wet>.01)L('only the top gets wet',x+12,gy+60,x+90,gy+12);}
+  c.restore();c.strokeStyle='#d8d8d3';c.lineWidth=1;zaRR(c,x,y,w,h,12);c.stroke();
+  c.fillStyle='rgba(255,255,255,.9)';zaRR(c,x+10,y+10,isPit?150:178,24,6);c.fill();zaT(c,isPit?'One pit, cut in half':'Bare crust, cut in half',x+18,y+27,{s:14,w:700});}
+function zaPanel(c){const x=790,y=345;c.fillStyle='#fff';c.strokeStyle='#d8d8d3';c.lineWidth=1;zaRR(c,x,y,390,315,12);c.fill();c.stroke();zaT(c,'Yacouba Sawadogo',x+18,y+30,{s:18,w:700});
+  [['🏜️','1980s: drought, failed harvests'],['🕳️','zaï: an old way, made better'],['🧺','wider, deeper pits; manure'],['🐜','termites open the hard crust'],['🌳','a forest of almost 40 hectares'],['🏆','2018 Right Livelihood Award'],['⚠️','hard part: called a madman; forest burned']].forEach(([i,t],k)=>{const yy=y+62+k*33;zaT(c,i,x+30,yy+6,{s:20,a:'center'});zaT(c,t,x+54,yy+2,{s:14.5,w:600});});
+  zaT(c,'Sources: Right Livelihood; UN Environment Programme;',x+18,y+296,{s:11,c:'#5d5d63'});zaT(c,'World Bank IK Notes (2005); The Conversation (2023).',x+18,y+309,{s:11,c:'#5d5d63'});}
+function zaRhyme(c){const x=0,y=530,w=760,h=135;c.fillStyle='#fff';c.strokeStyle='#d8d8d3';zaRR(c,x+10,y,w-20,h-6,12);c.fill();c.stroke();
+  const sq=(ox,oy,cs,fn)=>{for(let r=0;r<12;r++)for(let i=0;i<12;i++)fn(ox+i*cs,oy+r*cs,cs,zaKind(i,r));};
+  sq(212,y+12,7.6,(px,py,cs,k)=>{c.fillStyle=k==='old'?((px+py)/7.6%2<1?'#c8945c':'#b98349'):k==='strip'?'#2f6fd0':'#c9790f';c.fillRect(px,py,cs-.6,cs-.6);});
+  zaT(c,'the dance floor',257,y+120,{s:13,a:'center',c:'#5d5d63'});
+  zaT(c,'=',372,y+66,{s:32,w:700,a:'center',c:'#5d5d63'});
+  sq(420,y+12,7.6,(px,py,cs,k)=>{c.fillStyle='#cfae8c';c.fillRect(px,py,cs,cs);c.fillStyle='#4a3020';c.beginPath();c.arc(px+cs/2,py+cs/2,2.2,0,7);c.fill();if(k==='old'){c.fillStyle='#5c8a3a';c.beginPath();c.arc(px+cs/2,py+cs/2,1.6,0,7);c.fill();}});
+  c.lineWidth=2;c.strokeStyle='#8a5a2b';c.strokeRect(420,y+12,68.4,68.4);c.strokeStyle='#1b5fc4';c.setLineDash([4,3]);c.strokeRect(488.4,y+12,22.8,68.4);c.strokeRect(420,y+80.4,68.4,22.8);c.strokeStyle='#b45309';c.strokeRect(488.4,y+80.4,22.8,22.8);c.setLineDash([]);
+  zaT(c,'his field, from above',465,y+120,{s:13,a:'center',c:'#5d5d63'});
+  zaT(c,'old',600,y+40,{s:14,w:700,c:'#8a5a2b'});zaT(c,'two strips',600,y+64,{s:14,w:700,c:'#1b5fc4'});zaT(c,'corner',600,y+88,{s:14,w:700,c:'#b45309'});
+  zaT(c,'x²',36,y+40,{s:18,w:700,c:'#8a5a2b'});zaT(c,'2ax',36,y+66,{s:18,w:700,c:'#1b5fc4'});zaT(c,'a²',36,y+92,{s:18,w:700,c:'#b45309'});}
+function zaDraw(){if(!zaX)return;const c=zaX;c.clearRect(0,0,1200,675);c.fillStyle='#f6f5f2';c.fillRect(0,0,1200,675);c.save();zaRR(c,10,10,750,512,12);c.clip();zaScene(c);c.restore();
+  c.strokeStyle='#d8d8d3';c.lineWidth=1;zaRR(c,10,10,750,512,12);c.stroke();zaInset(c);zaPanel(c);zaRhyme(c);}
+let zaLast=0;
+function zaStep(dt){ZA.t+=dt;
+  if(ZA.digging){ZA.dig=Math.min(1,ZA.dig+dt/7);if(ZA.dig>=1){ZA.digging=false;ZA.dug=true;ui();}}
+  const raining=ZA.rainT>=0&&ZA.rainT<7;
+  if(ZA.rainT>=0){ZA.rainT+=dt;if(ZA.rainT>=7&&raining)ui();}
+  let runoff=0;
+  for(let cc=0;cc<ZW;cc++){const p=zaPit(cc);if(raining){ZA.water[cc]=Math.min(1,ZA.water[cc]+dt*(p?.32:.02));if(!p)runoff++;}
+    ZA.water[cc]=Math.max(0,ZA.water[cc]-dt*(p?.03:.045));
+    if(ZA.sown){const w=ZA.water[cc];if(w>.22)ZA.grow[cc]=Math.min(1,ZA.grow[cc]+dt*.16*(1.1-ZA.grow[cc]));else if(w>.05&&ZA.grow[cc]<.16)ZA.grow[cc]+=dt*.05;
+      if(w<.04&&ZA.grow[cc]>.03&&ZA.grow[cc]<.6)ZA.wilt[cc]=Math.min(1.3,ZA.wilt[cc]+dt*.35);
+      if(ZA.wilt[cc]>1.25){ZA.grow[cc]=0;ZA.wilt[cc]=0;}}}
+  // runoff over the crust outside the field and from bare strips
+  if(raining){const n=Math.round(dt*(160+runoff*5));const R=Math.random;for(let k=0;k<n&&ZA.runs.length<520;k++){let X=-16+R()*32,Z=-.6+R()*24;
+      if(Math.abs(X)<6&&Z>0&&Z<12){const i=Math.floor(X+6),r=Math.floor(12-Z);if(zaPit(r*ZN+i))continue;}ZA.runs.push({X,Z,l:1});}}
+  let into=0;ZA.runs=ZA.runs.filter(p=>{p.Z-=dt*(1.5+(12-Math.min(12,p.Z))*.05);p.X+=Math.sin(p.Z*1.3+p.X)*dt*.25;p.l-=dt*.12;if(p.Z<-1.1){into++;return false;}
+    if(Math.abs(p.X)<6&&p.Z>0&&p.Z<12){const i=Math.floor(p.X+6),r=Math.floor(12-p.Z);if(zaPit(r*ZN+i)){ZA.water[r*ZN+i]=Math.min(1,ZA.water[r*ZN+i]+.01);return false;}}return p.l>0;});
+  ZA.mudFlow=lerp(ZA.mudFlow,Math.min(1,into/(dt*90+1e-6)*.5),Math.min(1,dt*2));ZA.mud=Math.min(1,ZA.mud+into*.0006);if(!raining)ZA.mud=Math.max(0,ZA.mud-dt*.02);
+  // the close-up: water soaks in, termites tunnel, deeper in a pit
+  const wa=ZA.water[ZA_WATCH],pit=zaPit(ZA_WATCH);ZA.wet=pit?Math.min(1,Math.max(ZA.wet-dt*.012,ZA.wet+dt*(wa>.15?.09:0))):Math.max(0,Math.min(.33,ZA.wet+dt*(raining?.08:-.02)));
+  ZA.term=pit&&ZA.wet>.1?Math.min(1,ZA.term+dt*.12):Math.max(0,ZA.term-dt*(pit?0:.5));
+  if(ZA.yearsGo){ZA.years=Math.min(1,ZA.years+dt/6);ZA.sown=true;for(let cc=0;cc<ZW;cc++)if(zaPit(cc))ZA.water[cc]=Math.max(ZA.water[cc],.6);if(ZA.years>=1){ZA.yearsGo=false;ZA.yearsDone=true;ui();}}}
+function zaLoop(ts){if(S.beat!==B.zai)return;const dt=Math.min(.05,(ts-(zaLast||ts))/1000);zaLast=ts;zaStep(RM?dt*3:dt);zaDraw();requestAnimationFrame(zaLoop);}
+function zaEnter(){zaLast=0;requestAnimationFrame(zaLoop);}
+function zaRain(){ZA.season++;ZA.rainT=0;ZA.sown=true;ZA.grow.fill(0);ZA.wilt.fill(0);ZA.water.fill(0);ZA.wet=0;ZA.term=0;if(ZA.land==='crust')ZA.crustTried=true;else ZA.rained=true;}
+const zaThumb=k=>{let s='';for(let r=0;r<6;r++)for(let i=0;i<6;i++){const old=i<4&&r<4,cor=i>=4&&r>=4,str=!old&&!cor;const f=old?'#c8945c':(k==='corner'?(cor?'#c9790f':'#e9e2d6'):(cor?'#c9790f':'#2f6fd0'));s+=`<rect x="${i*9}" y="${r*9}" width="8.2" height="8.2" fill="${f}"/>`;}
+  return `<svg width="54" height="54" viewBox="0 0 54 54" aria-hidden="true" style="vertical-align:middle;margin-right:8px">${s}</svg>`;};
+function zaYears(){ZA.treeNew=ZA.dug&&ZA.land==='pits'?1:0;ZA.yearsGo=true;ZA.years=Math.min(ZA.years,.001);ZA.grow.fill(0);ZA.wilt.fill(0);}
+
 function animate(ms,fn,ease){const g=GEN;ease=ease||easeIO;return new Promise(res=>{
   if(RM||ms<=0){fn(1);render();return res(true);}
   const t0=performance.now();
@@ -482,6 +683,7 @@ function go(i){i=clamp(i,0,BEATS.length-1);GEN++;const from=S.beat;S.beat=i;S.re
   chatEl.hidden=!(i===B.last||i===B.story);storyEl.hidden=i!==B.story;
   if(i===B.last)chatEl.innerHTML=`<p class="them"><small>Dance committee</small>Last year’s floor was way too small. Go 3 panels bigger each way?</p><p class="you">On it. How many more panels do I order?</p>`;
   if(i===B.story)buildStory();
+  if(zaCv){zaCv.hidden=i!==B.zai;svg.style.visibility=i===B.zai?'hidden':'';eqEl.style.visibility=i===B.zai?'hidden':'';if(i===B.zai)zaEnter();}
   chapters();ui();render();
   if(window.StoryHelp)StoryHelp.step();
   if(i===B.bigger&&S.guess==null){S.grow=0;animate(1100,t=>{S.grow=t;});}else if(i===B.bigger)S.grow=1,render();
@@ -542,7 +744,24 @@ function ui(){
   case 'cube':cap=S.cubeOK?'A square splits 1, 2, 1. A cube splits 1, 3, 3, 1.':'One dimension up: the same cut, made in a cube.';
     sub=S.cubeOK?'One big cube, three slabs, three rods, one small cube. You will meet that pattern again in Algebra 2 as <span class="term">Pascal’s triangle</span>.':'This is (x + a)³: a cube with side x + a. Pull it apart, then count the pieces.';
     ctl=`<label style="flex-basis:100%">Pull it apart<input class="rng" id="expl" type="range" min="0" max="100" value="${Math.round(S.explode*100)}"></label>`+(S.cubeOK?'':`<form class="ans" data-form="cube"><label>Flat slabs <input id="c1" inputmode="numeric" autocomplete="off" style="width:60px"></label><label>Thin rods <input id="c2" inputmode="numeric" autocomplete="off" style="width:60px"></label><button class="btn primary" type="submit">Check</button></form><p class="fb" id="cFb"></p>`);
-    ok=S.cubeOK;nextL='Tell the story';break;
+    ok=S.cubeOK;nextL='Who is doing this';break;
+  case 'zai':{const raining=ZA.rainT>=0&&ZA.rainT<7;
+    if(!ZA.pick||ZA.pick==='corner'){
+      cap=ZA.pick?'Only the corner leaves two long strips of bare crust.':'Gourga, Burkina Faso. Yacouba Sawadogo makes his field of planting pits a rows bigger each way. Where do the new pits go?';
+      sub=ZA.pick?'Same as the dance floor: the strips are most of the new ground. Try the other one.':'The ground here is a hard crust, and rain runs off it. Each pit, called a zaï, catches the rain and holds a handful of manure.';
+      ctl=(ZA.pick?'':`<button class="btn pick" data-act="zaPick" data-v="corner">${zaThumb('corner')}Only the corner</button>`)+`<button class="btn pick" data-act="zaPick" data-v="L">${zaThumb('L')}Two strips and the corner</button>`;ok=false;}
+    else if(!ZA.dug){cap=ZA.digging?'He digs the strips first, then the corner.':'Right: two strips and a corner, just like the dance floor.';
+      sub=ZA.digging?'Each pit is about a hand-span wide, with the soil heaped on the downhill side.':'Digging is slow, hard work: one person with a short hoe needs about three months of mornings for one hectare.';
+      ctl=ZA.digging?'':`<button class="btn primary" data-act="zaDig">Dig the new pits</button>`;ok=false;}
+    else{const all=ZA.rained&&ZA.crustTried&&ZA.yearsDone;
+      cap=raining?(zaPit(ZA_WATCH)?'Watch the close-up: the pit catches the rain.':'Watch the close-up: the rain runs off the crust.'):all?'The pits turned rain into crops, then into a forest.':ZA.yearsGo?'Ten years go by.':'Pick the new land, then make it rain.';
+      const ms=[['Make it rain on the pits',ZA.rained],['Try a season with bare crust on the new land',ZA.crustTried],['Let 10 years pass',ZA.yearsDone]],now=ms.findIndex(m=>!m[1]);
+      sub=`<ul class="miss">${ms.map(([t,d],i)=>`<li class="${d?'done':i===now?'now':''}"><span class="bx">${d?'✓':''}</span><span>${t}</span></li>`).join('')}</ul>`
+        +(all?'<p style="margin:10px 0 0">Pits catch the rain, termites open the soil, and the roots follow the water down. His farm became a forest of almost 40 hectares, and farmers across Burkina Faso and Niger now dig zaï. <br><b>Go deeper:</b> <a href="https://www.unep.org/championsofearth/laureates/2020/yacouba-sawadogo" target="_blank" rel="noopener">UN Champions of the Earth ↗</a> · <a href="https://www.weforum.org/stories/2023/08/zai-technique-sahel-farmers-adapt-climate-change/" target="_blank" rel="noopener">How zaï helps farmers in the Sahel ↗</a> · <a href="https://www.unccd.int/actions/great-green-wall-initiative" target="_blank" rel="noopener">The Great Green Wall ↗</a></p>':'');
+      ctl=`<span class="muted" style="align-self:center">New land:</span><button class="btn pick ${ZA.land==='pits'?'on':''}" data-act="zaLand" data-v="pits" aria-pressed="${ZA.land==='pits'}" ${raining||ZA.yearsGo?'disabled':''}>Zaï pits</button><button class="btn pick ${ZA.land==='crust'?'on':''}" data-act="zaLand" data-v="crust" aria-pressed="${ZA.land==='crust'}" ${raining||ZA.yearsGo?'disabled':''}>Bare crust</button>`
+        +`<button class="btn ${!ZA.rained||(!ZA.crustTried&&ZA.land==='crust')?'primary':''}" data-act="zaRain" ${raining||ZA.yearsGo?'disabled':''} style="flex-basis:100%;max-width:220px">Make it rain</button><button class="btn" data-act="zaYears" ${ZA.rained&&!raining&&!ZA.yearsGo?'':'disabled'}>Let 10 years pass</button>`;
+      ok=all;}
+    room='<b>In class:</b> the strips were most of the new dance floor. Why are they most of the new field too?';nextL='Tell the story';break;}
   case 'story':cap='Now tell the story of the math.';sub='Fill the gaps below in your own words. Your answer to the committee appears on the picture.';room='<b>In class:</b> tell your story to a partner without looking at the screen.';ok=false;break;
   }
   panel.innerHTML=`<p class="kicker">Chapter ${ch+1} of ${CH.length} · ${CH[ch]}</p><p class="cap">${cap}</p><div class="sub">${sub}</div>${ctl?`<div class="ctl">${ctl}</div>`:''}${room?`<p class="room">${room}</p>`:''}
@@ -550,10 +769,11 @@ function ui(){
 }
 panel.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t||t.disabled)return;const a=t.dataset.act,v=t.dataset.v;
   if(a==='next')go(S.beat+1);else if(a==='back')go(S.beat-1);
-  else if(a==='restart'){Object.assign(S,{guess:null,paint:new Array(GAPN).fill(0),order:[],typedOK:false,seen:{},pick:null,m:[false,false,false],trapDone:false,buildDone:false,holeOK:false,tenOK:false,cubeOK:false,reached:0});go(0);}
+  else if(a==='restart'){Object.assign(S,{guess:null,paint:new Array(GAPN).fill(0),order:[],typedOK:false,seen:{},pick:null,m:[false,false,false],trapDone:false,buildDone:false,holeOK:false,tenOK:false,cubeOK:false,reached:0});zaReset();go(0);}
   else if(a==='color'){S.color=+v;ui();}
   else if(a==='clearp'){S.paint.fill(0);S.order=[];ui();render();}
   else if(a==='fillrest'){if(S.order.indexOf(S.color)<0)S.order.push(S.color);for(let i=0;i<GAPN;i++)if(!S.paint[i])S.paint[i]=S.color;ui();render();}
+  else if(a==='zaPick'){ZA.pick=v;ui();}else if(a==='zaDig'){ZA.digging=true;ZA.dig=0;ui();}else if(a==='zaLand'){ZA.land=v;ui();}else if(a==='zaRain'){zaRain();ui();}else if(a==='zaYears'){zaYears();ui();}
   else if(a==='view')showView(v);else if(a==='pickv'){S.pick=v;ui();render();}
   else if(a==='showm'){const i=S.m.indexOf(false);GEN++;if(i===0){S.a=4;}else if(i===1){S.x=10;S.a=4;}else{S.a=3;S.xLo=6;S.xHi=14;const g=GEN;S.x=6;animate(2600,t=>{S.x=Math.round(lerp(6,14,t));},t=>t).then(()=>{if(g===GEN){S.m[2]=true;ui();render();}});}checkMissions();render();}
   else if(a==='showtrap'){S.sel={sr:1,sb:1};S.trapDone=true;ui();render();}
@@ -646,7 +866,7 @@ function fit(){
   const sw=stage.clientWidth||w;K=clamp(880/sw,1,2.2);compact=K>1.55;svg.style.setProperty('--k',K.toFixed(2));render();}
 window.addEventListener('resize',fit);
 
-if(window.StoryHelp)StoryHelp.init({id:'areamodel',title:'The dance floor',beat:()=>S.beat,go,help:[{"ask": "Nothing to do yet. The committee wants the floor 3 panels bigger each way.", "another": "The floor is made of square panels, 12 across and 12 down. Your job is to order the new panels."}, {"ask": "Type how many more panels you think you need, then press Place my order.", "another": "Picture the new 15-by-15 floor. Only the part outside the old 12-by-12 square is new. Your order has to fill that L-shaped gap."}, {"ask": "Color the gap in big chunks so you can count it fast, or type your count.", "another": "Try one long strip down the right side first: how many panels wide and how many tall? Then a strip along the bottom, then the corner that is left."}, {"ask": "Tap each button to see four other ways people counted the same gap.", "another": "Every one of them gets 81. They just cut the gap differently: into strips, by taking the old floor away, or into rings."}, {"ask": "Choose the coloring closest to yours.", "another": "If you counted strips and a corner, pick that one. If you did something else, choose Mine was different."}, {"ask": "Drag the two handles to finish the three tasks in the checklist.", "another": "x is the old floor’s side and a is how much it grows. Each blue strip is a by x, so it holds a·x panels. The orange corner is a by a."}, {"ask": "Tap the pieces of the floor that x² + 9 leaves out.", "another": "x² is the old floor and 9 is the corner. What else is new on the floor? Look at the two long blue strips."}, {"ask": "Drag the six strips onto the right side or the bottom to make a square, then fill the hole.", "another": "A square is the same length both ways, so split the strips evenly: 3 on the right and 3 on the bottom. The empty corner is then 3 by 3."}, {"ask": "Plan the square for 10 strips: how many on each side, and how many corner panels?", "another": "Split the 10 strips evenly: 5 and 5. The corner is then 5 by 5. Half of 10, then squared."}, {"ask": "Slide to pull the cube apart, then count the blue slabs and the orange rods.", "another": "The cube is the square floor built up into 3-D. Blue slabs are x by x by a; orange rods are x by a by a. Count each color."}, {"ask": "Fill each gap below in your own words, then copy your story for Canvas.", "another": "Tell it the way you would explain it to a friend: your guess, how you counted the gap, which piece people forget, and how you completed the square."}]});
+if(window.StoryHelp)StoryHelp.init({id:'areamodel',title:'The dance floor',beat:()=>S.beat,go,help:[{"ask": "Nothing to do yet. The committee wants the floor 3 panels bigger each way.", "another": "The floor is made of square panels, 12 across and 12 down. Your job is to order the new panels."}, {"ask": "Type how many more panels you think you need, then press Place my order.", "another": "Picture the new 15-by-15 floor. Only the part outside the old 12-by-12 square is new. Your order has to fill that L-shaped gap."}, {"ask": "Color the gap in big chunks so you can count it fast, or type your count.", "another": "Try one long strip down the right side first: how many panels wide and how many tall? Then a strip along the bottom, then the corner that is left."}, {"ask": "Tap each button to see four other ways people counted the same gap.", "another": "Every one of them gets 81. They just cut the gap differently: into strips, by taking the old floor away, or into rings."}, {"ask": "Choose the coloring closest to yours.", "another": "If you counted strips and a corner, pick that one. If you did something else, choose Mine was different."}, {"ask": "Drag the two handles to finish the three tasks in the checklist.", "another": "x is the old floor’s side and a is how much it grows. Each blue strip is a by x, so it holds a·x panels. The orange corner is a by a."}, {"ask": "Tap the pieces of the floor that x² + 9 leaves out.", "another": "x² is the old floor and 9 is the corner. What else is new on the floor? Look at the two long blue strips."}, {"ask": "Drag the six strips onto the right side or the bottom to make a square, then fill the hole.", "another": "A square is the same length both ways, so split the strips evenly: 3 on the right and 3 on the bottom. The empty corner is then 3 by 3."}, {"ask": "Plan the square for 10 strips: how many on each side, and how many corner panels?", "another": "Split the 10 strips evenly: 5 and 5. The corner is then 5 by 5. Half of 10, then squared."}, {"ask": "Slide to pull the cube apart, then count the blue slabs and the orange rods.", "another": "The cube is the square floor built up into 3-D. Blue slabs are x by x by a; orange rods are x by a by a. Count each color."}, {"ask": "Tap the picture that shows where the new pits go. Then dig, make it rain, try a season with bare crust, and let 10 years pass.", "another": "The field grows like the dance floor: the old field is x², the two strips are 2ax, the corner is a². The close-up shows one pit cut in half, so you can watch the rain go in."}, {"ask": "Fill each gap below in your own words, then copy your story for Canvas.", "another": "Tell it the way you would explain it to a friend: your guess, how you counted the gap, which piece people forget, and how you completed the square."}]});
 build();go(0);fit();
 if(/github\.io$/.test(location.hostname)){const s=document.createElement('script');s.async=true;s.src='//gc.zgo.at/count.js';s.setAttribute('data-goatcounter','https://rjedtech.goatcounter.com/count');document.head.appendChild(s);}
 window.__floor={S,go,B,render,ui};
