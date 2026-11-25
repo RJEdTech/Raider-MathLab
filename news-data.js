@@ -8,6 +8,62 @@
    name agencies and programs, never parties; no em dashes. */
 window.RAIDER_NEWS = [
  {
+  "id": "who-tb-report-2026",
+  "week": "2026-11-22",
+  "date": "2026-11-12",
+  "title": "WHO: TB deaths have fallen 35% since 2015, and treatment has saved an estimated 86 million lives",
+  "summary": "The World Health Organization released its Global Tuberculosis Report 2026 on November 12. Deaths from tuberculosis (TB), a bacterial lung disease, keep falling, though the world is about five years behind its targets and millions of cases are still missed.",
+  "numbers": [
+   "About 1.13 million people died of TB in 2025, down from 1.18 million in 2024 and 1.74 million in 2015, a 35% drop since 2015 (<a href=\"https://healthpolicy-watch.news/global-tuberculosis-burden-declining-but-five-years-behind-schedule/\" target=\"_blank\" rel=\"noopener\">Health Policy Watch, reporting the WHO Global TB Report 2026, Nov 13, 2026</a>).",
+   "New TB cases in 2025: 129 per 100,000 people, down from 131 in 2024 and 14% lower than in 2015; the End TB Strategy milestone for 2025 was a 50% drop (<a href=\"https://healthpolicy-watch.news/global-tuberculosis-burden-declining-but-five-years-behind-schedule/\" target=\"_blank\" rel=\"noopener\">Health Policy Watch, reporting the WHO Global TB Report 2026, Nov 13, 2026</a>).",
+   "About 10.6 million people fell ill with TB in 2025; 8.4 million were diagnosed, leaving about 2.2 million undiagnosed or unreported (<a href=\"https://www.manoramayearbook.in/current-affairs/world/2026/11/14/who-global-tuberculosis-report-2026.html\" target=\"_blank\" rel=\"noopener\">Manorama Yearbook, reporting the WHO Global TB Report 2026, Nov 14, 2026</a>).",
+   "TB treatment has saved an estimated 86 million lives since 2000 (<a href=\"https://www.manoramayearbook.in/current-affairs/world/2026/11/14/who-global-tuberculosis-report-2026.html\" target=\"_blank\" rel=\"noopener\">Manorama Yearbook, reporting the WHO Global TB Report 2026, Nov 14, 2026</a>).",
+   "About 370,000 people developed TB resistant to the drug rifampicin in 2025, and 42% of them got treatment (<a href=\"https://www.manoramayearbook.in/current-affairs/world/2026/11/14/who-global-tuberculosis-report-2026.html\" target=\"_blank\" rel=\"noopener\">Manorama Yearbook, reporting the WHO Global TB Report 2026, Nov 14, 2026</a>).",
+   "Funding for TB care reached $6.6 billion in 2025, about 30% of the $22 billion a year targeted for 2027 (<a href=\"https://healthpolicy-watch.news/global-tuberculosis-burden-declining-but-five-years-behind-schedule/\" target=\"_blank\" rel=\"noopener\">Health Policy Watch, reporting the WHO Global TB Report 2026, Nov 13, 2026</a>)."
+  ],
+  "concept": {
+   "title": "Rates per 100,000 and the pace needed to hit a target",
+   "html": "A rate <b>per 100,000 people</b> lets you compare years and countries even as populations grow. To undo a percent change, divide: if a rate is 14% lower than before, today's rate is 86% of the old one, so old = new &divide; 0.86. To find the steady yearly change that reaches a target in n years, use the n-th root: yearly factor = (target &divide; start)<sup>1/n</sup>. Comparing the pace you <i>needed</i> with the pace you <i>got</i> tells you how far behind a plan is."
+  },
+  "hook": {
+   "prompt": "Use the report's numbers.",
+   "parts": [
+    {
+     "label": "(a) By what percent did TB deaths fall from 2015 (1.74 million) to 2025 (1.13 million)?",
+     "answer": 35.1,
+     "tol": 0.2,
+     "unit": "%"
+    },
+    {
+     "label": "(b) The 2025 rate of 129 new cases per 100,000 is 14% lower than in 2015. What was the 2015 rate?",
+     "answer": 150,
+     "tol": 0.5,
+     "unit": "per 100,000"
+    },
+    {
+     "label": "(c) To cut the rate 50% in the 10 years from 2015 to 2025, what steady yearly percent drop was needed?",
+     "answer": 6.7,
+     "tol": 0.1,
+     "unit": "% per year"
+    }
+   ],
+   "worked": "(a) (1.74 &minus; 1.13) &divide; 1.74 = 0.351, about <b>35.1%</b>. (b) 129 &divide; 0.86 = <b>150 per 100,000</b> (not 129 &times; 1.14 = 147). (c) The yearly factor must satisfy f<sup>10</sup> = 0.5, so f = 0.5<sup>1/10</sup> = 0.933, a drop of about <b>6.7% a year</b>. The actual pace: 0.86<sup>1/10</sup> = 0.985, about 1.5% a year. The world moved at less than a quarter of the planned pace."
+  },
+  "hides": "Deaths are estimates built from death records, surveys and models, especially in countries where many deaths are not registered. About 2.2 million cases were never diagnosed, so the counts depend on how hard countries look. Progress is uneven: the report shows a 42% drop in new cases in the European Region since 2015 but only 6.6% in the Eastern Mediterranean Region. Drug-resistant TB is rising as a share of the problem, and less than half of those cases got treatment. The mutation rates in the hook are teaching numbers, not measured values.",
+  "evidence": "Strong: WHO's annual report, built from country data. This page read news coverage of the report, not the WHO report itself, and the two sources describe the 2030 target differently (80% or 90% fewer cases), so that target is not quoted.",
+  "investigate": "Open WHO's <a href=\"https://www.who.int/teams/global-tuberculosis-programme/tb-reports/global-tuberculosis-report-2025\" target=\"_blank\" rel=\"noopener\">Global TB Report 2025 page</a> and find the estimated TB deaths for 2024. Use it with this year's 1.13 million for 2025. What one-year percent change do you get, and does it match the 4% drop reported?",
+  "related": [
+   {
+    "href": "index.html#yearlygrowth",
+    "label": "What yearly rate did that?"
+   },
+   {
+    "href": "index.html#livessaved",
+    "label": "Lives saved: an estimate, not a count"
+   }
+  ]
+ },
+ {
   "id": "nhtsa-traffic-deaths-h1-2026",
   "week": "2026-11-15",
   "date": "2026-11-10",
